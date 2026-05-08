@@ -1,18 +1,32 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.24;
+pragma solidity ^0.8.23;
 
-import {ERC20} from "solady/tokens/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract EURS is ERC20 {
-    uint256 public constant FAUCET_CAP = 10_000 * 10**18;
-
-    error InsufficientLiquidity();
-
-    function name() public pure override returns (string memory) { return "Euro Stablecoin Mock"; }
-    function symbol() public pure override returns (string memory) { return "EURS"; }
-
-    function mintFaucet(uint256 amount) external {
-        if (amount > FAUCET_CAP) revert InsufficientLiquidity();
-        _mint(msg.sender, amount);
+    uint256 public constant FAUCET_AMOUNT = 10000 * 10**18;
+    address public regulator;
+    
+    event FaucetDispensed(address indexed to, uint256 amount);
+    
+    modifier onlyRegulator() {
+        require(msg.sender == regulator, "only regulator");
+        _;
+    }
+    
+    constructor() ERC20("Mock EUR Stablecoin", "EURS") {
+        regulator = msg.sender;
+    }
+    
+    // Demo faucet - anyone can get test EURS
+    function requestFaucet() external {
+        require(balanceOf(msg.sender) == 0, "already received faucet");
+        _mint(msg.sender, FAUCET_AMOUNT);
+        emit FaucetDispensed(msg.sender, FAUCET_AMOUNT);
+    }
+    
+    // Regulator can mint more (for demo liquidity)
+    function mint(address to, uint256 amount) external onlyRegulator {
+        _mint(to, amount);
     }
 }
