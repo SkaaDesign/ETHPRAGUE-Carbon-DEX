@@ -74,11 +74,14 @@ Per `BRIEF.md` §13:
 
 1. Confirm with Fredrik: ready to scaffold?
 2. **Add a proper `.gitignore`** before any code lands — Foundry (`out/`, `cache/`, `broadcast/`), Node (`node_modules/`, `.next/`), env (`.env*`). Current `.gitignore` is minimal (only `.twincurrent-build/`).
-3. **Install Foundry** (Fredrik's machine — confirm before running):
-   ```powershell
-   powershell -c "irm https://foundry.paradigm.xyz | iex"
+3. **Install Foundry** — already installed on Fredrik's primary machine (2026-05-08, v1.7.1). For a fresh machine, use **Git Bash** (the official installer is a bash script; PowerShell `iex` will not parse it):
+   ```bash
+   curl -L https://foundry.paradigm.xyz | bash
+   export PATH="$HOME/.foundry/bin:$PATH"   # foundryup auto-detects shell to persist this; if it fails, append to ~/.bashrc manually
    foundryup
+   forge --version    # verify
    ```
+   On Fredrik's machine the path is already in `~/.bashrc`. PowerShell users who want `forge` outside Git Bash also need `%USERPROFILE%\.foundry\bin` on their Windows User PATH.
 4. **Scaffold contracts:** `forge init contracts` in repo root. File-level stubs for the six contracts in `BRIEF.md` §4: `CarbonCredit.sol`, `ComplianceRegistry.sol`, `CarbonDEX.sol`, `Regulator.sol`, `Retirement.sol`, `EURS.sol`. Empty function bodies + event signatures.
 5. **Scaffold frontend:** Next.js App Router init in `web/`. Three routes: `/company`, `/regulator`, `/public`.
 6. **Lin's parallel track:** wireframes + the canonical 3-role architecture diagram (`BRIEF.md` §4 frontend section).
@@ -116,7 +119,34 @@ Memories worth saving on first opportunity (these don't auto-transfer from the s
 
 ---
 
-## 8. Style cheat sheet for responding to Fredrik
+## 8. Open research task — low priority, not blocking
+
+A pending research task came out of the scope conversation. **Not required for ship.** Hand to a research agent (e.g. `research-specialist` or `research-deep`) as a parallel low-priority task — ideally early in the new session so Nahin can use the output for pitch-Q&A defensibility. Do not block scaffolding on it.
+
+### Goal
+A 1-page reference doc on how the real EU ETS works at the regulator level, so Nahin sounds informed in judge Q&A and so the brief's framing of our regulator role can be pinned down (faithful to real ETS or deliberate divergence, with reason).
+
+### Six questions
+1. **What powers do EU national ETS administrators actually have?** Mid-trade halt? Reverse transfers? Freeze accounts? In what circumstances?
+2. **2010 EU ETS VAT carousel fraud (~€5B):** how was it detected, who acted, what changed afterwards (e.g. reverse-charge VAT)?
+3. **2022 Russian-linked allowance freeze:** the technical mechanic — were accounts frozen, transfers reversed, or registry flags flipped? Who authorised it?
+4. **Existing institutional sketches of tokenised compliance carbon:** JPMorgan Project Carbon, MSCI Real Assets, EEX, AirCarbon Exchange — what specifically have they designed or proposed? What does our DEX-with-regulator-as-participant model do differently?
+5. **MiFID II operational requirements for a carbon-trading venue:** what does a compliant venue actually need (custody, reporting, KYC, capital, market surveillance)?
+6. **Union Registry architecture:** account types (operator, person, aviation, government), KYC flow, transfer flow, allowance vintage tracking. How does our `ComplianceRegistry` + `Regulator` split compare?
+
+### Output destination
+`research/eu-ets-reality-check.md` in this repo. Markdown, ~1 page, one short section per question with specific facts and citations to primary sources where possible (EU ETS Directive articles, Union Registry technical docs, official EU Commission statements, news reports).
+
+### After research lands
+1. Update `BRIEF.md §14` to add the **Regulator-MEV Q&A** entry with informed framing (currently deferred).
+2. Optionally tweak `BRIEF.md §5` step 4 narration if the research surfaces a more accurate suspicious-trade scenario than "suspected sanctions exposure."
+3. Optionally refine `BRIEF.md §10` competitive landscape with what the research surfaces about JPM/MSCI/EEX.
+
+The brief already has a stub at §14 ("Regulator-MEV Q&A — deferred until research is done") pointing here. Close the loop when research lands.
+
+---
+
+## 9. Style cheat sheet for responding to Fredrik
 
 - Lead with the answer. Mental model first when teaching. One concrete next step.
 - Tables and short bullets > paragraphs.

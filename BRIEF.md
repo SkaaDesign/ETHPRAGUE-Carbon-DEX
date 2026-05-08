@@ -128,10 +128,12 @@ Spine of the project. Everything we build serves this.
 1. **Regulator mints 1,000 carbon credits to Company A** (verified emitter). Sourcify-verified contract address shown on screen.
 2. **Company B swaps EURS for credits** on the DEX. Trade appears in the regulator dashboard in real time.
 3. **Regulator sees full provenance** — who, what, when, on-chain.
-4. **Suspicious trade flagged** — regulator hits the **pause button**. Live freeze on stage.
+4. **Regulator's review flags Company B** (suspected sanctions exposure or fraud pattern). Regulator calls `freeze(companyB)` on `ComplianceRegistry`. **Company B's next swap attempt reverts on-chain — frozen.** Live freeze visible on stage as the failed transaction.
 5. **Company B retires the credit.** Burned forever. Permanent on-chain offset proof displayed.
 
-Three laptops on stage = three roles. Regulator wields the pause button live.
+Three laptops on stage = three roles. Regulator wields the freeze button live.
+
+> **Why the freeze is prospective, not mid-flight:** EVM trades are atomic — a swap completes in a single transaction with no in-flight window in which to intercept. The regulator's freeze therefore stops *future* trades by Company B (and similarly, the DEX-wide `pause()` stops future trades by anyone). It does not unwind a confirmed trade. This matches how compliance-market enforcement actually works: investigations and freezes are post-hoc, applied to subsequent activity. Whether real EU ETS administrators have additional mid-flight powers in the centralized Union Registry is a separate research question (see HANDOFF §8) — our contracts are mechanically post-hoc by EVM design.
 
 ---
 
@@ -288,6 +290,12 @@ Honest scope acknowledgement builds credibility. List: real EU registry oracle, 
 
 ### ENS framing for Q&A
 Takeaway #12 warns against bolt-on bounty features. Pre-prepared answer if a judge asks about ENS being a prize-grab: *"Institutional identity for institutional roles. The regulator and verified emitters need legible identities — `eu-ets-authority.eth` is a primitive that ENS makes natural. Not a bolt-on; it's the addressing layer for the compliance market."*
+
+### Derivatives Q&A
+*"What about futures and options?"* — *"Spot only in V1. Real EU ETS is dominated by derivatives — futures and options on EEX and ICE Endex run roughly 10–15× spot volume — and the legitimate uses (hedging, capital planning, liquidity) are real. Adding a perpetual or fixed-date forward on top of our spot DEX is mechanical, not architectural — it's the natural next layer. EU ETS itself developed in that order: spot launched 2005, derivatives matured afterward. We chose not to make a speculative market our V1 contribution."*
+
+### Regulator-MEV Q&A
+**Deferred until research is done** (HANDOFF §8). Our contracts are post-hoc by EVM design — there is no mempool-watching primitive, no front-run hook, no transaction-ordering capability. The framing of *whether this is faithful to real EU ETS or a deliberate divergence* depends on what powers the Union Registry administrators actually have. Don't lock pitch language for this Q&A entry until that's known.
 
 ### Aesthetic
 Institutional / Scandinavian-industrial. No crypto-kitsch, no gradients, no marketing language. Judges from TradFi or policy backgrounds respond to clean, sparse, structured design — the brief already aligns Lin to this.
