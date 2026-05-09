@@ -158,7 +158,7 @@ export default async function PublicPage({
                   <strong className="font-semibold text-foreground-deep">
                     Retirement
                   </strong>{" "}
-                  · <Ens>cement-mainz.eth</Ens>
+                  · <Ens>cement-mainz.verified-entity.eth</Ens>
                   <Meta>
                     beneficiary · Q4-2026 emissions · reasonURI:
                     ipfs://QmYz…2026.pdf
@@ -178,7 +178,7 @@ export default async function PublicPage({
                   <strong className="font-semibold text-foreground-deep">
                     Trade
                   </strong>{" "}
-                  · <Ens>cement-mainz.eth</Ens> → Carbon DEX Pool
+                  · <Ens>cement-mainz.verified-entity.eth</Ens> → Carbon DEX Pool
                   <Meta>
                     200 EUA at ~{s.effectivePrice.toFixed(2)} EURS/EUA ·{" "}
                     {fmt(s.tradeProceedsEurs)} EURS settled · slippage{" "}
@@ -200,7 +200,7 @@ export default async function PublicPage({
                     Allocation
                   </strong>{" "}
                   · <Ens>eu-ets-authority.eth</Ens> →{" "}
-                  <Ens>cement-mainz.eth</Ens>
+                  <Ens>cement-mainz.verified-entity.eth</Ens>
                   <Meta>
                     vintage 2026 · sector cement · origin DE · ref
                     2026-FA-DE-001
@@ -223,7 +223,7 @@ export default async function PublicPage({
             when="verified"
             what={
               <>
-                <Ens>cement-mainz.eth</Ens>
+                <Ens>cement-mainz.verified-entity.eth</Ens>
                 <Meta>
                   cement · DE · holdings {fmt(s.coBal)} EUA · retired{" "}
                   {fmt(s.retired)} EUA
@@ -237,7 +237,7 @@ export default async function PublicPage({
             when="verified"
             what={
               <>
-                <Ens>aluminium-bratislava.eth</Ens>
+                <Ens>aluminium-bratislava.verified-entity.eth</Ens>
                 <Meta>aluminium · SK · 11 other emitters in roster</Meta>
               </>
             }

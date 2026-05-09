@@ -73,7 +73,7 @@ export default async function RegulatorPage({
           {/* Row a) cement-mainz — live at Beat 0, executed at Beat ≥ 1 */}
           <SchedRow
             ref_="2026-FA-DE-001"
-            who="cement-mainz.eth"
+            who="cement-mainz.verified-entity.eth"
             meta="free allocation · cement · DE · vintage 2026"
             qty="1,000"
             tone={beat === 0 ? "live" : "executed"}
@@ -90,7 +90,7 @@ export default async function RegulatorPage({
 
           <SchedRow
             ref_="2026-FA-SK-014"
-            who="aluminium-bratislava.eth"
+            who="aluminium-bratislava.verified-entity.eth"
             meta="free allocation · aluminium · SK · vintage 2026"
             qty="820"
             right={<StatusPill kind="CONFIRMED" />}
@@ -133,13 +133,13 @@ export default async function RegulatorPage({
           </h3>
 
           <RosterRow
-            name="cement-mainz.eth"
+            name="cement-mainz.verified-entity.eth"
             sub="cement · DE"
             balance={`${fmt(state.coBal)} EUA`}
             status={beat >= 3 ? "✓ Surrendered Q4" : "✓ Verified"}
           />
           <RosterRow
-            name="aluminium-bratislava.eth"
+            name="aluminium-bratislava.verified-entity.eth"
             sub="aluminium · SK"
             balance="820 EUA"
             status="✓ Verified"

@@ -1,6 +1,6 @@
 // /company — Editorial Calm Company Portal.
 //
-// Server component. Single-actor protagonist: cement-mainz.eth. The body
+// Server component. Single-actor protagonist: cement-mainz.verified-entity.eth. The body
 // composes three always-on slots (identity tile, beat-driven action/receipt,
 // holdings strip) plus the EditorialShell chrome. The certificate at Beat 3
 // is the demo's climax shot — striped paper, embossed seal, scannable QR.
@@ -110,7 +110,7 @@ function BalanceTile({ state: s }: { state: ReturnType<typeof stateAt> }) {
           className="w-7 h-7 rounded-full bg-[linear-gradient(135deg,#c8d4b8,#4a7d5e)]"
         />
         <div className="font-mono text-xs leading-[1.2]">
-          cement-mainz.eth
+          cement-mainz.verified-entity.eth
           <small className="block font-sans text-[10px] text-muted mt-[2px] tracking-[0.04em] uppercase">
             verified emitter · cement · DE
           </small>
@@ -225,7 +225,7 @@ function AllocationReceipt() {
         <SourcifyBadge />
         <span className="text-muted">provenance</span>
         <span className="font-mono text-[11px]">
-          regulator → cement-mainz.eth
+          regulator → cement-mainz.verified-entity.eth
         </span>
         <span className="text-muted">event</span>
         <span className="font-mono text-[11px]">
@@ -327,7 +327,7 @@ function Certificate() {
 
       <dl className="grid grid-cols-[130px_1fr] gap-x-4 gap-y-2 text-xs">
         <dt className="text-muted">Holder</dt>
-        <dd className="font-mono">cement-mainz.eth</dd>
+        <dd className="font-mono">cement-mainz.verified-entity.eth</dd>
         <dt className="text-muted">Beneficiary</dt>
         <dd className="font-mono">Q4-2026 emissions · cement-mainz DE</dd>
         <dt className="text-muted">Vintage</dt>

@@ -1,7 +1,7 @@
 // Port of design/source/carbon-dex/project/happy-path/state.jsx with
 // main-session resolution numbers (single-actor narrative, retire-all-800).
 //
-// Single protagonist: cement-mainz.eth.
+// Single protagonist: cement-mainz.verified-entity.eth.
 //   Beat 0  awaiting (allocation queued, on-chain registry empty)
 //   Beat 1  receives 1,000 EUA (regulator issuance event)
 //   Beat 2  sells 200 surplus EUA into pool → 13,422 EURS in
@@ -21,7 +21,7 @@ export type Beat = 0 | 1 | 2 | 3;
 
 export const ACTORS = {
   CO: {
-    ens: 'cement-mainz.eth',
+    ens: 'cement-mainz.verified-entity.eth',
     addr: '0xA1F8…7c2D',
     label: 'Verified emitter — Cement, DE',
     sector: 'Industry · Cement',
@@ -78,7 +78,7 @@ export type AuditEntry =
       hash: string;
       kind: 'ISSUE';
       amount: string; // "1,000 EUA"
-      to: string; // "cement-mainz.eth"
+      to: string; // "cement-mainz.verified-entity.eth"
       meta: string; // "vintage 2026 · sector cement · origin DE · ref 2026-FA-DE-001"
     }
   | {
@@ -86,7 +86,7 @@ export type AuditEntry =
       ts: string;
       hash: string;
       kind: 'SWAP';
-      from: string; // "cement-mainz.eth"
+      from: string; // "cement-mainz.verified-entity.eth"
       to: string; // "Carbon DEX Pool"
       outAmount: string; // "200 EUA"
       inAmount: string; // "13,422 EURS"
@@ -98,7 +98,7 @@ export type AuditEntry =
       hash: string;
       kind: 'RETIRE';
       amount: string; // "800 EUA"
-      from: string; // "cement-mainz.eth"
+      from: string; // "cement-mainz.verified-entity.eth"
       meta: string;
     }
   | {
