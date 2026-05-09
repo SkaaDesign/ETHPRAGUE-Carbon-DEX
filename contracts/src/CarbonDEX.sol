@@ -49,6 +49,7 @@ contract CarbonDEX is ERC20, AccessControl, ReentrancyGuard {
     error DEX_AmountZero();
     error DEX_InsufficientLiquidity();
     error DEX_InsufficientOutput(uint256 minExpected, uint256 actual);
+    error DEX_ExcessiveInput(uint256 maxAllowed, uint256 actual);
     error DEX_InsufficientLPMinted();
 
     modifier onlyVerified() {
@@ -180,13 +181,68 @@ contract CarbonDEX is ERC20, AccessControl, ReentrancyGuard {
         emit Swap(msg.sender, amountIn, amountOut, false);
     }
 
-    /// @notice Quote helper. Same math as the swap functions; pure (no state read).
+    // ─── Exact-output swaps ─────────────────────────────────────────────
+    // "I want exactly N tokens out — take whatever input it costs, up to maxAmountIn."
+    // Compliance buyer pattern: "I emitted 200 tCO2; I need 200 EUAs; spend up to X EURS."
+
+    /// @notice Buy an exact amount of CarbonCredit. Pays whatever EURS it costs, capped by maxAmountIn.
+    function swapEURSForCreditExactOut(uint256 amountOut, uint256 maxAmountIn)
+        external
+        nonReentrant
+        onlyVerified
+        whenNotPaused
+        returns (uint256 amountIn)
+    {
+        if (amountOut == 0) revert DEX_AmountZero();
+
+        amountIn = _getAmountIn(amountOut, reserveEURS, reserveCredit);
+        if (amountIn > maxAmountIn) revert DEX_ExcessiveInput(maxAmountIn, amountIn);
+
+        EURS.safeTransferFrom(msg.sender, address(this), amountIn);
+        reserveEURS += amountIn;
+        reserveCredit -= amountOut;
+        CREDIT.safeTransfer(msg.sender, amountOut);
+
+        emit Swap(msg.sender, amountIn, amountOut, true);
+    }
+
+    /// @notice Sell to receive an exact amount of EURS. Spends whatever CarbonCredit it costs, capped by maxAmountIn.
+    function swapCreditForEURSExactOut(uint256 amountOut, uint256 maxAmountIn)
+        external
+        nonReentrant
+        onlyVerified
+        whenNotPaused
+        returns (uint256 amountIn)
+    {
+        if (amountOut == 0) revert DEX_AmountZero();
+
+        amountIn = _getAmountIn(amountOut, reserveCredit, reserveEURS);
+        if (amountIn > maxAmountIn) revert DEX_ExcessiveInput(maxAmountIn, amountIn);
+
+        CREDIT.safeTransferFrom(msg.sender, address(this), amountIn);
+        reserveCredit += amountIn;
+        reserveEURS -= amountOut;
+        EURS.safeTransfer(msg.sender, amountOut);
+
+        emit Swap(msg.sender, amountIn, amountOut, false);
+    }
+
+    /// @notice Quote helper for exact-input swaps. Same math; pure.
     function getAmountOut(uint256 amountIn, uint256 reserveIn, uint256 reserveOut)
         external
         pure
         returns (uint256)
     {
         return _getAmountOut(amountIn, reserveIn, reserveOut);
+    }
+
+    /// @notice Quote helper for exact-output swaps. Returns required input for desired output.
+    function getAmountIn(uint256 amountOut, uint256 reserveIn, uint256 reserveOut)
+        external
+        pure
+        returns (uint256)
+    {
+        return _getAmountIn(amountOut, reserveIn, reserveOut);
     }
 
     // ─── Frontend view helpers ──────────────────────────────────────────
@@ -219,6 +275,21 @@ contract CarbonDEX is ERC20, AccessControl, ReentrancyGuard {
         uint256 numerator = amountInWithFee * reserveOut;
         uint256 denominator = reserveIn * FEE_DEN + amountInWithFee;
         return numerator / denominator;
+    }
+
+    /// @dev Inverse of _getAmountOut: how much input produces exactly `amountOut` output?
+    ///      Adds +1 to handle integer rounding so caller is guaranteed at least amountOut.
+    function _getAmountIn(uint256 amountOut, uint256 reserveIn, uint256 reserveOut)
+        internal
+        pure
+        returns (uint256)
+    {
+        if (amountOut == 0) revert DEX_AmountZero();
+        if (reserveIn == 0 || reserveOut == 0) revert DEX_InsufficientLiquidity();
+        if (amountOut >= reserveOut) revert DEX_InsufficientLiquidity();
+        uint256 numerator = reserveIn * amountOut * FEE_DEN;
+        uint256 denominator = (reserveOut - amountOut) * FEE_NUM;
+        return numerator / denominator + 1;
     }
 
     // ─── Regulator pause ────────────────────────────────────────────────

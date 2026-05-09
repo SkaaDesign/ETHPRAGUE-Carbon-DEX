@@ -62,9 +62,13 @@ contract CarbonCredit is ERC20, AccessControl {
         emit CreditMinted(to, amount, vintage, sector, originCountry, issuanceRef);
     }
 
-    /// @notice Burn credits from `from`. BURNER_ROLE only (Retirement). Retirement enforces
-    ///         from = msg.sender (the company surrendering); CarbonCredit trusts the role.
+    /// @notice Burn credits from `from`. BURNER_ROLE-gated AND requires the burner to hold
+    ///         an ERC-20 allowance from `from` (matches OZ ERC20Burnable convention). Defends
+    ///         against a future BURNER_ROLE mis-grant: the holder must explicitly approve the
+    ///         burner before any burn can happen. Retirement.retire() pulls the allowance from
+    ///         msg.sender as part of its flow.
     function burnFrom(address from, uint256 amount) external onlyRole(BURNER_ROLE) {
+        _spendAllowance(from, msg.sender, amount);
         _burn(from, amount); // _update enforces from-verification
     }
 

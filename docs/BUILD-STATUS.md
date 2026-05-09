@@ -12,7 +12,9 @@ Snapshot of where the build stands on `docs/scope-update`. Flip ❌ → ✅ as i
 | OpenZeppelin v5.6.1 installed (submodule) | ✅ |
 | AMM architecture decided: custom CPMM (V2-style math, no V2 install) | ✅ |
 | Write 6 contracts | ✅ 6/6 — all six done |
-| Write tests | ✅ 6/6 — EURS (5), CR (12), CC (12), Retirement (7), DEX (12), Regulator (10) — 58 pass in ~11ms |
+| Write tests | ✅ 72 pass in ~17ms — EURS (5), CR (16), CC (13), Retirement (8), DEX (19), Regulator (11). Includes exact-output swap + burnFrom-allowance + audit + DEX view tests. |
+| Devils-advocate review pass | ✅ PROCEED verdict; 3 issues fixed (Demo.s.sol numbers, burnFrom allowance, fresh-anvil doc comment) |
+| Exact-output swap functions on DEX | ✅ swapEURSForCreditExactOut + swapCreditForEURSExactOut + getAmountIn quote helper |
 | Deploy.s.sol — single-tx deploy + role wiring | ✅ |
 | DemoLocal.s.sol — happy flow (deploy + seed + 3 beats) | ✅ |
 | Local end-to-end on anvil (happy flow) | ✅ runs clean — issue → trade → retire |

@@ -14,6 +14,10 @@ import {Regulator} from "../src/Regulator.sol";
 ///         No env vars required for the basic anvil run (uses anvil's default funded keys).
 ///         Run with:  forge script script/DemoLocal.s.sol:DemoLocal -vv
 ///         Or against a live anvil: forge script ... --rpc-url http://127.0.0.1:8545 --broadcast
+///
+/// @dev    Assumes a fresh anvil — redeploys all 6 contracts every run. Faucet calls (line 55)
+///         accumulate from zero EURS balance. Do NOT run against a long-lived chain that already
+///         has demo state; for re-running against an existing deployment, use Demo.s.sol instead.
 contract DemoLocal is Script {
     // Anvil default funded keys (account 0, 1, 2)
     uint256 constant DEPLOYER_PK = 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80;
@@ -79,41 +83,39 @@ contract DemoLocal is Script {
         console.log("Company A balance:      ", credit.balanceOf(companyA) / 1e18, "EUA");
         console.log("Total supply (incl pool):", credit.totalSupply() / 1e18, "EUA");
 
-        // ─── BEAT 2: Secondary-market trade ────────────────────────────
+        // ─── BEAT 2: Secondary-market trade (exact-output) ─────────────
+        // "Company B emitted 200 tCO2 last quarter; they need exactly 200 EUAs."
         console.log("");
-        console.log("=== BEAT 2 - Trade ===");
-        // 14,627 EURS yields ~200 EUA against the 350k/5k pool (0.3% fee, V2 math).
-        // We send a small buffer (14,650) so any tiny rounding lands ≥ 200.
-        uint256 amountIn = 14_650 * 10 ** 18;
+        console.log("=== BEAT 2 - Trade (buy exactly 200 EUA) ===");
+        uint256 desiredOut = 200 * 10 ** 18;
+        uint256 maxIn = 20_000 * 10 ** 18; // generous cap; actual cost ~14,627 EURS
 
         vm.startBroadcast(COMPANY_B_PK);
-        eurs.faucet(amountIn);
-        eurs.approve(address(dex), amountIn);
-        uint256 quoted = dex.getAmountOut(amountIn, dex.reserveEURS(), dex.reserveCredit());
-        uint256 received = dex.swapEURSForCredit(amountIn, (quoted * 99) / 100);
+        eurs.faucet(maxIn);
+        eurs.approve(address(dex), maxIn);
+        uint256 spent = dex.swapEURSForCreditExactOut(desiredOut, maxIn);
         vm.stopBroadcast();
 
-        console.log("Company B paid:         ", amountIn / 1e18, "EURS");
-        console.log("Company B received:     ", received / 1e18, "EUA");
+        console.log("Company B paid:         ", spent / 1e18, "EURS");
+        console.log("Company B received:      200 EUA (exact)");
         console.log("Spot post-trade:         ", dex.getSpotPrice() / 1e18, "EURS/EUA");
 
         // ─── BEAT 3: Surrender ─────────────────────────────────────────
         console.log("");
         console.log("=== BEAT 3 - Surrender ===");
         vm.startBroadcast(COMPANY_B_PK);
-        credit.approve(address(retirement), received);
-        retirement.retire(received, companyB, "ipfs://sustainability-report-2026-Q4.pdf");
+        credit.approve(address(retirement), desiredOut);
+        retirement.retire(desiredOut, companyB, "ipfs://sustainability-report-2026-Q4.pdf");
         vm.stopBroadcast();
 
-        console.log("Company B retired:      ", received / 1e18, "EUA");
+        console.log("Company B retired:       200 EUA (burned forever)");
         console.log("Company B balance:      ", credit.balanceOf(companyB) / 1e18, "EUA");
 
         // ─── CLOSING VISUAL ────────────────────────────────────────────
         console.log("");
         console.log("=== CLOSING VISUAL (the cap-and-trade proof) ===");
-        // Allocations to companyA only (pool seed is operator-side, not allocation)
         console.log("Issued to Company A:     1,000 EUA");
-        console.log("Retired by Company B:   ", received / 1e18, "EUA  (burned forever)");
+        console.log("Retired by Company B:    200 EUA  (burned forever)");
         console.log("Company A still holds:  ", credit.balanceOf(companyA) / 1e18, "EUA");
         console.log("On-chain supply:        ", credit.totalSupply() / 1e18, "EUA total");
     }

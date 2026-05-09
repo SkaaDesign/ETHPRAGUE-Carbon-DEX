@@ -37,15 +37,25 @@ contract RetirementTest is Test {
 
     // ─── Retire ─────────────────────────────────────────────────────────
 
-    function test_Retire_Succeeds() public {
+    /// @dev Helper: companyA approves Retirement to burn `amount` and calls retire().
+    function _approveAndRetire(uint256 amount, address beneficiary, string memory reasonURI) internal {
         vm.prank(companyA);
-        retirement.retire(200 * 10 ** 18, companyA, "ipfs://report-2026.pdf");
+        credit.approve(address(retirement), amount);
+        vm.prank(companyA);
+        retirement.retire(amount, beneficiary, reasonURI);
+    }
+
+    function test_Retire_Succeeds() public {
+        _approveAndRetire(200 * 10 ** 18, companyA, "ipfs://report-2026.pdf");
 
         assertEq(credit.balanceOf(companyA), 800 * 10 ** 18);
         assertEq(credit.totalSupply(), 800 * 10 ** 18);
     }
 
     function test_Retire_EmitsEvent() public {
+        vm.prank(companyA);
+        credit.approve(address(retirement), 200 * 10 ** 18);
+
         vm.expectEmit(true, true, false, true, address(retirement));
         emit Retirement.Retired(companyA, 200 * 10 ** 18, companyA, "ipfs://report-2026.pdf", block.timestamp);
 
@@ -61,11 +71,24 @@ contract RetirementTest is Test {
 
     function test_Retire_RevertsIfNotEnoughBalance() public {
         vm.prank(companyA);
+        credit.approve(address(retirement), 2_000 * 10 ** 18);
+
+        vm.prank(companyA);
         vm.expectRevert(); // OZ ERC20InsufficientBalance
         retirement.retire(2_000 * 10 ** 18, companyA, "ipfs://report.pdf");
     }
 
+    function test_Retire_RevertsWithoutApproval() public {
+        // Deliberately skip approve() — burnFrom should revert on insufficient allowance
+        vm.prank(companyA);
+        vm.expectRevert(); // OZ ERC20InsufficientAllowance
+        retirement.retire(200 * 10 ** 18, companyA, "ipfs://report.pdf");
+    }
+
     function test_Retire_RevertsIfFromFrozen() public {
+        vm.prank(companyA);
+        credit.approve(address(retirement), 200 * 10 ** 18);
+
         vm.prank(admin);
         registry.freeze(companyA, "investigation");
 
@@ -76,9 +99,7 @@ contract RetirementTest is Test {
 
     function test_Retire_AllowsThirdPartyBeneficiary() public {
         address beneficiary = makeAddr("beneficiary");
-
-        vm.prank(companyA);
-        retirement.retire(50 * 10 ** 18, beneficiary, "ipfs://third-party-report.pdf");
+        _approveAndRetire(50 * 10 ** 18, beneficiary, "ipfs://third-party-report.pdf");
 
         // Burn happens from companyA regardless; beneficiary is just metadata for the event
         assertEq(credit.balanceOf(companyA), 950 * 10 ** 18);
@@ -87,6 +108,9 @@ contract RetirementTest is Test {
     function test_Retire_RevertsWithoutBurnerRole() public {
         // Deploy a fresh Retirement that hasn't been granted BURNER_ROLE
         Retirement orphan = new Retirement(credit);
+
+        vm.prank(companyA);
+        credit.approve(address(orphan), 100 * 10 ** 18);
 
         vm.prank(companyA);
         vm.expectRevert(); // OZ AccessControlUnauthorizedAccount

@@ -115,6 +115,9 @@ contract CarbonCreditTest is Test {
     function test_BurnFrom_Succeeds() public {
         _mint(companyA, 1_000 * 10 ** 18);
 
+        vm.prank(companyA);
+        credit.approve(burner, 300 * 10 ** 18);
+
         vm.prank(burner);
         credit.burnFrom(companyA, 300 * 10 ** 18);
 
@@ -130,8 +133,20 @@ contract CarbonCreditTest is Test {
         credit.burnFrom(companyA, 300 * 10 ** 18);
     }
 
+    function test_BurnFrom_RevertsWithoutAllowance() public {
+        _mint(companyA, 1_000 * 10 ** 18);
+
+        // burner has BURNER_ROLE but no allowance from companyA — must revert
+        vm.prank(burner);
+        vm.expectRevert(); // OZ ERC20InsufficientAllowance
+        credit.burnFrom(companyA, 300 * 10 ** 18);
+    }
+
     function test_BurnFrom_RevertsIfFromFrozen() public {
         _mint(companyA, 1_000 * 10 ** 18);
+
+        vm.prank(companyA);
+        credit.approve(burner, 300 * 10 ** 18);
 
         vm.prank(admin);
         registry.freeze(companyA, "test");

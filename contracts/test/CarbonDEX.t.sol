@@ -213,6 +213,61 @@ contract CarbonDEXTest is Test {
         assertEq(credit.balanceOf(lp), expectedCredit);
     }
 
+    // ─── Exact-output swaps ─────────────────────────────────────────────
+
+    function test_SwapEURSForCreditExactOut_DeliversExactOutput() public {
+        // Fund trader with generous EURS budget
+        vm.prank(trader);
+        eurs.faucet(20_000 * 10 ** 18);
+        vm.prank(trader);
+        eurs.approve(address(dex), 20_000 * 10 ** 18);
+
+        uint256 desiredOut = 200 * 10 ** 18;
+        uint256 quotedIn = dex.getAmountIn(desiredOut, INITIAL_EURS, INITIAL_CREDIT);
+
+        vm.prank(trader);
+        uint256 actualIn = dex.swapEURSForCreditExactOut(desiredOut, 20_000 * 10 ** 18);
+
+        // Trader received EXACTLY what they asked for
+        assertEq(credit.balanceOf(trader), desiredOut);
+        // Input matches the quote
+        assertEq(actualIn, quotedIn);
+    }
+
+    function test_SwapEURSForCreditExactOut_RevertsOnExcessiveInput() public {
+        vm.prank(trader);
+        eurs.faucet(20_000 * 10 ** 18);
+        vm.prank(trader);
+        eurs.approve(address(dex), 20_000 * 10 ** 18);
+
+        // Demand 200 EUA but only allow 1 EURS input — must revert
+        vm.prank(trader);
+        vm.expectRevert();
+        dex.swapEURSForCreditExactOut(200 * 10 ** 18, 1 * 10 ** 18);
+    }
+
+    function test_SwapCreditForEURSExactOut_DeliversExactOutput() public {
+        // Give trader credits to sell
+        vm.prank(admin);
+        credit.mint(trader, 200 * 10 ** 18, 2026, bytes2("IN"), bytes2("DE"), keccak256("test"));
+
+        vm.prank(trader);
+        credit.approve(address(dex), 200 * 10 ** 18);
+
+        uint256 desiredOut = 5_000 * 10 ** 18;
+
+        vm.prank(trader);
+        dex.swapCreditForEURSExactOut(desiredOut, 200 * 10 ** 18);
+
+        assertEq(eurs.balanceOf(trader), desiredOut);
+    }
+
+    function test_GetAmountIn_RevertsForOutputExceedingReserve() public {
+        // Cannot buy more than reserveOut allows
+        vm.expectRevert(CarbonDEX.DEX_InsufficientLiquidity.selector);
+        dex.getAmountIn(INITIAL_CREDIT + 1, INITIAL_EURS, INITIAL_CREDIT);
+    }
+
     // ─── x*y=k invariant (within 0.3% fee tolerance) ────────────────────
 
     function test_Swap_PreservesKInvariantUpToFee() public {
