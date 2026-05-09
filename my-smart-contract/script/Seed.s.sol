@@ -19,12 +19,12 @@ contract Seed is Script {
     uint256 public constant INITIAL_MINT_AMOUNT = 5000 * 10**18; // 5000 carbon credits
     uint256 public constant INITIAL_EURS_CAPITAL = 1000000 * 10**18; // 1,000,000 EURS
 
-    // Change these to match your actual deployed addresses from broadcast logs
-    address public constant EURS_ADDR = 0x...;               // TODO: Replace with deployed EURS address
-    address public constant REGISTRY_ADDR = 0x...;           // TODO: Replace with deployed ComplianceRegistry address
-    address public constant CARBON_CREDIT_ADDR = 0x...;      // TODO: Replace with deployed CarbonCredit address
-    address public constant DEX_ADDR = 0x...;                // TODO: Replace with deployed CarbonDEX address
-    address public constant REGULATOR_ADDR = 0x...;          // TODO: Replace with deployed Regulator address
+   // Deployed addresses from your local run-latest.json
+    address public constant EURS_ADDR = 0x2279B7A0a67Db372996a5FaB50D91eAA73d2eBe6;
+    address public constant REGISTRY_ADDR = 0x5FbDB2315678afecb367f032d93F642f64180aa3;
+    address public constant CARBON_CREDIT_ADDR = 0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512;
+    address public constant DEX_ADDR = 0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0;
+    address public constant REGULATOR_ADDR = 0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9;
 
     function run() external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
