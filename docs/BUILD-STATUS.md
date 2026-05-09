@@ -11,8 +11,8 @@ Snapshot of where the build stands on `docs/scope-update`. Flip ❌ → ✅ as i
 | `forge init contracts/` (with proper parent-repo submodule for forge-std) | ✅ |
 | OpenZeppelin v5.6.1 installed (submodule) | ✅ |
 | AMM architecture decided: custom CPMM (V2-style math, no V2 install) | ✅ |
-| Write 6 contracts | 🟡 2/6 — EURS, ComplianceRegistry done |
-| Write tests | 🟡 2/6 — EURS (5), ComplianceRegistry (12) — 17 pass |
+| Write 6 contracts | 🟡 3/6 — EURS, ComplianceRegistry, CarbonCredit done |
+| Write tests | 🟡 3/6 — EURS (5), ComplianceRegistry (12), CarbonCredit (12) — 29 pass |
 | Local end-to-end on anvil (happy flow) | ❌ |
 | Test wallet + Sepolia RPC + faucet ETH | ❌ |
 | Deploy to Sepolia | ❌ |
