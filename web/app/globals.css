@@ -1,0 +1,172 @@
+@import "tailwindcss";
+
+/* Carbon DEX — design tokens ported from
+ * design/source/carbon-dex/project/happy-path/styles.css
+ *
+ * Two visual languages:
+ *   - Editorial Calm (Reg + Company): IBM Plex Sans body, Fraunces display, IBM Plex Mono data
+ *   - EEA Editorial (Public): Source Sans 3 body, Source Serif 4 display, IBM Plex Mono data
+ *
+ * Single accent (copper) for state changes; lime for action CTAs (Company swap form);
+ * green family for success / cap-accounting / verified / EURS / ENS on public.
+ * No dark mode — institutional UIs read better in light. */
+
+:root {
+  /* ── Surfaces ───────────────────────────────────────────── */
+  --background: #1a1917;          /* dark page surround */
+  --surface: #ffffff;             /* portal interior + tile */
+  --ec-bg: #f0eee6;               /* Editorial Calm body bg (cream) */
+  --ec-surface-alt: #0e0e0e;      /* dark tiles inside ec (swap form) */
+  --pub-bg: #ffffff;              /* Public Observer body */
+  --pub-elev: #f7f8f4;            /* hero gradient end + crumbs strip + footer */
+  --pub-section-divider: #e5e7e2;
+
+  /* ── Foreground / text ──────────────────────────────────── */
+  --foreground: #1a1917;          /* primary text on light */
+  --foreground-deep: #1a2419;     /* deep green-black for public h1 / cap-cell val */
+  --muted: #6b6860;               /* mid muted (Editorial Calm) */
+  --muted-public: #6b7268;        /* mid muted (Public) */
+  --muted-strong: #4a4740;        /* darker label (clock) */
+  --muted-strong-public: #4a5048; /* darker label (public nav) */
+  --dim: #8a8780;                 /* very dim grey */
+  --bright: #f4f1e8;              /* light text on dark */
+  --bright-dim: #b6b2a8;          /* dim light text on dark */
+
+  /* ── Borders / dividers ─────────────────────────────────── */
+  --border: #ededde;              /* Editorial Calm border */
+  --border-public: #e5e7e2;       /* Public border */
+  --border-row: #f5f3eb;          /* audit/roster row sep */
+  --border-row-light: #f0f1ec;    /* public row sep */
+  --border-row-cream: #f0eee6;    /* ec row sep */
+  --border-strong: #c9c4b6;       /* pill border, dashed receipt sep */
+  --border-dark: #3a3833;         /* dark stage border */
+
+  /* ── Accents ────────────────────────────────────────────── */
+  --accent: #d4a035;              /* copper / amber — narration, CTA warn, dots, kicker */
+  --accent-hover: #c19022;
+  --accent-soft: #fffbf0;         /* sched-row.live bg */
+  --accent-tag: #fff1d4;          /* CONFIRMED status bg */
+  --accent-tag-text: #8a6018;     /* CONFIRMED status text */
+  --accent-flash: #fff8d8;        /* flashUp keyframe */
+
+  --accent-lime: #d4f158;         /* swap-form CTA + swap-leg amount EURS color */
+  --accent-lime-hover: #b8d847;
+
+  /* ── Greens (success / cap / verified / EURS / ENS) ─────── */
+  --success: #2d6e4e;             /* main success — cap-bar issued, sourcify, ENS, etc. */
+  --success-soft: #8ab09c;        /* cap-bar pool segment */
+  --success-deep: #1a2419;        /* cap-bar retired segment + toast bg + pub h1 color */
+
+  /* ── Audit-log kind chips ───────────────────────────────── */
+  --chip-issue-bg: #e2efe6;
+  --chip-issue-text: #1f5733;
+  --chip-swap-bg: #e6ecf2;
+  --chip-swap-text: #1b4f8a;
+  --chip-retire-bg: #1a1917;
+  --chip-retire-text: #f4f1e8;
+
+  /* ── Status pills (regulator scheduled events) ──────────── */
+  --status-scheduled-bg: #f5f3eb;
+  --status-scheduled-text: #6b6860;
+  --status-confirmed-bg: #fff1d4;
+  --status-confirmed-text: #8a6018;
+  --status-executed-bg: #1a1917;
+  --status-executed-text: #f4f1e8;
+
+  /* ── Errors / down ──────────────────────────────────────── */
+  --danger: #b54845;              /* down delta, danger CTA */
+
+  /* ── EU brand (public flag) ─────────────────────────────── */
+  --eu-blue: #003399;
+  --eu-yellow: #ffcc00;
+}
+
+@theme inline {
+  /* Surfaces */
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-ec-bg: var(--ec-bg);
+  --color-ec-surface-alt: var(--ec-surface-alt);
+  --color-pub-bg: var(--pub-bg);
+  --color-pub-elev: var(--pub-elev);
+
+  /* Text */
+  --color-foreground: var(--foreground);
+  --color-foreground-deep: var(--foreground-deep);
+  --color-muted: var(--muted);
+  --color-muted-public: var(--muted-public);
+  --color-muted-strong: var(--muted-strong);
+  --color-muted-strong-public: var(--muted-strong-public);
+  --color-dim: var(--dim);
+  --color-bright: var(--bright);
+  --color-bright-dim: var(--bright-dim);
+
+  /* Borders */
+  --color-border: var(--border);
+  --color-border-public: var(--border-public);
+  --color-border-row: var(--border-row);
+  --color-border-row-light: var(--border-row-light);
+  --color-border-row-cream: var(--border-row-cream);
+  --color-border-strong: var(--border-strong);
+  --color-border-dark: var(--border-dark);
+
+  /* Accents */
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-tag: var(--accent-tag);
+  --color-accent-tag-text: var(--accent-tag-text);
+  --color-accent-flash: var(--accent-flash);
+  --color-accent-lime: var(--accent-lime);
+  --color-accent-lime-hover: var(--accent-lime-hover);
+
+  /* Greens */
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-success-deep: var(--success-deep);
+
+  /* Chips */
+  --color-chip-issue-bg: var(--chip-issue-bg);
+  --color-chip-issue-text: var(--chip-issue-text);
+  --color-chip-swap-bg: var(--chip-swap-bg);
+  --color-chip-swap-text: var(--chip-swap-text);
+  --color-chip-retire-bg: var(--chip-retire-bg);
+  --color-chip-retire-text: var(--chip-retire-text);
+
+  /* Status */
+  --color-status-scheduled-bg: var(--status-scheduled-bg);
+  --color-status-scheduled-text: var(--status-scheduled-text);
+  --color-status-confirmed-bg: var(--status-confirmed-bg);
+  --color-status-confirmed-text: var(--status-confirmed-text);
+  --color-status-executed-bg: var(--status-executed-bg);
+  --color-status-executed-text: var(--status-executed-text);
+
+  --color-danger: var(--danger);
+  --color-eu-blue: var(--eu-blue);
+  --color-eu-yellow: var(--eu-yellow);
+
+  /* ── Fonts ────────────────────────────────────────────── */
+  --font-sans: var(--font-plex-sans);                 /* Editorial Calm body */
+  --font-display: var(--font-fraunces);                /* Editorial Calm display + big numbers */
+  --font-mono: var(--font-plex-mono);                  /* universal mono — tags, refs, hashes */
+  --font-eea-sans: var(--font-source-sans);           /* Public Observer body */
+  --font-eea-serif: var(--font-source-serif);         /* Public Observer h1 + cap-cell val */
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  /* IBM Plex Sans doesn't expose ss01/ss02 stylistic sets — use the universally
+   * available kerning + ligatures + contextual alternates instead. */
+  font-feature-settings: "calt", "kern", "liga";
+  min-height: 100vh;
+}
+
+/* shared updated-flash for value transitions (Editorial Calm balance, fresh audit row) */
+@keyframes flashUp {
+  0%   { background: var(--accent-flash); }
+  100% { background: transparent; }
+}
+.flash { animation: flashUp 1.6s ease-out; }
+.flash-slow { animation: flashUp 2.4s ease-out; }
