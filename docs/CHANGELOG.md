@@ -9,9 +9,52 @@ Plain-English log of scope and infrastructure changes since the locked baseline.
 
 ## In flight
 
-- **Write the 6 contracts** starting with `EURS.sol` (simplest — inherits OZ ERC-20 with a faucet mint), then `ComplianceRegistry`, `CarbonCredit`, `Regulator`, `Retirement`, `CarbonDEX` (custom CPMM).
-- **Branch reconciliation:** `docs/scope-update` carries today's research, ERC-20 pivot, happy flow, bridge framing, Foundry scaffold, docs reshuffle, OZ install, and AMM decision. `origin/main` carries Parth's contracts (`c40abad`, `995fad9`). PR `docs/scope-update` → `main` reconciles when ready.
+- **Deploy.s.sol** — single Foundry script that deploys all 6 contracts in order, wires the role grants (DEX → registry, MINTER/BURNER on CarbonCredit, REGULATOR on registry, PAUSER on DEX, OPERATOR on Regulator), pre-seeds Company A + Company B + DEX in the registry, and seeds initial liquidity. Mirrors the deploy-time wiring assumed by every test's setUp().
+- **End-to-end happy-flow script** — `Demo.s.sol` runs BRIEF §5 against a local anvil (issue → swap → retire) so Lin's UI work has a live chain to point at.
+- **Branch reconciliation:** `docs/scope-update` carries 11 commits of scope work + 6 contracts. `origin/main` carries Parth's contracts (`c40abad`, `995fad9`). PR `docs/scope-update` → `main` reconciles when ready.
 - **Frontend scaffold:** Next.js + viem init in `web/` not yet started.
+
+---
+
+## 2026-05-09 (evening) — All 6 contracts implemented + tested
+
+**Branch:** `docs/scope-update`. Six commits, contract-by-contract — `76fab3d`, `e25aad9`, `810b409`, `34c2891`, `90edc00`, plus this one.
+
+### Summary
+
+| Contract | What it is | Tests | Commit |
+|---|---|---|---|
+| `EURS` | Mock EUR ERC-20 with faucet (settlement currency) | 5 | `76fab3d` |
+| `ComplianceRegistry` | KYC whitelist + freeze flag (Reg. 2019/1122 Art. 30 analogue) | 12 | `e25aad9` |
+| `CarbonCredit` | EUA token (ERC-20 + role-gated mint/burn + transfer whitelist hooks) | 12 | `810b409` |
+| `Retirement` | Surrender interface (calls CarbonCredit.burnFrom + emits Retired event) | 7 | `34c2891` |
+| `CarbonDEX` | Custom CPMM, x*y=k math + whitelist + pause | 12 | `90edc00` |
+| `Regulator` | Orchestrator: holds privileged roles on the other 3 + audit-log event stream | 10 | this commit |
+| **Total** | | **58** | |
+
+All 58 tests pass in ~11ms on anvil. CPMM invariant test (`test_Swap_PreservesKInvariantUpToFee`) confirms `k` only grows or stays constant after every swap — the canonical AMM correctness check.
+
+### Deploy-time wiring (for the next commit's Deploy.s.sol)
+
+Each contract has explicit role grants required at deploy:
+
+- **ComplianceRegistry** — register DEX address as Trader (so DEX can hold CarbonCredit, since CC's transfers are whitelist-gated)
+- **CarbonCredit.MINTER_ROLE** → Regulator contract
+- **CarbonCredit.BURNER_ROLE** → Retirement contract
+- **ComplianceRegistry.REGULATOR_ROLE** → Regulator contract
+- **CarbonDEX.PAUSER_ROLE** → Regulator contract
+- **Regulator.OPERATOR_ROLE** → operator wallet (the EU ETS Authority signer that clicks buttons)
+
+Test setUp() in every suite demonstrates the pattern; Deploy.s.sol will codify it for testnet.
+
+### Stack-level sanity checks (passed)
+
+- ERC-20 transfers blocked when sender or recipient is unverified (CC tests)
+- ERC-20 transfers blocked when either side is frozen (CC tests)
+- DEX swaps blocked when caller unverified or DEX paused (DEX tests)
+- DEX swaps preserve x*y=k invariant within fee tolerance (DEX test)
+- Retirement burns from msg.sender even when called via beneficiary != msg.sender (Retirement test)
+- Regulator's full happy-flow path (register → issue) executes end-to-end (Regulator test_HappyFlow)
 
 ---
 
