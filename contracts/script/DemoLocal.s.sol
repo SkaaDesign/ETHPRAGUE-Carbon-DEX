@@ -48,12 +48,16 @@ contract DemoLocal is Script {
         regulator.registerCompany(companyA, ComplianceRegistry.AccountType.Operator, bytes2("DE"), "Cement Mainz");
         regulator.registerCompany(companyB, ComplianceRegistry.AccountType.Operator, bytes2("SK"), "Aluminium Bratislava");
 
-        // Seed pool: 70k EURS / 1k EUA → €70/EUA
-        eurs.faucet(70_000 * 10 ** 18);
-        regulator.issueAllowance(deployer, 1_000 * 10 ** 18, 2026, bytes2("IN"), bytes2("DE"), keccak256("LP-SEED"));
-        eurs.approve(address(dex), 70_000 * 10 ** 18);
-        credit.approve(address(dex), 1_000 * 10 ** 18);
-        dex.addLiquidity(70_000 * 10 ** 18, 1_000 * 10 ** 18);
+        // Seed pool: 350k EURS / 5k EUA → €70/EUA spot, deep enough that a 200-EUA buy
+        // moves price < 5%. Real EU ETS secondary market is far deeper still (~€100B/yr
+        // volume, MSR-managed surplus 400-833M EUAs); this is "small but realistic" demo
+        // depth. Faucet caps at 100k/call so we batch-mint EURS via 4 faucet calls.
+        for (uint256 i = 0; i < 4; ++i) eurs.faucet(eurs.FAUCET_MAX());
+        // After 4 calls: 400k EURS — we'll seed 350k and keep 50k as deployer buffer.
+        regulator.issueAllowance(deployer, 5_000 * 10 ** 18, 2026, bytes2("IN"), bytes2("DE"), keccak256("LP-SEED"));
+        eurs.approve(address(dex), 350_000 * 10 ** 18);
+        credit.approve(address(dex), 5_000 * 10 ** 18);
+        dex.addLiquidity(350_000 * 10 ** 18, 5_000 * 10 ** 18);
         vm.stopBroadcast();
 
         console.log("");
@@ -64,7 +68,7 @@ contract DemoLocal is Script {
         console.log("Retirement:", address(retirement));
         console.log("DEX:       ", address(dex));
         console.log("Regulator: ", address(regulator));
-        console.log("Pool:       70,000 EURS / 1,000 EUA  (spot:", dex.getSpotPrice() / 1e18, "EURS/EUA)");
+        console.log("Pool:       350,000 EURS / 5,000 EUA  (spot:", dex.getSpotPrice() / 1e18, "EURS/EUA)");
 
         // ─── BEAT 1: Issuance event executes ───────────────────────────
         console.log("");
@@ -78,7 +82,9 @@ contract DemoLocal is Script {
         // ─── BEAT 2: Secondary-market trade ────────────────────────────
         console.log("");
         console.log("=== BEAT 2 - Trade ===");
-        uint256 amountIn = 14_028 * 10 ** 18;
+        // 14,627 EURS yields ~200 EUA against the 350k/5k pool (0.3% fee, V2 math).
+        // We send a small buffer (14,650) so any tiny rounding lands ≥ 200.
+        uint256 amountIn = 14_650 * 10 ** 18;
 
         vm.startBroadcast(COMPANY_B_PK);
         eurs.faucet(amountIn);
