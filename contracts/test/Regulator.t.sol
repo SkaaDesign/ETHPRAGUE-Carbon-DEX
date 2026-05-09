@@ -124,6 +124,21 @@ contract RegulatorTest is Test {
         regulator.pauseDEX("attempted");
     }
 
+    // ─── auditCompany ───────────────────────────────────────────────────
+
+    function test_AuditCompany_UpdatesRegistryAndEmitsAction() public {
+        vm.prank(operator);
+        regulator.registerCompany(companyA, ComplianceRegistry.AccountType.Operator, bytes2("DE"), "Cement Mainz");
+
+        vm.warp(block.timestamp + 30 days);
+
+        vm.prank(operator);
+        regulator.auditCompany(companyA, "Q1 2026 routine review");
+
+        ComplianceRegistry.CompanyRecord memory rec = registry.recordOf(companyA);
+        assertEq(rec.lastAuditAt, uint64(block.timestamp));
+    }
+
     // ─── End-to-end happy flow (mirrors BRIEF §5) ───────────────────────
 
     function test_HappyFlow_IssueTransferRetire() public {

@@ -60,6 +60,25 @@ contract CarbonDEXTest is Test {
         assertGt(dex.balanceOf(lp), 0);
     }
 
+    // ─── View helpers ───────────────────────────────────────────────────
+
+    function test_GetReserves_ReturnsCurrentState() public view {
+        (uint256 r0, uint256 r1) = dex.getReserves();
+        assertEq(r0, INITIAL_EURS);
+        assertEq(r1, INITIAL_CREDIT);
+    }
+
+    function test_GetSpotPrice_ReturnsEURSPerCreditScaled1e18() public view {
+        // 70k EURS / 1k Credit = 70 EURS per Credit → 70 * 1e18
+        uint256 expected = (INITIAL_EURS * 1e18) / INITIAL_CREDIT;
+        assertEq(dex.getSpotPrice(), expected);
+        assertEq(expected, 70 * 1e18);
+    }
+
+    function test_GetLpBalance_MatchesBalanceOf() public view {
+        assertEq(dex.getLpBalance(lp), dex.balanceOf(lp));
+    }
+
     // ─── addLiquidity ───────────────────────────────────────────────────
 
     function test_AddLiquidity_RevertsForUnverified() public {

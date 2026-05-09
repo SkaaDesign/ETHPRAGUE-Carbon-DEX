@@ -21,7 +21,7 @@ contract Regulator is AccessControl {
     ///         multiple roles (issuance, enforcement, audit); collapsed here for the demo.
     bytes32 public constant OPERATOR_ROLE = keccak256("OPERATOR_ROLE");
 
-    enum ActionType { Issue, Register, Freeze, Unfreeze, Pause, Unpause }
+    enum ActionType { Issue, Register, Freeze, Unfreeze, Pause, Unpause, Audit }
 
     CarbonCredit public immutable CARBON_CREDIT;
     ComplianceRegistry public immutable REGISTRY;
@@ -90,6 +90,12 @@ contract Regulator is AccessControl {
     function unfreezeCompany(address who) external onlyRole(OPERATOR_ROLE) {
         REGISTRY.unfreeze(who);
         emit RegulatoryAction(ActionType.Unfreeze, who, msg.sender, "", block.timestamp);
+    }
+
+    /// @notice Record a routine audit on a company. No on-chain consequence — audit-trail only.
+    function auditCompany(address who, string calldata note) external onlyRole(OPERATOR_ROLE) {
+        REGISTRY.audit(who, note);
+        emit RegulatoryAction(ActionType.Audit, who, msg.sender, note, block.timestamp);
     }
 
     // ─── DEX pause control ──────────────────────────────────────────────

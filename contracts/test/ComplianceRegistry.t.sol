@@ -93,6 +93,48 @@ contract ComplianceRegistryTest is Test {
         registry.unfreeze(companyA);
     }
 
+    // ─── Audit ─────────────────────────────────────────────────────────
+
+    function test_Audit_UpdatesLastAuditAtAndEmits() public {
+        _register(companyA, ComplianceRegistry.AccountType.Operator, bytes2("DE"), "Cement Mainz");
+        uint64 registeredAt = registry.recordOf(companyA).lastAuditAt;
+
+        vm.warp(block.timestamp + 30 days);
+
+        vm.expectEmit(true, false, false, true, address(registry));
+        emit ComplianceRegistry.CompanyAudited(companyA, "Q1 2026 routine review");
+
+        vm.prank(regulator);
+        registry.audit(companyA, "Q1 2026 routine review");
+
+        ComplianceRegistry.CompanyRecord memory rec = registry.recordOf(companyA);
+        assertGt(rec.lastAuditAt, registeredAt);
+        assertEq(rec.lastAuditAt, uint64(block.timestamp));
+    }
+
+    function test_Audit_RevertsForUnregistered() public {
+        vm.prank(regulator);
+        vm.expectRevert(abi.encodeWithSelector(ComplianceRegistry.CR_NotRegistered.selector, companyA));
+        registry.audit(companyA, "ad-hoc");
+    }
+
+    function test_Audit_RevertsForNonRegulator() public {
+        _register(companyA, ComplianceRegistry.AccountType.Operator, bytes2("DE"), "Cement Mainz");
+        vm.prank(stranger);
+        vm.expectRevert();
+        registry.audit(companyA, "attempted");
+    }
+
+    // ─── Timestamps initialised at register ─────────────────────────────
+
+    function test_Register_SetsTimestampsToNow() public {
+        vm.warp(1_700_000_000);
+        _register(companyA, ComplianceRegistry.AccountType.Operator, bytes2("DE"), "Cement Mainz");
+        ComplianceRegistry.CompanyRecord memory rec = registry.recordOf(companyA);
+        assertEq(rec.registeredAt, 1_700_000_000);
+        assertEq(rec.lastAuditAt, 1_700_000_000);
+    }
+
     // ─── isVerified ────────────────────────────────────────────────────
 
     function test_IsVerified_TrueForRegisteredNotFrozen() public {

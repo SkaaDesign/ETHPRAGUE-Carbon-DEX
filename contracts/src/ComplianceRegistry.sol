@@ -25,8 +25,10 @@ contract ComplianceRegistry is AccessControl {
         bool registered;
         bool frozen;
         AccountType account;
-        bytes2 country;   // ISO 3166-1 alpha-2: "DE", "SK", "CZ", ...
-        string name;      // human-readable label (e.g. "Cement Mainz GmbH")
+        bytes2 country;       // ISO 3166-1 alpha-2: "DE", "SK", "CZ", ...
+        string name;          // human-readable label (e.g. "Cement Mainz GmbH")
+        uint64 registeredAt;  // block.timestamp at register()
+        uint64 lastAuditAt;   // block.timestamp at last audit() (initialised at register)
     }
 
     mapping(address => CompanyRecord) private _records;
@@ -34,6 +36,7 @@ contract ComplianceRegistry is AccessControl {
     event CompanyRegistered(address indexed who, AccountType account, bytes2 country, string name);
     event CompanyFrozen(address indexed who, string reason);
     event CompanyUnfrozen(address indexed who);
+    event CompanyAudited(address indexed who, string note);
 
     error CR_AlreadyRegistered(address who);
     error CR_NotRegistered(address who);
@@ -59,7 +62,9 @@ contract ComplianceRegistry is AccessControl {
             frozen: false,
             account: account,
             country: country,
-            name: name
+            name: name,
+            registeredAt: uint64(block.timestamp),
+            lastAuditAt: uint64(block.timestamp)
         });
         emit CompanyRegistered(who, account, country, name);
     }
@@ -81,6 +86,16 @@ contract ComplianceRegistry is AccessControl {
         if (!rec.frozen) revert CR_NotFrozen(who);
         rec.frozen = false;
         emit CompanyUnfrozen(who);
+    }
+
+    /// @notice Record a regulator audit. Updates lastAuditAt and emits an audit event. Regulator-only.
+    /// @dev    No on-chain consequence — purely a timestamp + event for the audit trail. Frontend
+    ///         shows "last audited X days ago" on the compliance roster.
+    function audit(address who, string calldata note) external onlyRole(REGULATOR_ROLE) {
+        CompanyRecord storage rec = _records[who];
+        if (!rec.registered) revert CR_NotRegistered(who);
+        rec.lastAuditAt = uint64(block.timestamp);
+        emit CompanyAudited(who, note);
     }
 
     /// @notice True if `who` is registered AND not frozen. Read by CarbonCredit + CarbonDEX gates.

@@ -189,6 +189,25 @@ contract CarbonDEX is ERC20, AccessControl, ReentrancyGuard {
         return _getAmountOut(amountIn, reserveIn, reserveOut);
     }
 
+    // ─── Frontend view helpers ──────────────────────────────────────────
+
+    /// @notice Current pool reserves. Convenience for viem reads.
+    function getReserves() external view returns (uint256 _reserveEURS, uint256 _reserveCredit) {
+        return (reserveEURS, reserveCredit);
+    }
+
+    /// @notice Spot price as EURS per CarbonCredit, scaled by 1e18 (display-friendly).
+    /// @dev    Returns 0 if pool empty. Caller divides by 1e18 to get a human number.
+    function getSpotPrice() external view returns (uint256 eursPerCredit18) {
+        if (reserveCredit == 0) return 0;
+        return (reserveEURS * 1e18) / reserveCredit;
+    }
+
+    /// @notice LP balance of a provider (just `balanceOf`, named for frontend clarity).
+    function getLpBalance(address provider) external view returns (uint256) {
+        return balanceOf(provider);
+    }
+
     function _getAmountOut(uint256 amountIn, uint256 reserveIn, uint256 reserveOut)
         internal
         pure
