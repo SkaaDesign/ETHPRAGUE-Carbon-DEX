@@ -9,13 +9,13 @@
 .env.*
 !.env.example
 
-# ─── Foundry (contracts/) ───────────────────────────────────────────
-out/
-cache/
-broadcast/
-lib/
-dependencies/
-.foundry/
+# ─── Foundry (contracts/ only — scoped so Next.js paths like web/lib/ aren't matched) ───
+contracts/out/
+contracts/cache/
+contracts/broadcast/
+contracts/lib/
+contracts/dependencies/
+contracts/.foundry/
 
 # ─── Node / Next.js (web/) ──────────────────────────────────────────
 node_modules/
