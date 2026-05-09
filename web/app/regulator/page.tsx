@@ -26,6 +26,13 @@ import {
   StatusPill,
 } from "@/components/ui";
 import { BeatSwitcher } from "@/components/BeatSwitcher";
+import { IssueButton } from "@/components/actions";
+
+// Force dynamic — `actions.tsx` pulls in wagmi which validates
+// WalletConnect projectId at module load. Static prerender at build time
+// would fail without a real projectId env var; dynamic rendering means
+// the validation only happens at request time.
+export const dynamic = "force-dynamic";
 
 export default async function RegulatorPage({
   searchParams,
@@ -80,9 +87,13 @@ export default async function RegulatorPage({
             tone={beat === 0 ? "live" : "executed"}
             right={
               beat === 0 ? (
-                <Link href="/regulator?beat=1">
-                  <CTAButton variant="warn">Execute →</CTAButton>
-                </Link>
+                isLive ? (
+                  <IssueButton />
+                ) : (
+                  <Link href="/regulator?beat=1">
+                    <CTAButton variant="warn">Execute →</CTAButton>
+                  </Link>
+                )
               ) : (
                 <StatusPill kind="EXECUTED" />
               )

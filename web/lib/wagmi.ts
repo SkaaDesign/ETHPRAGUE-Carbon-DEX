@@ -4,9 +4,12 @@ import { getDefaultConfig } from "@rainbow-me/rainbowkit";
 
 // WalletConnect project ID — required by RainbowKit's getDefaultConfig.
 // Set NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID in .env.local for production.
-// The literal fallback works for local-anvil-only development without WalletConnect.
+// `||` (not `??`) so an empty-string env value falls back to the placeholder
+// — RainbowKit's runtime check rejects empty `projectId` outright with
+// "No projectId found", which breaks static prerendering at build time.
 const projectId =
-  process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID ?? "carbon-dex-dev";
+  process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID ||
+  "0000000000000000000000000000000000000000000000000000000000000000";
 
 export const config = getDefaultConfig({
   appName: "Carbon DEX",

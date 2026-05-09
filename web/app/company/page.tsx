@@ -19,6 +19,13 @@ import {
 } from "@/components/ui";
 import { fmt, stateAt } from "@/lib/demo-state";
 import { getStateForRoute } from "@/lib/chain-state";
+import { SellButton, RetireButton } from "@/components/actions";
+
+// Force dynamic — `actions.tsx` pulls in wagmi which validates
+// WalletConnect projectId at module load. Static prerender at build time
+// would fail without a real projectId env var; dynamic rendering means
+// the validation only happens at request time.
+export const dynamic = "force-dynamic";
 
 const PILLS = [
   { label: "Overview", active: true },
@@ -73,8 +80,8 @@ export default async function CompanyPage({
         <BalanceTile state={s} />
 
         {beat === 0 && <Awaiting />}
-        {beat === 1 && <AllocationReceipt />}
-        {beat === 2 && <SwapReceipt s={s} />}
+        {beat === 1 && <AllocationReceipt isLive={isLive} />}
+        {beat === 2 && <SwapReceipt s={s} isLive={isLive} />}
         {beat === 3 && <Certificate />}
 
         <HoldingsStrip s={s} />
@@ -190,7 +197,7 @@ function Awaiting() {
 // 3 · Beat 1 — allocation receipt
 // ─────────────────────────────────────────────────────────────────────────
 
-function AllocationReceipt() {
+function AllocationReceipt({ isLive }: { isLive: boolean }) {
   return (
     <div className="co-receipt bg-surface rounded-[14px] px-6 py-[22px] border border-border relative">
       {/* Head */}
@@ -234,7 +241,7 @@ function AllocationReceipt() {
       </div>
 
       <div className="mt-[14px]">
-        <CTAButton>Open trade →</CTAButton>
+        {isLive ? <SellButton /> : <CTAButton>Open trade →</CTAButton>}
       </div>
     </div>
   );
@@ -244,7 +251,13 @@ function AllocationReceipt() {
 // 4 · Beat 2 — swap settled receipt
 // ─────────────────────────────────────────────────────────────────────────
 
-function SwapReceipt({ s }: { s: ReturnType<typeof stateAt> }) {
+function SwapReceipt({
+  s,
+  isLive,
+}: {
+  s: ReturnType<typeof stateAt>;
+  isLive: boolean;
+}) {
   return (
     <div className="co-receipt bg-surface rounded-[14px] px-6 py-[22px] border border-border relative">
       <div className="flex justify-between items-baseline pb-[14px] border-b border-dashed border-border-strong mb-[14px]">
@@ -292,7 +305,11 @@ function SwapReceipt({ s }: { s: ReturnType<typeof stateAt> }) {
       </div>
 
       <div className="mt-4">
-        <CTAButton>Surrender for compliance →</CTAButton>
+        {isLive ? (
+          <RetireButton />
+        ) : (
+          <CTAButton>Surrender for compliance →</CTAButton>
+        )}
       </div>
     </div>
   );
