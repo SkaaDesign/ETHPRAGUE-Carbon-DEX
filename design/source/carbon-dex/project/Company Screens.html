@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Company — flow screens × variants</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,400;9..144,500&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0a0a0a; font-family: 'IBM Plex Sans', Inter, system-ui, sans-serif; padding: 56px 32px 80px; color: #1a1a1a; }
+  .doc-head { max-width: 1380px; margin: 0 auto 56px; color: #e8e8e8; }
+  .doc-head h1 { font-size: 32px; font-weight: 400; letter-spacing: -0.01em; margin-bottom: 6px; }
+  .doc-head p { color: #999; font-size: 14px; line-height: 1.5; max-width: 70ch; }
+
+  .sec { max-width: 1380px; margin: 0 auto 80px; }
+  .sec-head { color: #e8e8e8; padding: 0 0 22px; display: flex; align-items: baseline; gap: 18px; border-bottom: 1px solid #2a2a2a; margin-bottom: 28px; }
+  .sec-head .num { font-family: 'JetBrains Mono', monospace; color: #6b6b6b; font-size: 14px; letter-spacing: 0.06em; }
+  .sec-head h2 { font-size: 22px; font-weight: 500; }
+  .sec-head p { color: #888; font-size: 13px; margin-left: auto; }
+
+  .row3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  .row5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 18px; }
+  .row5b { display: grid; grid-template-columns: repeat(2, 1fr) 1fr 1fr 1fr; gap: 18px; } /* not used */
+
+  .ab { background: white; border-radius: 6px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.35); display: flex; flex-direction: column; }
+  .ab-lbl { background: #0e0e0e; color: #f4f4f4; padding: 10px 14px; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; display: flex; gap: 8px; }
+  .ab-lbl .n { color: #6b6b6b; }
+  .ab-lbl .desc { color: #888; margin-left: auto; text-transform: none; letter-spacing: 0.04em; font-family: Inter; font-size: 11px; }
+  .ab-body { background: #f7f6f2; padding: 28px; min-height: 560px; display: flex; align-items: center; justify-content: center; flex: 1; }
+  .ab-body.tight { padding: 18px; min-height: 480px; }
+  .ab-body.dark { background: #0e1011; }
+  .ab-body.cream { background: #f7f3eb; }
+  .ab-body.olive { background: #e9e9dd; }
+
+  /* shared: card surface */
+  .surf { background: white; border-radius: 6px; border: 1px solid #ddd9d0; padding: 22px; width: 100%; max-width: 360px; }
+  .surf-l { max-width: 420px; }
+  .surf-xl { max-width: 100%; }
+
+  /* TYPE */
+  h3.t { font-size: 16px; font-weight: 600; letter-spacing: -0.005em; margin-bottom: 4px; color: #1a1917; }
+  .t-meta { font-size: 11px; color: #6b6860; letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 14px; font-weight: 500; }
+  .t-body { font-size: 13px; color: #4a4740; line-height: 1.5; margin-bottom: 14px; }
+  .mono { font-family: 'IBM Plex Mono', monospace; }
+
+  .ens { color: #d4a035; font-family: 'IBM Plex Mono', monospace; }
+  .addr { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #6b6860; }
+
+  /* ====== CONNECT WALLET (3) ====== */
+  /* C1: classic centered */
+  .c1 .wm { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; margin-bottom: 4px; text-align: center; }
+  .c1 .sb { font-size: 13px; color: #6b6860; text-align: center; margin-bottom: 22px; line-height: 1.5; }
+  .c1 .div { height: 1px; background: #ddd9d0; margin: 18px 0; }
+  .c1 .bgbtn { width: 100%; padding: 14px; background: #1b4f8a; color: white; border: 0; border-radius: 4px; font-size: 14px; font-weight: 500; cursor: pointer; }
+  .c1 .small { font-size: 11px; color: #6b6860; text-align: center; margin-top: 14px; line-height: 1.5; }
+  .c1 .src { display: inline-flex; gap: 6px; align-items: center; font-size: 10px; color: #166534; background: #f0fdf4; padding: 3px 8px; border-radius: 4px; margin-top: 10px; border: 1px solid #bbf7d0; font-weight: 500; }
+
+  /* C2: split card with provenance */
+  .c2 { background: white; border: 1px solid #ddd9d0; border-radius: 6px; width: 100%; max-width: 480px; overflow: hidden; }
+  .c2 .hd { padding: 18px 22px; border-bottom: 1px solid #ddd9d0; display: flex; gap: 10px; align-items: center; }
+  .c2 .hd .m { width: 26px; height: 26px; background: #1b4f8a; color: white; font-size: 11px; font-weight: 700; border-radius: 4px; display: flex; align-items: center; justify-content: center; }
+  .c2 .hd .nm { font-weight: 600; font-size: 13px; }
+  .c2 .hd .nm small { display: block; font-size: 11px; color: #6b6860; font-weight: 400; }
+  .c2 .hd .net { margin-left: auto; font-size: 11px; color: #6b6860; }
+  .c2 .body { padding: 22px; }
+  .c2 .body h3 { font-size: 15px; font-weight: 600; margin-bottom: 10px; }
+  .c2 .body p { font-size: 12px; color: #6b6860; line-height: 1.55; margin-bottom: 18px; }
+  .c2 .opts { display: flex; flex-direction: column; gap: 6px; }
+  .c2 .opt { padding: 12px; border: 1px solid #ddd9d0; border-radius: 4px; display: flex; align-items: center; gap: 12px; cursor: pointer; }
+  .c2 .opt:hover { border-color: #1b4f8a; }
+  .c2 .opt .ic { width: 28px; height: 28px; border-radius: 6px; background: #f0f6fe; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+  .c2 .opt .nm { font-size: 13px; font-weight: 500; flex: 1; }
+  .c2 .opt .nm small { display: block; font-size: 11px; color: #6b6860; font-weight: 400; }
+  .c2 .opt .arr { color: #6b6860; }
+  .c2 .ft { padding: 12px 22px; background: #fafaf6; border-top: 1px solid #ddd9d0; font-size: 11px; color: #6b6860; display: flex; gap: 8px; align-items: center; }
+  .c2 .src { font-size: 10px; color: #166534; background: #f0fdf4; padding: 2px 6px; border-radius: 3px; border: 1px solid #bbf7d0; font-weight: 500; }
+
+  /* C3: government document feel */
+  .c3 { background: white; border-radius: 0; border: 1px solid #ddd9d0; max-width: 460px; width: 100%; padding: 0; }
+  .c3 .hd { padding: 16px 24px 14px; border-bottom: 1px solid #ddd9d0; }
+  .c3 .gov { font-size: 10px; letter-spacing: 0.12em; color: #6b6860; text-transform: uppercase; margin-bottom: 4px; }
+  .c3 .ttl { font-family: Fraunces, serif; font-size: 22px; font-weight: 500; letter-spacing: -0.01em; }
+  .c3 .body { padding: 22px 24px; }
+  .c3 .body p { font-size: 12px; color: #4a4740; line-height: 1.6; margin-bottom: 18px; }
+  .c3 .terms { background: #fafaf6; border-left: 2px solid #1b4f8a; padding: 12px; font-size: 11px; color: #6b6860; line-height: 1.6; margin-bottom: 18px; }
+  .c3 .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .c3 .btn-row button { padding: 12px; font-size: 13px; font-weight: 500; border-radius: 0; cursor: pointer; }
+  .c3 .btn-p { background: #1b4f8a; color: white; border: 0; }
+  .c3 .btn-s { background: white; border: 1px solid #ddd9d0; color: #1a1917; }
+  .c3 .ft { padding: 10px 24px; border-top: 1px solid #ddd9d0; font-size: 10px; color: #6b6860; font-family: 'IBM Plex Mono', monospace; }
+
+  /* ====== KYC PENDING (3) ====== */
+  .k1 .pill-p { display: inline-flex; gap: 6px; align-items: center; font-size: 11px; padding: 3px 9px; border-radius: 100px; background: #fffbeb; color: #92400e; border: 1px solid #fde68a; font-weight: 500; margin-bottom: 14px; }
+  .k1 h3 { font-size: 16px; font-weight: 600; margin-bottom: 12px; }
+  .k1 .row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #ededee; font-size: 12px; }
+  .k1 .row:last-child { border: 0; }
+  .k1 .row .l { color: #6b6860; }
+  .k1 .row .v { font-family: 'IBM Plex Mono', monospace; color: #1a1917; }
+  .k1 p { font-size: 12px; color: #6b6860; line-height: 1.55; margin: 14px 0; }
+  .k1 .ghost { width: 100%; padding: 11px; background: white; border: 1px solid #ddd9d0; border-radius: 4px; font-size: 13px; color: #1b4f8a; cursor: pointer; font-weight: 500; }
+
+  /* K2: stepper status */
+  .k2 .s-pill { display: inline-flex; gap: 6px; align-items: center; font-size: 10px; padding: 3px 8px; border-radius: 100px; background: #fffbeb; color: #92400e; border: 1px solid #fde68a; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 14px; }
+  .k2 h3 { font-size: 17px; font-weight: 600; margin-bottom: 4px; }
+  .k2 .sub { font-size: 12px; color: #6b6860; margin-bottom: 18px; }
+  .k2 .step { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px dashed #ddd9d0; font-size: 12px; }
+  .k2 .step:last-child { border: 0; }
+  .k2 .step .ic { width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; }
+  .k2 .step .ic.done { background: #166534; color: white; }
+  .k2 .step .ic.cur { background: #92400e; color: white; }
+  .k2 .step .ic.pend { background: #ededee; color: #6b6860; }
+  .k2 .step .nm { font-weight: 500; }
+  .k2 .step .det { color: #6b6860; font-size: 11px; margin-top: 2px; }
+  .k2 .step .ts { margin-left: auto; color: #6b6860; font-size: 11px; font-family: 'IBM Plex Mono', monospace; }
+
+  /* K3: lockout poster */
+  .k3 { background: #f3f1e8; border: 1px solid #ddd9d0; border-radius: 0; max-width: 460px; padding: 32px; }
+  .k3 .glyph { width: 56px; height: 56px; border-radius: 50%; background: white; border: 1px solid #ddd9d0; display: flex; align-items: center; justify-content: center; margin-bottom: 22px; font-size: 24px; }
+  .k3 h3 { font-family: Fraunces, serif; font-size: 26px; font-weight: 500; line-height: 1.15; letter-spacing: -0.01em; margin-bottom: 12px; }
+  .k3 p { font-size: 13px; color: #4a4740; line-height: 1.6; margin-bottom: 18px; }
+  .k3 .who { padding: 14px; background: white; border: 1px solid #ddd9d0; font-size: 12px; line-height: 1.6; margin-bottom: 18px; }
+  .k3 .who .row { display: flex; justify-content: space-between; padding: 4px 0; }
+  .k3 .who .l { color: #6b6860; }
+  .k3 .actions { display: flex; gap: 8px; }
+  .k3 .actions button { padding: 11px 16px; font-size: 12px; font-weight: 500; cursor: pointer; border-radius: 4px; }
+  .k3 .actions .p { background: #1a1917; color: white; border: 0; flex: 1; }
+  .k3 .actions .s { background: transparent; border: 1px solid #ddd9d0; color: #1a1917; }
+
+  /* ====== TRADE — 5 variants ====== */
+  .t-lbl { display: block; font-size: 10px; color: #6b6860; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 6px; font-weight: 500; }
+  .t-input-row { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; padding: 12px; border: 1px solid #ddd9d0; border-radius: 4px; }
+  .t-tok { display: inline-flex; gap: 6px; align-items: center; font-weight: 600; font-size: 13px; }
+  .t-tok .d { width: 16px; height: 16px; border-radius: 50%; background: #1b4f8a; }
+  .t-tok.eua .d { background: #1a4a35; }
+  .t-amt { text-align: right; font-family: 'IBM Plex Mono', monospace; font-size: 18px; font-weight: 600; }
+
+  /* T1: Uniswap-clone clean */
+  .t1 { width: 100%; max-width: 380px; }
+  .t1 .surf { padding: 18px; }
+  .t1 .hd { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .t1 .hd h3 { font-size: 16px; font-weight: 600; }
+  .t1 .ic-g { display: flex; gap: 6px; color: #6b6860; }
+  .t1 .swap-input { background: #fafaf6; border: 1px solid #ddd9d0; border-radius: 4px; padding: 14px; }
+  .t1 .swap-input .top { display: flex; justify-content: space-between; font-size: 11px; color: #6b6860; margin-bottom: 8px; }
+  .t1 .swap-input .row2 { display: flex; justify-content: space-between; align-items: center; }
+  .t1 .swap-input .tok-pill { display: flex; gap: 8px; align-items: center; padding: 6px 10px; background: white; border: 1px solid #ddd9d0; border-radius: 100px; font-weight: 600; font-size: 14px; cursor: pointer; }
+  .t1 .swap-input .tok-pill .dot { width: 14px; height: 14px; border-radius: 50%; background: #1b4f8a; }
+  .t1 .swap-input.eua .tok-pill .dot { background: #1a4a35; }
+  .t1 .swap-input .num { font-family: 'IBM Plex Mono', monospace; font-size: 22px; font-weight: 600; text-align: right; }
+  .t1 .swap-input .bal { font-size: 11px; color: #6b6860; text-align: right; margin-top: 4px; }
+  .t1 .arr-btn { width: 32px; height: 32px; border-radius: 50%; background: white; border: 1px solid #ddd9d0; margin: -8px auto; display: flex; align-items: center; justify-content: center; position: relative; z-index: 2; cursor: pointer; }
+  .t1 .meta { padding: 12px 6px; font-size: 11px; color: #6b6860; }
+  .t1 .meta .row { display: flex; justify-content: space-between; padding: 3px 0; }
+  .t1 .meta .row .v { color: #1a1917; font-family: 'IBM Plex Mono', monospace; }
+  .t1 .swap-btn { width: 100%; padding: 14px; background: #1b4f8a; color: white; border: 0; border-radius: 4px; font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 6px; }
+  .t1 .src { font-size: 10px; color: #166534; background: #f0fdf4; padding: 3px 8px; border-radius: 3px; border: 1px solid #bbf7d0; font-weight: 500; display: inline-block; margin-top: 10px; }
+
+  /* T2: terminal / bloomberg slab */
+  .t2 { width: 100%; max-width: 480px; background: #0e1011; color: #e8e6df; border: 1px solid #2a2c2e; border-radius: 0; }
+  .t2 .hd { padding: 12px 16px; border-bottom: 1px solid #2a2c2e; display: flex; gap: 10px; font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+  .t2 .hd .ttl { color: #d4a035; letter-spacing: 0.08em; text-transform: uppercase; }
+  .t2 .hd .id { color: #6b6860; margin-left: auto; }
+  .t2 .body { padding: 18px 16px; }
+  .t2 .row { display: grid; grid-template-columns: auto 1fr; gap: 14px; padding: 8px 0; align-items: baseline; font-family: 'IBM Plex Mono', monospace; font-size: 12px; border-bottom: 1px dashed #2a2c2e; }
+  .t2 .row .l { color: #6b6860; letter-spacing: 0.04em; text-transform: uppercase; font-size: 10px; }
+  .t2 .row .v { color: #e8e6df; text-align: right; font-size: 14px; }
+  .t2 .row .v.big { font-size: 22px; color: white; letter-spacing: -0.01em; }
+  .t2 .row .v.amber { color: #d4a035; }
+  .t2 .input { display: grid; grid-template-columns: auto 1fr; gap: 8px; padding: 10px 0; align-items: baseline; }
+  .t2 .input .l { color: #6b6860; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; }
+  .t2 .input .field { background: #1a1c1e; border: 1px solid #2a2c2e; padding: 8px 10px; font-family: 'IBM Plex Mono', monospace; color: white; font-size: 14px; text-align: right; }
+  .t2 .quote { padding: 10px 0; margin-top: 10px; border-top: 1px solid #2a2c2e; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: #6b6860; }
+  .t2 .quote-row { display: flex; justify-content: space-between; padding: 2px 0; }
+  .t2 .submit { padding: 12px; background: #d4a035; color: #0e1011; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; border: 0; width: 100%; letter-spacing: 0.1em; cursor: pointer; margin-top: 14px; }
+
+  /* T3: enterprise form (SAP-ish) */
+  .t3 { background: white; border: 1px solid #d5dce2; border-radius: 0; width: 100%; max-width: 460px; }
+  .t3 .hd { background: #fafbfc; padding: 12px 18px; border-bottom: 1px solid #d5dce2; display: flex; gap: 10px; }
+  .t3 .hd h3 { font-size: 14px; font-weight: 500; color: #32363a; }
+  .t3 .hd .id { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #6a6d70; margin-left: auto; }
+  .t3 .body { padding: 18px; }
+  .t3 .grp { margin-bottom: 14px; }
+  .t3 .grp .lab { font-size: 11px; color: #6a6d70; margin-bottom: 4px; font-weight: 500; }
+  .t3 .grp .field { display: grid; grid-template-columns: 130px 1fr; gap: 0; }
+  .t3 .grp .sel { padding: 8px 12px; border: 1px solid #d5dce2; border-right: 0; font-size: 13px; background: #fafbfc; display: flex; gap: 8px; align-items: center; }
+  .t3 .grp .sel .dot { width: 10px; height: 10px; border-radius: 50%; background: #1b4f8a; }
+  .t3 .grp .num { padding: 8px 12px; border: 1px solid #d5dce2; font-size: 14px; font-family: 'IBM Plex Mono', monospace; text-align: right; font-weight: 500; }
+  .t3 .quote-tbl { background: #fafbfc; border: 1px solid #d5dce2; padding: 10px 12px; font-size: 11px; }
+  .t3 .quote-tbl .row { display: flex; justify-content: space-between; padding: 3px 0; }
+  .t3 .quote-tbl .v { font-family: 'IBM Plex Mono', monospace; }
+  .t3 .actions { display: flex; gap: 8px; padding: 12px 18px; background: #fafbfc; border-top: 1px solid #d5dce2; }
+  .t3 .actions button { padding: 8px 16px; font-size: 12px; font-weight: 500; cursor: pointer; border-radius: 2px; }
+  .t3 .actions .p { background: #0a6ed1; color: white; border: 0; flex: 1; }
+  .t3 .actions .s { background: white; border: 1px solid #b3c5d3; color: #0a6ed1; }
+
+  /* T4: orderbook combined */
+  .t4 { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: #ddd9d0; border: 1px solid #ddd9d0; border-radius: 6px; overflow: hidden; max-width: 560px; width: 100%; }
+  .t4 .pane { background: white; padding: 16px; }
+  .t4 .pane .ttl { font-size: 11px; color: #6b6860; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 10px; font-weight: 500; }
+  .t4 .ob { font-family: 'IBM Plex Mono', monospace; font-size: 11px; }
+  .t4 .ob-row { display: grid; grid-template-columns: 1fr 1fr 1fr; padding: 3px 0; gap: 8px; }
+  .t4 .ob-row.ask { color: #b91c1c; }
+  .t4 .ob-row.bid { color: #166534; }
+  .t4 .ob-spread { padding: 6px 0; border-top: 1px dashed #ddd9d0; border-bottom: 1px dashed #ddd9d0; margin: 4px 0; text-align: center; color: #6b6860; }
+  .t4 .form { display: flex; flex-direction: column; gap: 10px; }
+  .t4 .form input { padding: 8px 10px; border: 1px solid #ddd9d0; border-radius: 4px; font-family: 'IBM Plex Mono', monospace; font-size: 14px; text-align: right; width: 100%; }
+  .t4 .form .l { font-size: 10px; color: #6b6860; letter-spacing: 0.04em; text-transform: uppercase; font-weight: 500; }
+  .t4 .form .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .t4 .form .seg { display: flex; gap: 0; border: 1px solid #ddd9d0; border-radius: 4px; overflow: hidden; }
+  .t4 .form .seg button { flex: 1; padding: 7px; font-size: 11px; font-weight: 600; background: white; border: 0; cursor: pointer; }
+  .t4 .form .seg .on.buy { background: #166534; color: white; }
+  .t4 .form .total { padding: 10px; background: #fafaf6; border-radius: 4px; font-size: 11px; }
+  .t4 .form .total .row { display: flex; justify-content: space-between; padding: 2px 0; color: #6b6860; }
+  .t4 .form .total .row .v { color: #1a1917; font-family: 'IBM Plex Mono', monospace; }
+  .t4 .form .submit { padding: 11px; background: #166534; color: white; border: 0; border-radius: 4px; font-size: 13px; font-weight: 600; cursor: pointer; }
+
+  /* T5: confirmation dialog */
+  .t5 { background: white; border: 1px solid #ddd9d0; border-radius: 8px; max-width: 460px; width: 100%; }
+  .t5 .hd { padding: 18px 22px 0; }
+  .t5 .hd .pill { display: inline-flex; gap: 6px; align-items: center; font-size: 10px; padding: 3px 8px; border-radius: 100px; background: #fffbeb; color: #92400e; border: 1px solid #fde68a; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 12px; }
+  .t5 .hd h3 { font-size: 18px; font-weight: 600; letter-spacing: -0.01em; margin-bottom: 6px; }
+  .t5 .hd p { font-size: 12px; color: #6b6860; line-height: 1.55; }
+  .t5 .visual { padding: 22px; }
+  .t5 .swap-vis { display: grid; grid-template-columns: 1fr 24px 1fr; gap: 8px; align-items: center; padding: 14px; background: #fafaf6; border: 1px solid #ddd9d0; border-radius: 4px; }
+  .t5 .swap-vis .side { text-align: center; }
+  .t5 .swap-vis .l { font-size: 11px; color: #6b6860; margin-bottom: 4px; }
+  .t5 .swap-vis .v { font-size: 18px; font-weight: 700; font-family: 'IBM Plex Mono', monospace; }
+  .t5 .swap-vis .v small { font-size: 11px; font-weight: 500; color: #6b6860; margin-left: 3px; font-family: 'IBM Plex Sans', sans-serif; }
+  .t5 .swap-vis .arr { color: #6b6860; text-align: center; font-size: 18px; }
+  .t5 .details { font-size: 12px; padding: 14px 0 0; }
+  .t5 .details .row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #ededee; }
+  .t5 .details .row .l { color: #6b6860; }
+  .t5 .details .row .v { color: #1a1917; font-family: 'IBM Plex Mono', monospace; }
+  .t5 .actions { padding: 14px 22px 18px; display: grid; grid-template-columns: 1fr 1.5fr; gap: 8px; }
+  .t5 .actions button { padding: 12px; font-size: 13px; font-weight: 600; border-radius: 4px; cursor: pointer; }
+  .t5 .actions .p { background: #1b4f8a; color: white; border: 0; }
+  .t5 .actions .s { background: white; border: 1px solid #ddd9d0; color: #1a1917; }
+
+  /* ====== RECEIPT (3) ====== */
+  .r1 { background: white; border: 1px solid #ddd9d0; border-radius: 6px; max-width: 460px; width: 100%; }
+  .r1 .hd { padding: 22px; text-align: center; border-bottom: 1px solid #ddd9d0; }
+  .r1 .check { width: 44px; height: 44px; border-radius: 50%; background: #166534; color: white; display: inline-flex; align-items: center; justify-content: center; font-size: 22px; margin-bottom: 10px; }
+  .r1 .hd h3 { font-size: 17px; font-weight: 600; margin-bottom: 4px; }
+  .r1 .hd p { font-size: 12px; color: #6b6860; }
+  .r1 .body { padding: 18px 22px; font-size: 12px; }
+  .r1 .body .desc { padding: 12px; background: #fafaf6; border: 1px solid #ddd9d0; border-radius: 4px; line-height: 1.6; margin-bottom: 14px; color: #4a4740; }
+  .r1 .body .desc .num { font-family: 'IBM Plex Mono', monospace; font-weight: 600; color: #1a1917; }
+  .r1 .body .row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #ededee; }
+  .r1 .body .row .l { color: #6b6860; }
+  .r1 .body .row .v { font-family: 'IBM Plex Mono', monospace; }
+  .r1 .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 14px 22px 18px; }
+  .r1 .actions button { padding: 11px; font-size: 12px; font-weight: 600; cursor: pointer; border-radius: 4px; }
+  .r1 .actions .p { background: #1b4f8a; color: white; border: 0; }
+  .r1 .actions .s { background: white; border: 1px solid #ddd9d0; color: #1a1917; }
+
+  /* R2: tape print */
+  .r2 { background: white; border: 1px dashed #ddd9d0; padding: 26px 22px; max-width: 360px; width: 100%; font-family: 'IBM Plex Mono', monospace; font-size: 12px; line-height: 1.7; }
+  .r2 .ttl { text-align: center; letter-spacing: 0.2em; font-size: 10px; margin-bottom: 8px; color: #6b6860; }
+  .r2 .ttl-big { font-family: 'IBM Plex Sans'; text-align: center; font-size: 14px; font-weight: 600; margin-bottom: 18px; }
+  .r2 .div { border-top: 1px dashed #ddd9d0; margin: 12px 0; }
+  .r2 .row { display: flex; justify-content: space-between; padding: 1px 0; }
+  .r2 .row .l { color: #6b6860; }
+  .r2 .total { font-size: 14px; font-weight: 700; padding-top: 6px; }
+  .r2 .ft { text-align: center; padding-top: 14px; border-top: 1px dashed #ddd9d0; margin-top: 14px; font-size: 10px; color: #6b6860; line-height: 1.55; }
+  .r2 .ft .src { display: inline-block; margin-top: 6px; color: #166534; }
+
+  /* R3: confirmation hero */
+  .r3 { width: 100%; max-width: 460px; }
+  .r3 .hero { background: linear-gradient(160deg, #ecf3ed 0%, #f5fbf7 100%); border: 1px solid #ddd9d0; border-bottom: 0; padding: 26px; }
+  .r3 .hero .stamp { display: inline-flex; gap: 6px; align-items: center; font-size: 10px; padding: 3px 8px; border-radius: 100px; background: white; color: #166534; border: 1px solid #bbf7d0; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 14px; }
+  .r3 .hero h3 { font-family: Fraunces, serif; font-size: 24px; font-weight: 500; line-height: 1.2; letter-spacing: -0.01em; margin-bottom: 4px; }
+  .r3 .hero .meta { font-size: 12px; color: #4a4740; }
+  .r3 .body { background: white; border: 1px solid #ddd9d0; padding: 22px; }
+  .r3 .body .row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #ededee; font-size: 12px; }
+  .r3 .body .row .l { color: #6b6860; }
+  .r3 .body .row .v { font-family: 'IBM Plex Mono', monospace; }
+  .r3 .body .actions { display: flex; gap: 8px; padding-top: 14px; }
+  .r3 .body .actions button { flex: 1; padding: 11px; font-size: 12px; font-weight: 600; cursor: pointer; border-radius: 4px; }
+  .r3 .body .actions .p { background: #1a4a35; color: white; border: 0; }
+  .r3 .body .actions .s { background: white; border: 1px solid #ddd9d0; color: #1a1917; }
+
+  /* ====== PORTFOLIO (3) ====== */
+  /* P1: classic table */
+  .p1 { background: white; border: 1px solid #ddd9d0; border-radius: 6px; max-width: 100%; width: 100%; padding: 18px; }
+  .p1 h3 { font-size: 15px; font-weight: 600; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: baseline; }
+  .p1 h3 .meta { font-size: 11px; color: #6b6860; font-weight: 500; }
+  .p1 table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .p1 th { text-align: left; padding: 8px 6px; font-size: 10px; color: #6b6860; letter-spacing: 0.04em; text-transform: uppercase; font-weight: 600; border-bottom: 1px solid #ddd9d0; }
+  .p1 td { padding: 9px 6px; border-bottom: 1px solid #ededee; }
+  .p1 td.mono { font-family: 'IBM Plex Mono', monospace; }
+  .p1 td.amt { text-align: right; font-family: 'IBM Plex Mono', monospace; font-weight: 600; }
+  .p1 td button { padding: 5px 10px; font-size: 11px; border: 1px solid #ddd9d0; background: white; border-radius: 3px; cursor: pointer; color: #1b4f8a; }
+
+  /* P2: card grid */
+  .p2 { width: 100%; }
+  .p2 h3 { font-size: 15px; font-weight: 600; margin-bottom: 14px; color: #e8e8e8; }
+  .p2 .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+  .p2 .crd { background: white; border: 1px solid #ddd9d0; border-radius: 6px; padding: 16px; }
+  .p2 .crd .hd { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+  .p2 .crd .id { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #6b6860; }
+  .p2 .crd .pill { font-size: 10px; padding: 2px 7px; border-radius: 100px; font-weight: 500; }
+  .p2 .crd .pill.energy { background: #f0f6fe; color: #1b4f8a; }
+  .p2 .crd .pill.industry { background: #f5edd6; color: #92400e; }
+  .p2 .crd .qty { font-size: 26px; font-weight: 700; font-family: 'IBM Plex Mono', monospace; letter-spacing: -0.01em; margin-bottom: 4px; }
+  .p2 .crd .qty small { font-size: 12px; color: #6b6860; font-weight: 500; margin-left: 4px; font-family: 'IBM Plex Sans'; }
+  .p2 .crd .meta { font-size: 11px; color: #6b6860; line-height: 1.5; margin-bottom: 12px; }
+  .p2 .crd .actions { display: flex; gap: 6px; }
+  .p2 .crd button { flex: 1; padding: 7px; font-size: 11px; font-weight: 500; border-radius: 3px; cursor: pointer; }
+  .p2 .crd .p { background: #1b4f8a; color: white; border: 0; }
+  .p2 .crd .s { background: white; border: 1px solid #ddd9d0; color: #1a1917; }
+
+  /* P3: kanban-by-vintage */
+  .p3 { width: 100%; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .p3 .col { background: #fafaf6; border-radius: 6px; padding: 12px; }
+  .p3 .col h4 { font-size: 11px; color: #6b6860; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 10px; font-weight: 600; display: flex; justify-content: space-between; }
+  .p3 .col h4 .c { background: white; border-radius: 100px; padding: 1px 7px; color: #1a1917; font-size: 10px; }
+  .p3 .col .card { background: white; border: 1px solid #ddd9d0; border-radius: 4px; padding: 10px; margin-bottom: 8px; }
+  .p3 .col .card .id { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: #6b6860; margin-bottom: 4px; }
+  .p3 .col .card .qty { font-size: 16px; font-weight: 700; font-family: 'IBM Plex Mono', monospace; margin-bottom: 4px; }
+  .p3 .col .card .qty small { font-size: 11px; color: #6b6860; font-weight: 500; margin-left: 3px; font-family: 'IBM Plex Sans'; }
+  .p3 .col .card .meta { font-size: 11px; color: #6b6860; }
+
+  /* ====== RETIRE FORM (3) ====== */
+  /* RF1: standard form */
+  .rf1 { background: white; border: 1px solid #ddd9d0; border-radius: 6px; padding: 22px; max-width: 460px; width: 100%; }
+  .rf1 h3 { font-size: 17px; font-weight: 600; margin-bottom: 4px; }
+  .rf1 .sub { font-size: 12px; color: #6b6860; margin-bottom: 18px; }
+  .rf1 .grp { margin-bottom: 14px; }
+  .rf1 .grp .l { font-size: 11px; font-weight: 500; color: #1a1917; margin-bottom: 5px; display: flex; justify-content: space-between; }
+  .rf1 .grp .l .help { color: #6b6860; font-weight: 400; }
+  .rf1 .grp .field { padding: 9px 12px; border: 1px solid #ddd9d0; border-radius: 4px; font-size: 13px; font-family: 'IBM Plex Mono', monospace; }
+  .rf1 .grp .field.sel { display: flex; justify-content: space-between; align-items: center; }
+  .rf1 .grp .field.amt { font-size: 18px; font-weight: 600; text-align: right; }
+  .rf1 .warn { background: #fffbeb; border: 1px solid #fde68a; border-radius: 4px; padding: 10px 12px; font-size: 12px; color: #92400e; line-height: 1.5; margin-bottom: 14px; }
+  .rf1 .actions { display: flex; gap: 8px; }
+  .rf1 .actions button { padding: 12px; font-size: 13px; font-weight: 600; cursor: pointer; border-radius: 4px; }
+  .rf1 .actions .p { background: #b91c1c; color: white; border: 0; flex: 1.6; }
+  .rf1 .actions .s { background: white; border: 1px solid #ddd9d0; color: #1a1917; flex: 1; }
+
+  /* RF2: ledger style */
+  .rf2 { background: #fafaf6; padding: 22px; border: 1px solid #ddd9d0; max-width: 480px; width: 100%; font-family: 'IBM Plex Mono', monospace; }
+  .rf2 .ttl { font-family: 'IBM Plex Sans'; font-size: 14px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; padding-bottom: 12px; border-bottom: 2px solid #1a1917; margin-bottom: 14px; }
+  .rf2 .row { display: grid; grid-template-columns: 1fr 1fr; padding: 8px 0; border-bottom: 1px dashed #ddd9d0; align-items: baseline; }
+  .rf2 .row .l { font-family: 'IBM Plex Sans'; font-size: 12px; color: #6b6860; }
+  .rf2 .row .v { font-size: 14px; text-align: right; }
+  .rf2 .row .v.big { font-size: 22px; font-weight: 700; }
+  .rf2 .row .v.input { background: white; border: 1px solid #ddd9d0; padding: 6px 8px; }
+  .rf2 .stamp { padding: 12px 14px; background: white; border: 1px solid #b91c1c; margin: 16px 0; font-family: 'IBM Plex Sans'; font-size: 12px; line-height: 1.55; color: #b91c1c; }
+  .rf2 .stamp b { display: block; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px; }
+  .rf2 .submit { width: 100%; padding: 14px; background: #1a1917; color: white; border: 0; font-family: 'IBM Plex Sans'; font-size: 12px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; }
+
+  /* RF3: confirmation modal */
+  .rf3 { background: white; border-radius: 8px; max-width: 420px; width: 100%; box-shadow: 0 30px 60px rgba(0,0,0,0.25); }
+  .rf3 .hd { padding: 22px 24px 0; }
+  .rf3 .hd .ic { width: 48px; height: 48px; border-radius: 50%; background: #fef2f2; color: #b91c1c; display: flex; align-items: center; justify-content: center; font-size: 22px; margin-bottom: 12px; }
+  .rf3 .hd h3 { font-size: 18px; font-weight: 600; letter-spacing: -0.01em; margin-bottom: 4px; }
+  .rf3 .hd p { font-size: 12px; color: #6b6860; line-height: 1.55; margin-bottom: 14px; }
+  .rf3 .body { padding: 0 24px; }
+  .rf3 .body .qty { padding: 14px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 4px; text-align: center; margin-bottom: 14px; }
+  .rf3 .body .qty .v { font-size: 28px; font-weight: 700; font-family: 'IBM Plex Mono', monospace; color: #b91c1c; line-height: 1; }
+  .rf3 .body .qty .v small { font-size: 14px; color: #b91c1c; font-weight: 500; margin-left: 4px; font-family: 'IBM Plex Sans'; }
+  .rf3 .body .qty .l { font-size: 11px; color: #b91c1c; margin-top: 4px; font-weight: 500; }
+  .rf3 .body .row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 12px; border-bottom: 1px solid #ededee; }
+  .rf3 .body .row .l { color: #6b6860; }
+  .rf3 .body .row .v { font-family: 'IBM Plex Mono', monospace; }
+  .rf3 .actions { padding: 18px 24px 22px; display: grid; grid-template-columns: 1fr 1.6fr; gap: 8px; }
+  .rf3 .actions button { padding: 12px; font-size: 13px; font-weight: 600; cursor: pointer; border-radius: 4px; }
+  .rf3 .actions .p { background: #b91c1c; color: white; border: 0; }
+  .rf3 .actions .s { background: white; border: 1px solid #ddd9d0; color: #1a1917; }
+
+  /* ====== RETIREMENT CERTIFICATE — 5 variants ====== */
+  /* CC1: government document */
+  .cc1 { background: white; border: 1px solid #1a1917; padding: 28px; max-width: 100%; width: 100%; position: relative; }
+  .cc1::before { content: ''; position: absolute; inset: 4px; border: 1px solid #1a1917; pointer-events: none; }
+  .cc1 .ttl-row { text-align: center; padding-bottom: 14px; border-bottom: 1px solid #1a1917; margin-bottom: 18px; }
+  .cc1 .pre { font-size: 9px; letter-spacing: 0.3em; color: #6b6860; text-transform: uppercase; margin-bottom: 6px; }
+  .cc1 .ttl { font-family: Fraunces, serif; font-size: 24px; font-weight: 500; letter-spacing: 0.05em; }
+  .cc1 .seal { width: 38px; height: 38px; border-radius: 50%; border: 1px solid #1a1917; margin: 4px auto 0; display: flex; align-items: center; justify-content: center; font-size: 11px; letter-spacing: 0.1em; color: #6b6860; }
+  .cc1 .body { font-size: 11px; }
+  .cc1 .body .qty-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding: 14px 0; border-bottom: 1px solid #ddd9d0; margin-bottom: 14px; }
+  .cc1 .body .qty-row .col { display: flex; flex-direction: column; }
+  .cc1 .body .qty-row .l { font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: #6b6860; margin-bottom: 4px; }
+  .cc1 .body .qty-row .v { font-family: 'IBM Plex Mono', monospace; font-size: 18px; font-weight: 500; }
+  .cc1 .body .row { display: grid; grid-template-columns: 1fr 1fr; padding: 4px 0; }
+  .cc1 .body .row .l { color: #6b6860; }
+  .cc1 .body .row .v { font-family: 'IBM Plex Mono', monospace; text-align: right; }
+  .cc1 .ft { padding-top: 14px; border-top: 1px solid #1a1917; margin-top: 14px; display: flex; justify-content: space-between; font-size: 9px; color: #6b6860; }
+
+  /* CC2: editorial broadsheet */
+  .cc2 { background: #f3f1e8; padding: 28px 24px; max-width: 100%; width: 100%; }
+  .cc2 .head { border-bottom: 2px solid #1a1917; padding-bottom: 12px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: baseline; }
+  .cc2 .head .l { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: #6b6860; }
+  .cc2 .head .r { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: #6b6860; }
+  .cc2 .ttl { font-family: Fraunces, serif; font-size: 32px; font-weight: 400; line-height: 1.1; letter-spacing: -0.015em; margin-bottom: 6px; text-wrap: balance; }
+  .cc2 .ded { font-style: italic; font-size: 12px; color: #6b6860; margin-bottom: 18px; line-height: 1.5; }
+  .cc2 .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding: 14px 0; border-top: 1px solid #ddd9d0; border-bottom: 1px solid #ddd9d0; margin-bottom: 14px; font-size: 11px; }
+  .cc2 .grid .col { display: flex; flex-direction: column; }
+  .cc2 .grid .l { font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; color: #6b6860; margin-bottom: 4px; }
+  .cc2 .grid .v { font-family: 'IBM Plex Mono', monospace; font-size: 13px; }
+  .cc2 .footer { display: flex; justify-content: space-between; font-size: 10px; color: #6b6860; padding-top: 6px; }
+  .cc2 .footer .src { color: #166534; }
+
+  /* CC3: minimal certificate strip */
+  .cc3 { background: white; border-radius: 0; max-width: 100%; width: 100%; }
+  .cc3 .top-bar { background: #1a4a35; color: white; padding: 14px 22px; display: flex; align-items: center; gap: 12px; }
+  .cc3 .top-bar .ic { width: 24px; height: 24px; border-radius: 50%; border: 1px solid #5fb085; display: flex; align-items: center; justify-content: center; font-size: 11px; }
+  .cc3 .top-bar .nm { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; }
+  .cc3 .top-bar .id { margin-left: auto; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: #bbf7d0; }
+  .cc3 .body { padding: 22px; border: 1px solid #ddd9d0; border-top: 0; }
+  .cc3 .qty { font-family: Fraunces, serif; font-size: 36px; font-weight: 500; letter-spacing: -0.015em; line-height: 1; margin-bottom: 4px; }
+  .cc3 .qty small { font-size: 14px; font-weight: 500; color: #6b6860; margin-left: 6px; font-family: 'IBM Plex Sans'; }
+  .cc3 .body p { font-size: 13px; color: #4a4740; line-height: 1.5; margin-bottom: 16px; }
+  .cc3 .body p .ens { color: #d4a035; }
+  .cc3 .meta { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding-top: 14px; border-top: 1px solid #ddd9d0; font-size: 11px; }
+  .cc3 .meta .row { display: flex; flex-direction: column; }
+  .cc3 .meta .l { color: #6b6860; margin-bottom: 2px; }
+  .cc3 .meta .v { font-family: 'IBM Plex Mono', monospace; }
+
+  /* CC4: dark editorial poster */
+  .cc4 { background: #0e1011; color: #e8e6df; padding: 28px 24px; max-width: 100%; width: 100%; border: 1px solid #2a2c2e; }
+  .cc4 .head { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: 12px; border-bottom: 1px solid #2a2c2e; margin-bottom: 22px; }
+  .cc4 .head .l { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: #6b6860; }
+  .cc4 .head .star { color: #d4a035; }
+  .cc4 .qty { font-family: Fraunces, serif; font-size: 64px; font-weight: 400; letter-spacing: -0.02em; line-height: 1; margin-bottom: 6px; color: white; }
+  .cc4 .qty small { font-size: 18px; color: #d4a035; font-weight: 400; margin-left: 8px; font-family: 'IBM Plex Sans'; }
+  .cc4 .lede { font-size: 14px; color: #b8b6b0; line-height: 1.55; margin-bottom: 22px; max-width: 50ch; }
+  .cc4 .lede .ens { color: #d4a035; }
+  .cc4 .meta { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding-top: 14px; border-top: 1px solid #2a2c2e; font-size: 11px; }
+  .cc4 .meta .row .l { color: #6b6860; font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 3px; }
+  .cc4 .meta .row .v { font-family: 'IBM Plex Mono', monospace; color: #e8e6df; font-size: 12px; }
+  .cc4 .ft { display: flex; justify-content: space-between; padding-top: 14px; margin-top: 14px; border-top: 1px solid #2a2c2e; font-size: 10px; color: #6b6860; }
+
+  /* CC5: stamped receipt */
+  .cc5 { background: #f7f3eb; max-width: 100%; width: 100%; padding: 32px 24px; position: relative; }
+  .cc5::before { content: ''; position: absolute; top: 18px; right: 18px; width: 96px; height: 96px; border: 2px solid #b91c1c; border-radius: 50%; opacity: 0.18; transform: rotate(-12deg); }
+  .cc5::after { content: 'RETIRED'; position: absolute; top: 50px; right: 30px; font-family: Fraunces, serif; font-size: 16px; letter-spacing: 0.2em; color: #b91c1c; opacity: 0.5; transform: rotate(-12deg); font-weight: 600; }
+  .cc5 .top { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: 12px; border-bottom: 1px solid #1a1917; margin-bottom: 16px; max-width: 75%; }
+  .cc5 .top .l { font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: #6b6860; }
+  .cc5 .ttl { font-family: Fraunces, serif; font-size: 20px; font-weight: 500; max-width: 75%; margin-bottom: 4px; }
+  .cc5 .sub { font-size: 12px; color: #6b6860; max-width: 60%; line-height: 1.5; margin-bottom: 18px; }
+  .cc5 .qty-block { padding: 14px 0; border-top: 1px solid #ddd9d0; border-bottom: 1px solid #ddd9d0; margin-bottom: 14px; max-width: 75%; }
+  .cc5 .qty-block .v { font-family: 'IBM Plex Mono', monospace; font-size: 28px; font-weight: 600; line-height: 1; margin-bottom: 4px; }
+  .cc5 .qty-block .v small { font-size: 12px; color: #6b6860; font-weight: 500; margin-left: 4px; font-family: 'IBM Plex Sans'; }
+  .cc5 .qty-block .l { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: #6b6860; }
+  .cc5 .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 14px; font-size: 11px; max-width: 75%; }
+  .cc5 .grid .row { display: flex; justify-content: space-between; padding: 3px 0; border-bottom: 1px dashed #ddd9d0; }
+  .cc5 .grid .row .l { color: #6b6860; }
+  .cc5 .grid .row .v { font-family: 'IBM Plex Mono', monospace; }
+  .cc5 .ft { font-family: 'IBM Plex Mono', monospace; font-size: 9px; color: #6b6860; padding-top: 14px; margin-top: 14px; border-top: 1px solid #1a1917; max-width: 75%; }
+</style>
+</head>
+<body>
+
+<div class="doc-head">
+  <h1>Company portal — flow screens, by variant</h1>
+  <p>Connect → KYC gate → Trade → Receipt → Retire → Certificate → Portfolio. Three variants per gate, five for the two demo-critical moments (the swap and the retirement certificate).</p>
+</div>
+
+<!-- ============ CONNECT ============ -->
+<section class="sec">
+  <header class="sec-head"><span class="num">01</span><h2>Connect Wallet</h2><p>3 variants — gate to verified-only access</p></header>
+  <div class="row3">
+    <div class="ab">
+      <div class="ab-lbl"><span class="n">01-A</span><span>Centered card</span><span class="desc">Hick's Law · single action</span></div>
+      <div class="ab-body">
+        <div class="surf c1" style="text-align:center;">
+          <div style="width:36px;height:36px;background:#1b4f8a;color:white;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;margin-bottom:14px;">CD</div>
+          <div class="wm">Carbon DEX</div>
+          <div class="sb">EU ETS compliance trading.<br>Verified participants only.</div>
+          <button class="bgbtn">Connect Wallet</button>
+          <div class="small">Only addresses registered in the<br>EU ETS Compliance Registry may trade.</div>
+          <div class="src">✓ ComplianceRegistry.sol verified on Sourcify</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ab">
+      <div class="ab-lbl"><span class="n">01-B</span><span>Provider list</span><span class="desc">Familiar Web3 pattern</span></div>
+      <div class="ab-body">
+        <div class="c2">
+          <div class="hd">
+            <div class="m">CD</div>
+            <div class="nm">Carbon DEX <small>EU ETS compliance trading</small></div>
+            <span class="net">Base Sepolia</span>
+          </div>
+          <div class="body">
+            <h3>Connect a wallet to continue</h3>
+            <p>You'll be asked to sign a one-time message to prove ownership. No funds will move.</p>
+            <div class="opts">
+              <div class="opt"><div class="ic">🦊</div><div class="nm">MetaMask <small>Browser extension</small></div><div class="arr">›</div></div>
+              <div class="opt"><div class="ic" style="background:#fff7e8;">🌈</div><div class="nm">Rainbow <small>Mobile or extension</small></div><div class="arr">›</div></div>
+              <div class="opt"><div class="ic" style="background:#e8f1fe;">🔐</div><div class="nm">WalletConnect <small>Scan with any wallet</small></div><div class="arr">›</div></div>
+              <div class="opt"><div class="ic" style="background:#f3eeff;">🔑</div><div class="nm">Privy <small>Email or social</small></div><div class="arr">›</div></div>
+            </div>
+          </div>
+          <div class="ft">By connecting you accept the EU ETS terms · <span class="src">✓ Sourcify</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ab">
+      <div class="ab-lbl"><span class="n">01-C</span><span>Government form</span><span class="desc">Institutional · serif headline</span></div>
+      <div class="ab-body cream">
+        <div class="c3">
+          <div class="hd">
+            <div class="gov">EU Emissions Trading System · Phase IV</div>
+            <div class="ttl">Operator workspace.</div>
+          </div>
+          <div class="body">
+            <p>This portal is restricted to wallets registered in the European Union Emissions Trading System Compliance Registry. Connect the wallet associated with your verified company entity.</p>
+            <div class="terms">By proceeding, you acknowledge that all transactions executed via this portal are auditable on-chain and may be referenced in compliance proceedings.</div>
+            <div class="btn-row">
+              <button class="btn-s">Public market</button>
+              <button class="btn-p">Connect operator wallet →</button>
+            </div>
+          </div>
+          <div class="ft">REGISTRY · 0xb6c8…ad13 · ComplianceRegistry.sol · ✓ verified</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ KYC PENDING ============ -->
+<section class="sec">
+  <header class="sec-head"><span class="num">02</span><h2>KYC Gate — pending</h2><p>3 variants — connected but not verified</p></header>
+  <div class="row3">
+    <div class="ab">
+      <div class="ab-lbl"><span class="n">02-A</span><span>Status card</span><span class="desc">Scan-and-resume</span></div>
+      <div class="ab-body">
+        <div class="surf k1">
+          <span class="pill-p">● Verification pending</span>
+          <h3>Awaiting Compliance Registry approval</h3>
+          <div class="row"><span class="l">Wallet</span><span class="v">company-c.eth</span></div>
+          <div class="row"><span class="l">Address</span><span class="v">0x9f2c…4a1b</span></div>
+          <div class="row"><span class="l">Submitted</span><span class="v">14 May, 09:18 UTC</span></div>
+          <div class="row"><span class="l">Registry</span><span class="v">0xb6c8…ad13</span></div>
+          <p>Your address has not yet been registered. Contact the EU ETS Authority via your supervisory body to complete verification, or check back later.</p>
+          <button class="ghost">View public market →</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="ab">
+      <div class="ab-lbl"><span class="n">02-B</span><span>Stepper</span><span class="desc">Visible progress</span></div>
+      <div class="ab-body">
+        <div class="surf surf-l k2">
+          <span class="s-pill">● Step 3 of 4</span>
+          <h3>Verification in progress</h3>
+          <p class="sub">An EU ETS supervisor will register your wallet within 5 working days.</p>
+          <div class="step"><div class="ic done">✓</div><div><div class="nm">Wallet connected</div><div class="det">Signed proof of ownership</div></div><div class="ts">14 May 09:15</div></div>
+          <div class="step"><div class="ic done">✓</div><div><div class="nm">Documentation received</div><div class="det">EU-ETS-2026-447</div></div><div class="ts">14 May 09:18</div></div>
+          <div class="step"><div class="ic cur">●</div><div><div class="nm">Supervisor review</div><div class="det">Assigned to Federal Office, DE</div></div><div class="ts">in progress</div></div>
+          <div class="step"><div class="ic pend">4</div><div><div class="nm">Registry write</div><div class="det">register(0x9f2c…) on ComplianceRegistry.sol</div></div><div class="ts">pending</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ab">
+      <div class="ab-lbl"><span class="n">02-C</span><span>Lockout poster</span><span class="desc">Editorial gravity</span></div>
+      <div class="ab-body olive">
+        <div class="k3">
+          <div class="glyph">⊘</div>
+          <h3>Trading is locked until your wallet is registered.</h3>
+          <p>The EU ETS Compliance Registry is the source of truth for permission. We cannot let you trade until your supervisor writes your address into the registry.</p>
+          <div class="who">
+            <div class="row"><span class="l">Wallet</span><span class="mono">company-c.eth</span></div>
+            <div class="row"><span class="l">Submitted</span><span class="mono">14 May, 09:18 UTC</span></div>
+            <div class="row"><span class="l">Status</span><span style="color:#92400e;">Pending review</span></div>
+          </div>
+          <div class="actions">
+            <button class="p">Contact your supervisor</button>
+            <button class="s">Public →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TRADE — 5 VARIANTS ============ -->
+<section class="sec">
+  <header class="sec-head"><span class="num">03</span><h2>Trade — Swap EURS ↔ EUA</h2><p>5 variants — demo centerpiece</p></header>
+  <div class="row5">
+    <div class="ab">
+      <div class="ab-lbl"><span class="n">03-A</span><span>Uniswap clone</span></div>
+      <div class="ab-body tight">
+        <div class="t1">
+          <div class="surf">
+            <div class="hd"><h3>Trade</h3><div class="ic-g"><span>⚙</span></div></div>
+            <div class="swap-input">
+              <div class="top"><span>You pay</span><span>Bal: 5,000.00 EURS</span></div>
+              <div class="row2">
+                <div class="tok-pill"><span class="dot"></span> EURS <span style="color:#6b6860;">▾</span></div>
+                <div class="num">2,500.00</div>
+              </div>
+            </div>
+            <div class="arr-btn">⇅</div>
+            <div class="swap-input eua" style="margin-top:6px;">
+              <div class="top"><span>You receive</span><span>1 EUA = 2.50 EURS</span></div>
+              <div class="row2">
+                <div class="tok-pill"><span class="dot"></span> EUA <span style="color:#6b6860;">▾</span></div>
+                <div class="num" style="color:#1a4a35;">~1,000</div>
+              </div>
+            </div>
+            <div class="meta">
+              <div class="row"><span>Price impact</span><span class="v">0.12%</span></div>
+              <div class="row"><span>Min received (1%)</span><span class="v">990 EUA</span></div>
+              <div class="row"><span>Network fee</span><span class="v">~$0.04</span></div>
+            </div>
+            <button class="swap-btn">Swap EURS for EUA</button>
+            <span class="src">✓ CarbonDEX.sol verified</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ab">
+      <div class="ab-lbl"><span class="n">03-B</span><span>Bloomberg slab</span></div>
+      <div class="ab-body dark tight">
+        <div class="t2">
+          <div class="hd"><span class="ttl">SWAP</span><span class="id">CDEX-EU-001 · 14:32:07Z</span></div>
+          <div class="body">
+            <div class="row"><span class="l">PAIR</span><span class="v">EURS / EUA</span></div>
+            <div class="row"><span class="l">SPOT</span><span class="v big amber">2.50</span></div>
+            <div class="row"><span class="l">RESERVES</span><span class="v">125,000 / 50,000</span></div>
+            <div class="input"><span class="l">SELL</span><div class="field">2,500.00 EURS</div></div>
+            <div class="input"><span class="l">BUY</span><div class="field">~1,000.0000 EUA</div></div>
+            <div class="quote">
+              <div class="quote-row"><span>SLIPPAGE TOL</span><span>1.000%</span></div>
+              <div class="quote-row"><span>PRICE IMPACT</span><span>0.120%</span></div>
+              <div class="quote-row"><span>MIN OUT</span><span>990.000000 EUA</span></div>
+              <div class="quote-row"><span>VENUE</span><span>0x8e21…f00c</span></div>
+            </div>
+            <button class="submit">▶ EXECUTE SWAP</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ab">
+      <div class="ab-lbl"><span class="n">03-C</span><span>Enterprise form</span></div>
+      <div class="ab-body tight">
+        <div class="t3">
+          <div class="hd"><h3>New Trade Order</h3><span class="id">ORD-CDX-2604</span></div>
+          <div class="body">
+            <div class="grp">
+              <div class="lab">Sell</div>
+              <div class="field">
+                <div class="sel"><span class="dot"></span> EURS ▾</div>
+                <div class="num">2,500.00</div>
+              </div>
+            </div>
+            <div class="grp">
+              <div class="lab">Buy (estimated)</div>
+              <div class="field">
+                <div class="sel"><span class="dot" style="background:#1a4a35;"></span> EUA ▾</div>
+                <div class="num">~1,000</div>
+              </div>
+            </div>
+            <div class="grp">
+              <div class="lab">Slippage tolerance</div>
+              <div style="display:flex;gap:6px;">
+                <button style="padding:5px 10px;font-size:11px;border:1px solid #d5dce2;background:white;border-radius:2px;">0.5%</button>
+                <button style="padding:5px 10px;font-size:11px;border:1px solid #0a6ed1;background:#ddedfd;color:#0a6ed1;border-radius:2px;">1.0%</button>
+                <button style="padding:5px 10px;font-size:11px;border:1px solid #d5dce2;background:white;border-radius:2px;">2.0%</button>
+              </div>
+            </div>
+            <div class="quote-tbl">
+              <div class="row"><span>Spot price</span><span class="v">2.50 EURS / EUA</span></div>
+              <div class="row"><span>Min EUA received</span><span class="v">990</span></div>
+              <div class="row"><span>Price impact</span><span class="v">0.12%</span></div>
+              <div class="row"><span>Network fee</span><span class="v">~$0.04</span></div>
+            </div>
+          </div>
+          <div class="actions"><button class="s">Cancel</button><button class="p">Submit order →</button></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ab">
+      <div class="ab-lbl"><span class="n">03-D</span><span>Pool + form</span></div>
+      <div class="ab-body tight">
+        <div class="t4">
+          <div class="pane">
+            <div class="ttl">Pool depth</div>
+            <div class="ob">
+              <div class="ob-row" style="color:#6b6860;font-size:9px;letter-spacing:0.04em;text-transform:uppercase;"><span>Price</span><span style="text-align:right;">EUA</span><span style="text-align:right;">EURS</span></div>
+              <div class="ob-row ask"><span>2.55</span><span style="text-align:right;">820</span><span style="text-align:right;">2,091</span></div>
+              <div class="ob-row ask"><span>2.53</span><span style="text-align:right;">1,150</span><span style="text-align:right;">2,910</span></div>
+              <div class="ob-row ask"><span>2.51</span><span style="text-align:right;">1,400</span><span style="text-align:right;">3,514</span></div>
+              <div class="ob-spread">spread · 0.40 · 2.50 mid</div>
+              <div class="ob-row bid"><span>2.49</span><span style="text-align:right;">1,300</span><span style="text-align:right;">3,237</span></div>
+              <div class="ob-row bid"><span>2.47</span><span style="text-align:right;">980</span><span style="text-align:right;">2,421</span></div>
+              <div class="ob-row bid"><span>2.45</span><span style="text-align:right;">1,500</span><span style="text-align:right;">3,675</span></div>
+              <div class="ob-row bid"><span>2.42</span><span style="text-align:right;">700</span><span style="text-align:right;">1,694</span></div>
+            </div>
+          </div>
+          <div class="pane">
+            <div class="form">
+              <div class="seg"><button class="on buy">Buy EUA</button><button>Sell EUA</button></div>
+              <div>
+                <div class="l">Amount EUA</div>
+                <input value="1,000">
+              </div>
+              <div>
+                <div class="l">Limit · EURS / EUA</div>
+                <input value="2.50">
+              </div>
+              <div class="total">
+                <div class="row"><span>Total</span><span class="v">2,500.00 EURS</span></div>
+                <div class="row"><span>Min received</span><span class="v">990 EUA</span></div>
+                <div class="row"><span>Impact</span><span class="v">0.12%</span></div>
+              </div>
+              <button class="submit">Buy 1,000 EUA</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ab">
+      <div class="ab-lbl"><span class="n">03-E</span><span>Confirm dialog</span></div>
+      <div class="ab-body tight">
+        <div class="t5">
+          <div class="hd">
+            <span class="pill">● Awaiting wallet signature</span>
+            <h3>Confirm trade</h3>
+            <p>Review and sign in your wallet to execute this swap. The price quoted assumes 1% maximum slippage.</p>
+          </div>
+          <div class="visual">
+            <div class="swap-vis">
+              <div class="side"><div class="l">Sell</div><div class="v">2,500.00<small>EURS</small></div></div>
+              <div class="arr">→</div>
+              <div class="side"><div class="l">Buy</div><div class="v" style="color:#1a4a35;">1,000<small>EUA</small></div></div>
+            </div>
+            <div class="details">
+              <div class="row"><span class="l">Rate</span><span class="v">2.50 EURS / EUA</span></div>
+              <div class="row"><span class="l">Min received</span><span class="v">990 EUA</span></div>
+              <div class="row"><span class="l">Price impact</span><span class="v">0.12%</span></div>
+              <div class="row"><span class="l">Slippage tolerance</span><span class="v">1.00%</span></div>
+              <div class="row"><span class="l">Counterparty</span><span class="v">CarbonDEX pool</span></div>
+              <div class="row"><span class="l">Venue</span><span class="v">0x8e21…f00c</span></div>
+            </div>
+          </div>
+          <div class="actions"><button class="s">Cancel</button><button class="p">Sign in wallet →</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ RECEIPT ============ -->
+<section class="sec">
+  <header class="sec-head"><span class="num">04</span><h2>Trade — Receipt</h2><p>3 variants — confirmation moment</p></header>
+  <div class="row3">
+    <div class="ab">
+      <div class="ab-lbl"><span class="n">04-A</span><span>Standard confirmation</span></div>
+      <div class="ab-body">
+        <div class="r1">
+          <div class="hd">
+            <div class="check">✓</div>
+            <h3>Swap confirmed</h3>
+            <p>Block 18,294,441 · 14:32 UTC</p>
+          </div>
+          <div class="body">
+            <div class="desc"><span class="ens">company-b.eth</span> swapped <span class="num">2,500 EURS</span> for <span class="num">1,000 EUA</span> (Energy 2024) at <span class="num">2.50 EURS/EUA</span>.</div>
+            <div class="row"><span class="l">Tx</span><span class="v">0x3f7a…b291 ↗</span></div>
+            <div class="row"><span class="l">Block</span><span class="v">18,294,441</span></div>
+            <div class="row"><span class="l">Network fee</span><span class="v">$0.038</span></div>
+            <div class="row"><span class="l">Contract</span><span class="v">CarbonDEX.sol ✓</span></div>
+          </div>
+          <div class="actions"><button class="s">Trade again</button><button class="p">Retire these →</button></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ab">
+      <div class="ab-lbl"><span class="n">04-B</span><span>Tape print</span></div>
+      <div class="ab-body cream">
+        <div class="r2">
+          <div class="ttl">Carbon DEX · Trade Receipt</div>
+          <div class="ttl-big">SWAP CONFIRMED</div>
+          <div class="row"><span class="l">Date</span><span>14 May 2026</span></div>
+          <div class="row"><span class="l">Time UTC</span><span>14:32:07</span></div>
+          <div class="row"><span class="l">Block</span><span>18,294,441</span></div>
+          <div class="row"><span class="l">Wallet</span><span>company-b.eth</span></div>
+          <div class="div"></div>
+          <div class="row"><span class="l">Sell</span><span>2,500.00 EURS</span></div>
+          <div class="row"><span class="l">Buy</span><span>1,000.0000 EUA</span></div>
+          <div class="row"><span class="l">Rate</span><span>2.5000</span></div>
+          <div class="row"><span class="l">Slippage</span><span>0.000%</span></div>
+          <div class="div"></div>
+          <div class="row total"><span>NET EUA</span><span>+1,000.00</span></div>
+          <div class="row"><span class="l">Network fee</span><span>$0.038</span></div>
+          <div class="ft">
+            Tx 0x3f7a…b291<br>
+            CarbonDEX.sol<br>
+            <span class="src">✓ Verified on Sourcify</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ab">
+      <div class="ab-lbl"><span class="n">04-C</span><span>Hero panel</span></div>
+      <div class="ab-body">
+        <div class="r3">
+          <div class="hero">
+            <span class="stamp">● Confirmed</span>
+            <h3>1,000 EUA now in your portfolio.</h3>
+            <p class="meta">Block 18,294,441 · 14:32 UTC · gas $0.038</p>
+          </div>
+          <div class="body">
+            <div class="row"><span class="l">From</span><span class="v ens">company-b.eth</span></div>
+            <div class="row"><span class="l">Pool</span><span class="v">CarbonDEX 0x8e21…f00c</span></div>
+            <div class="row"><span class="l">Sell</span><span class="v">2,500.00 EURS</span></div>
+            <div class="row"><span class="l">Buy</span><span class="v">1,000 EUA</span></div>
+            <div class="row"><span class="l">Rate</span><span class="v">2.50</span></div>
+            <div class="row"><span class="l">Tx</span><span class="v">0x3f7a…b291 ↗</span></div>
+            <div class="actions"><button class="s">Done</button><button class="p">Retire these →</button></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PORTFOLIO ============ -->
+<section class="sec">
+  <header class="sec-head"><span class="num">05</span><h2>Portfolio</h2><p>3 variants — holdings overview</p></header>
+  <div class="row3">
+    <div class="ab">
+      <div class="ab-lbl"><span class="n">05-A</span><span>Classic table</span></div>
+      <div class="ab-body">
+        <div class="p1">
+          <h3>Holdings <span class="meta">3 batches · 1,500 EUA total</span></h3>
+          <table>
+            <thead><tr><th>Batch</th><th>Vintage</th><th>Sector</th><th>Origin</th><th style="text-align:right;">Balance</th><th></th></tr></thead>
+            <tbody>
+              <tr><td class="mono">#001</td><td>2024</td><td>Energy</td><td>DE</td><td class="amt">700</td><td><button>Retire</button></td></tr>
+              <tr><td class="mono">#002</td><td>2023</td><td>Industry</td><td>FR</td><td class="amt">300</td><td><button>Retire</button></td></tr>
+              <tr><td class="mono">#003</td><td>2024</td><td>Aviation</td><td>NL</td><td class="amt">500</td><td><button>Retire</button></td></tr>
+              <tr><td class="mono">#004</td><td>2022</td><td>Energy</td><td>PL</td><td class="amt" style="opacity:0.5;">— retired</td><td></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="ab">
+      <div class="ab-lbl"><span class="n">05-B</span><span>Card grid</span></div>
+      <div class="ab-body dark">
+        <div class="p2">
+          <h3>Credit batches</h3>
+          <div class="grid">
+            <div class="crd">
+              <div class="hd"><span class="id">BATCH #001</span><span class="pill energy">Energy 2024</span></div>
+              <div class="qty">700 <small>EUA</small></div>
+              <div class="meta">Origin: Germany (DE)<br>Issuer: Vattenfall · 2024 vintage</div>
+              <div class="actions"><button class="p">Retire</button><button class="s">Trade</button></div>
+            </div>
+            <div class="crd">
+              <div class="hd"><span class="id">BATCH #002</span><span class="pill industry">Industry 2023</span></div>
+              <div class="qty">300 <small>EUA</small></div>
+              <div class="meta">Origin: France (FR)<br>Issuer: ArcelorMittal · 2023 vintage</div>
+              <div class="actions"><button class="p">Retire</button><button class="s">Trade</button></div>
+            </div>
+            <div class="crd">
+              <div class="hd"><span class="id">BATCH #003</span><span class="pill" style="background:#fef2f2;color:#b91c1c;">Aviation 2024</span></div>
+              <div class="qty">500 <small>EUA</small></div>
+              <div class="meta">Origin: Netherlands (NL)<br>Issuer: KLM · 2024 vintage</div>
+              <div class="actions"><button class="p">Retire</button><button class="s">Trade</button></div>
+            </div>
+            <div class="crd" style="opacity:0.5;">
+              <div class="hd"><span class="id">BATCH #004</span><span class="pill" style="background:#ededee;color:#6b6860;">Retired</span></div>
+              <div class="qty">0 <small>/ 1,200</small></div>
+              <div class="meta">Energy 2022 · Poland (PL)<br>Retired 28 Apr · cert #2026-117</div>
+              <div class="actions"><button class="s" style="flex:1;">View certificate</button></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ab">
+      <div class="ab-lbl"><span class="n">05-C</span><span>By vintage</span></div>
+      <div class="ab-body">
+        <div class="p3">
+          <div class="col">
+            <h4>2024 <span class="c">2 batches</span></h4>
+            <div class="card"><div class="id">#001 · Energy · DE</div><div class="qty">700 <small>EUA</small></div><div class="meta">Vattenfall</div></div>
+            <div class="card"><div class="id">#003 · Aviation · NL</div><div class="qty">500 <small>EUA</small></div><div class="meta">KLM</div></div>
+          </div>
+          <div class="col">
+            <h4>2023 <span class="c">1 batch</span></h4>
+            <div class="card"><div class="id">#002 · Industry · FR</div><div class="qty">300 <small>EUA</small></div><div class="meta">ArcelorMittal</div></div>
+          </div>
+          <div class="col">
+            <h4>Retired <span class="c">1 batch</span></h4>
+            <div class="card" style="opacity:0.65;border-style:dashed;"><div class="id">#004 · Energy · PL</div><div class="qty">1,200 <small>EUA</small></div><div class="meta">Cert #2026-117</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ RETIRE FORM ============ -->
+<section class="sec">
+  <header class="sec-head"><span class="num">06</span><h2>Retire credits — form</h2><p>3 variants — irreversible action</p></header>
+  <div class="row3">
+    <div class="ab">
+      <div class="ab-lbl"><span class="n">06-A</span><span>Standard form</span></div>
+      <div class="ab-body">
+        <div class="rf1">
+          <h3>Retire carbon credits</h3>
+          <p class="sub">Permanent. The credits are burned and cannot be recovered.</p>
+          <div class="grp">
+            <div class="l">Select batch</div>
+            <div class="field sel"><span>#001 · Energy 2024 · 1,000 available</span><span style="color:#6b6860;">▾</span></div>
+          </div>
+          <div class="grp">
+            <div class="l">Amount <span class="help">Available 1,000 EUA · <a style="color:#1b4f8a;">Max</a></span></div>
+            <div class="field amt">500</div>
+          </div>
+          <div class="grp">
+            <div class="l">Beneficiary <span class="help">optional</span></div>
+            <div class="field" style="font-size:12px;">company-b.eth</div>
+          </div>
+          <div class="grp">
+            <div class="l">Reason · evidence URI <span class="help">optional</span></div>
+            <div class="field" style="font-size:12px;">ipfs://Qm…2024-q2-report</div>
+          </div>
+          <div class="warn">⚠ Retiring 500 EUA permanently removes them from circulation. This cannot be reversed.</div>
+          <div class="actions"><button class="s">Cancel</button><button class="p">Retire 500 EUA →</button></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ab">
+      <div class="ab-lbl"><span class="n">06-B</span><span>Ledger / official form</span></div>
+      <div class="ab-body cream">
+        <div class="rf2">
+          <div class="ttl">Retirement filing — Form R-27</div>
+          <div class="row"><span class="l">Filing date</span><span class="v">14 May 2026</span></div>
+          <div class="row"><span class="l">Filed by</span><span class="v">company-b.eth</span></div>
+          <div class="row"><span class="l">Batch</span><span class="v input">#001 Energy 2024</span></div>
+          <div class="row"><span class="l">Quantity</span><span class="v big">500.00</span></div>
+          <div class="row"><span class="l">Beneficiary</span><span class="v input">company-b.eth</span></div>
+          <div class="row"><span class="l">Evidence URI</span><span class="v input" style="font-size:11px;">ipfs://Qm…</span></div>
+          <div class="row"><span class="l">Methodology</span><span class="v">EU-ETS-P4-001</span></div>
+          <div class="stamp">
+            <b>Notice — irrevocable action</b>
+            Submitting this form burns 500 EUA. The on-chain event is permanent and will appear in the public retirement log.
+          </div>
+          <button class="submit">Sign and file →</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="ab">
+      <div class="ab-lbl"><span class="n">06-C</span><span>Confirmation modal</span></div>
+      <div class="ab-body">
+        <div class="rf3">
+          <div class="hd">
+            <div class="ic">▲</div>
+            <h3>Confirm retirement</h3>
+            <p>You're about to permanently retire credits. This emits an irrevocable on-chain event.</p>
+          </div>
+          <div class="body">
+            <div class="qty"><div class="v">500<small>EUA</small></div><div class="l">to be retired</div></div>
+            <div class="row"><span class="l">Batch</span><span class="v">#001 · Energy 2024</span></div>
+            <div class="row"><span class="l">Origin</span><span class="v">DE · Vattenfall</span></div>
+            <div class="row"><span class="l">Beneficiary</span><span class="v ens">company-b.eth</span></div>
+            <div class="row"><span class="l">Evidence</span><span class="v">ipfs://Qm…</span></div>
+          </div>
+          <div class="actions"><button class="s">Back</button><button class="p">Sign & retire →</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CERTIFICATE — 5 variants ============ -->
+<section class="sec">
+  <header class="sec-head"><span class="num">07</span><h2>Retirement Certificate</h2><p>5 variants — peak-end emotional moment</p></header>
+  <div class="row5">
+    <div class="ab">
+      <div class="ab-lbl"><span class="n">07-A</span><span>Government document</span></div>
+      <div class="ab-body cream tight">
+        <div class="cc1">
+          <div class="ttl-row">
+            <div class="pre">European Union · Emissions Trading System · Phase IV</div>
+            <div class="ttl">Certificate of Retirement</div>
+            <div class="seal">Nº 2026-117</div>
+          </div>
+          <div class="body">
+            <div class="qty-row">
+              <div class="col"><div class="l">Quantity</div><div class="v">500.0000 EUA</div></div>
+              <div class="col"><div class="l">Beneficiary</div><div class="v">company-b.eth</div></div>
+            </div>
+            <div class="row"><span class="l">Sector</span><span class="v">Energy</span></div>
+            <div class="row"><span class="l">Vintage</span><span class="v">2024</span></div>
+            <div class="row"><span class="l">Origin</span><span class="v">Germany (DE)</span></div>
+            <div class="row"><span class="l">Methodology</span><span class="v">EU-ETS-P4-001</span></div>
+            <div class="row"><span class="l">Tx hash</span><span class="v">0x3f7a…b291</span></div>
+            <div class="row"><span class="l">Block</span><span class="v">18,294,441</span></div>
+          </div>
+          <div class="ft"><span>Issued 14.05.2026 · 14:32 UTC</span><span>✓ Sourcify</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ab">
+      <div class="ab-lbl"><span class="n">07-B</span><span>Editorial broadsheet</span></div>
+      <div class="ab-body cream tight">
+        <div class="cc2">
+          <div class="head"><span class="l">No. 2026-117</span><span class="r">14.V.2026 · 14:32 UTC</span></div>
+          <div class="ttl">500 EUA retired against 2024 compliance.</div>
+          <div class="ded">In the matter of company-b.eth · Energy sector · vintage 2024 · DE</div>
+          <div class="grid">
+            <div class="col"><span class="l">Beneficiary</span><span class="v">company-b.eth</span></div>
+            <div class="col"><span class="l">Evidence</span><span class="v">ipfs://Qm…</span></div>
+            <div class="col"><span class="l">Methodology</span><span class="v">EU-ETS-P4-001</span></div>
+            <div class="col"><span class="l">Tx</span><span class="v">0x3f7a…b291</span></div>
+          </div>
+          <div class="footer"><span>Block 18,294,441 · Base Sepolia</span><span class="src">✓ Retirement.sol</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ab">
+      <div class="ab-lbl"><span class="n">07-C</span><span>Top-bar mark</span></div>
+      <div class="ab-body tight">
+        <div class="cc3">
+          <div class="top-bar"><div class="ic">●</div><span class="nm">Certificate · Retired</span><span class="id">No. 2026-117</span></div>
+          <div class="body">
+            <div class="qty">500 <small>EUA</small></div>
+            <p><span class="ens">company-b.eth</span> retired 500 EUA from batch #001 (Energy, vintage 2024, Germany) against 2024 compliance obligation.</p>
+            <div class="meta">
+              <div class="row"><span class="l">Beneficiary</span><span class="v ens">company-b.eth</span></div>
+              <div class="row"><span class="l">Evidence</span><span class="v">ipfs://Qm…</span></div>
+              <div class="row"><span class="l">Tx</span><span class="v">0x3f7a…b291 ↗</span></div>
+              <div class="row"><span class="l">Block</span><span class="v">18,294,441</span></div>
+              <div class="row"><span class="l">Methodology</span><span class="v">EU-ETS-P4-001</span></div>
+              <div class="row"><span class="l">Issued</span><span class="v">14.05.2026 · 14:32 UTC</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ab">
+      <div class="ab-lbl"><span class="n">07-D</span><span>Dark editorial</span></div>
+      <div class="ab-body dark tight">
+        <div class="cc4">
+          <div class="head"><span class="l">European Union · ETS · Phase IV</span><span class="star l">No. 2026-117</span></div>
+          <div class="qty">500<small>EUA</small></div>
+          <div class="lede">Permanently retired by <span class="ens">company-b.eth</span> against 2024 compliance. The credits — Energy sector, vintage 2024, Germany — were burned at block 18,294,441.</div>
+          <div class="meta">
+            <div class="row"><span class="l">Methodology</span><span class="v">EU-ETS-P4-001</span></div>
+            <div class="row"><span class="l">Beneficiary</span><span class="v">company-b.eth</span></div>
+            <div class="row"><span class="l">Evidence</span><span class="v">ipfs://Qm…</span></div>
+            <div class="row"><span class="l">Tx</span><span class="v">0x3f7a…b291</span></div>
+          </div>
+          <div class="ft"><span>14 May 2026 · 14:32 UTC</span><span>✓ Retirement.sol on Sourcify</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ab">
+      <div class="ab-lbl"><span class="n">07-E</span><span>Stamped receipt</span></div>
+      <div class="ab-body cream tight">
+        <div class="cc5">
+          <div class="top"><span class="l">EU ETS · Phase IV</span><span class="l">No. 2026-117</span></div>
+          <div class="ttl">Receipt of permanent retirement.</div>
+          <div class="sub">Issued for 2024 compliance obligation, sector: Energy.</div>
+          <div class="qty-block">
+            <div class="v">500.0000<small>EUA</small></div>
+            <div class="l">Burned · permanently</div>
+          </div>
+          <div class="grid">
+            <div class="row"><span class="l">Beneficiary</span><span class="v">company-b.eth</span></div>
+            <div class="row"><span class="l">Origin</span><span class="v">DE</span></div>
+            <div class="row"><span class="l">Vintage</span><span class="v">2024</span></div>
+            <div class="row"><span class="l">Block</span><span class="v">18,294,441</span></div>
+            <div class="row"><span class="l">Tx</span><span class="v">0x3f7a…b291</span></div>
+            <div class="row"><span class="l">Methodology</span><span class="v">EU-ETS-P4-001</span></div>
+          </div>
+          <div class="ft">Issued 14.05.2026 · 14:32 UTC · Retirement.sol ✓ Sourcify</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</body>
+</html>

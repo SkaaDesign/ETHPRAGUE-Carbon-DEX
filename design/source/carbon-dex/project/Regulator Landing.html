@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Regulator — 5 landing variants</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Source+Serif+4:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #1a1a1a; padding: 60px 40px; font-family: Inter, system-ui, sans-serif; color: #1a1a1a; }
+  .page-head { max-width: 1280px; margin: 0 auto 40px; color: #e8e8e8; }
+  .page-head h1 { font-size: 32px; font-weight: 400; letter-spacing: -0.01em; margin-bottom: 8px; }
+  .page-head p { color: #999; font-size: 14px; }
+  .variants { max-width: 1280px; margin: 0 auto; display: flex; flex-direction: column; gap: 80px; }
+  .variant { background: white; border-radius: 4px; overflow: hidden; box-shadow: 0 30px 60px rgba(0,0,0,0.4); }
+  .variant-label {
+    background: #0e0e0e; color: #f4f4f4; padding: 14px 24px; display: flex; align-items: baseline; gap: 14px;
+    font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+  }
+  .variant-label .num { color: #6b6b6b; }
+  .variant-label .desc { color: #888; text-transform: none; letter-spacing: 0.04em; margin-left: auto; font-family: Inter, sans-serif; font-size: 12px; }
+  .frame { width: 100%; height: 1100px; overflow: hidden; position: relative; }
+
+  /* ====================== V1: BUREAUCRATIC CASE FILE ====================== */
+  .v1 { font-family: 'IBM Plex Sans', sans-serif; background: #f5f4ef; }
+  .v1 .gov-strip { background: #1a4a35; color: white; padding: 6px 32px; font-size: 11px; display: flex; gap: 14px; align-items: center; letter-spacing: 0.04em; }
+  .v1 .gov-strip .tag { background: rgba(255,255,255,0.12); padding: 2px 8px; border-radius: 2px; font-size: 10px; font-weight: 600; letter-spacing: 0.1em; }
+  .v1 .gov-strip .right { margin-left: auto; display: flex; gap: 18px; align-items: center; }
+  .v1 .gov-strip .pulse { display: inline-block; width: 7px; height: 7px; background: #6dd388; border-radius: 50%; box-shadow: 0 0 0 3px rgba(109,211,136,0.25); }
+
+  .v1 .head {
+    background: white; border-bottom: 1px solid #d8d4c8; padding: 18px 32px;
+    display: flex; align-items: flex-end; justify-content: space-between;
+  }
+  .v1 .head-left .seal-row { display: flex; align-items: center; gap: 14px; margin-bottom: 8px; }
+  .v1 .head-left .seal {
+    width: 38px; height: 38px; border: 1.5px solid #1a4a35; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; color: #1a4a35; font-family: 'Source Serif 4', serif; font-size: 17px; font-weight: 600;
+  }
+  .v1 .head-left .titles small { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: #6b6b6b; display: block; }
+  .v1 .head-left h1 { font-family: 'Source Serif 4', serif; font-size: 22px; font-weight: 600; color: #1a2419; }
+  .v1 .head-meta { font-size: 11px; color: #6b6b6b; font-family: 'IBM Plex Mono', monospace; text-align: right; line-height: 1.7; }
+  .v1 .head-meta strong { color: #1a2419; }
+
+  .v1 .tabs {
+    display: flex; padding: 0 32px; background: white; border-bottom: 1px solid #d8d4c8;
+  }
+  .v1 .tabs a { padding: 12px 20px; font-size: 13px; color: #4a4a4a; text-decoration: none; border-bottom: 2px solid transparent; font-weight: 500; }
+  .v1 .tabs a.active { color: #1a4a35; border-bottom-color: #1a4a35; font-weight: 600; }
+  .v1 .tabs .right { margin-left: auto; display: flex; gap: 8px; align-items: center; padding: 8px 0; }
+  .v1 .tabs .right input { padding: 6px 10px; font-size: 12px; border: 1px solid #d8d4c8; background: #fbfaf6; width: 200px; font-family: 'IBM Plex Mono', monospace; }
+  .v1 .tabs .right button { padding: 6px 14px; font-size: 12px; background: #1a4a35; color: white; border: 0; cursor: pointer; font-weight: 600; }
+
+  .v1 .case-body { display: grid; grid-template-columns: 280px 1fr; gap: 0; }
+  .v1 .case-side { background: #fbfaf6; border-right: 1px solid #d8d4c8; padding: 22px 20px; }
+  .v1 .case-side .case-no { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #6b6b6b; margin-bottom: 4px; }
+  .v1 .case-side h3 { font-family: 'Source Serif 4', serif; font-size: 17px; font-weight: 600; color: #1a2419; margin-bottom: 14px; line-height: 1.3; }
+  .v1 .case-side dl { display: grid; grid-template-columns: 1fr; gap: 10px 0; padding-top: 12px; border-top: 1px solid #d8d4c8; }
+  .v1 .case-side .dl-row { display: grid; grid-template-columns: 110px 1fr; gap: 8px; font-size: 12px; }
+  .v1 .case-side dt { color: #6b6b6b; }
+  .v1 .case-side dd { color: #1a2419; font-family: 'IBM Plex Mono', monospace; font-size: 11px; }
+  .v1 .case-side .status-block { margin-top: 16px; padding: 12px; background: #ecf3ed; border-left: 3px solid #1a4a35; }
+  .v1 .case-side .status-block strong { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: #1a4a35; }
+  .v1 .case-side .status-block p { font-size: 12px; color: #4a4a4a; margin-top: 4px; line-height: 1.5; }
+
+  .v1 .case-main { padding: 24px 32px; }
+  .v1 .stamp-row { display: flex; gap: 16px; margin-bottom: 22px; align-items: stretch; }
+  .v1 .stamp {
+    flex: 1; background: white; border: 1px solid #d8d4c8; padding: 16px;
+    display: grid; grid-template-rows: auto 1fr auto;
+  }
+  .v1 .stamp .lbl { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: #6b6b6b; font-weight: 600; margin-bottom: 4px; }
+  .v1 .stamp .val { font-family: 'Source Serif 4', serif; font-size: 30px; font-weight: 600; color: #1a2419; line-height: 1; }
+  .v1 .stamp .sub { font-size: 11px; color: #6b6b6b; margin-top: 8px; font-family: 'IBM Plex Mono', monospace; }
+
+  .v1 .docket { background: white; border: 1px solid #d8d4c8; }
+  .v1 .docket-head { padding: 14px 18px; border-bottom: 1px solid #d8d4c8; display: flex; justify-content: space-between; align-items: center; background: #fbfaf6; }
+  .v1 .docket-head h4 { font-family: 'Source Serif 4', serif; font-size: 15px; font-weight: 600; }
+  .v1 .docket-head .filt { display: flex; gap: 8px; font-size: 11px; }
+  .v1 .docket-head .filt button { background: white; border: 1px solid #d8d4c8; padding: 4px 10px; cursor: pointer; font-size: 11px; }
+  .v1 .docket-head .filt button.active { background: #1a4a35; color: white; border-color: #1a4a35; }
+  .v1 .docket table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .v1 .docket th { text-align: left; padding: 10px 14px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: #6b6b6b; background: #fbfaf6; border-bottom: 1px solid #d8d4c8; font-weight: 600; }
+  .v1 .docket td { padding: 11px 14px; border-bottom: 1px solid #ecead8; font-family: 'IBM Plex Mono', monospace; color: #1a2419; }
+  .v1 .docket td.action { font-family: 'IBM Plex Sans', sans-serif; }
+  .v1 .docket .pill { display: inline-block; padding: 2px 8px; border-radius: 2px; font-size: 10px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; font-family: 'IBM Plex Sans', sans-serif; }
+  .v1 .pill-mint { background: #ecf3ed; color: #1a4a35; }
+  .v1 .pill-freeze { background: #fdecec; color: #b91c1c; }
+  .v1 .pill-pause { background: #fdecec; color: #b91c1c; }
+  .v1 .pill-reg { background: #eaf0f7; color: #1b4f8a; }
+  .v1 .pill-swap { background: #f3efe5; color: #6b5a2a; }
+
+  .v1 .quick-actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 20px; }
+  .v1 .quick-actions a { background: white; border: 1px solid #d8d4c8; padding: 14px 16px; text-decoration: none; color: #1a2419; font-size: 13px; font-weight: 500; display: flex; align-items: center; justify-content: space-between; }
+  .v1 .quick-actions a:hover { border-color: #1a4a35; }
+  .v1 .quick-actions a.danger { border-color: #b91c1c; color: #b91c1c; background: #fdecec; }
+
+  /* ====================== V2: TRADING DESK ====================== */
+  .v2 { background: #0a0a0a; color: #e0e0e0; font-family: 'IBM Plex Mono', monospace; font-size: 12px; }
+  .v2 .strip { background: #131313; padding: 6px 18px; display: flex; gap: 18px; align-items: center; border-bottom: 1px solid #2a2a2a; font-size: 11px; }
+  .v2 .strip .pill { background: #1a4a35; color: #6dd388; padding: 2px 6px; letter-spacing: 0.08em; font-size: 10px; }
+  .v2 .strip .grey { color: #888; }
+  .v2 .strip .green { color: #6dd388; }
+  .v2 .strip .red { color: #f06060; }
+  .v2 .strip .ml { margin-left: auto; }
+  .v2 .strip .blink { display: inline-block; width: 6px; height: 6px; background: #6dd388; border-radius: 50%; box-shadow: 0 0 8px #6dd388; }
+
+  .v2 .top-grid { display: grid; grid-template-columns: 1fr 320px 240px; height: 80px; border-bottom: 1px solid #2a2a2a; }
+  .v2 .top-grid > div { padding: 14px 18px; border-right: 1px solid #2a2a2a; display: flex; flex-direction: column; justify-content: center; }
+  .v2 .top-grid > div:last-child { border-right: 0; }
+  .v2 .top-grid .lbl { font-size: 10px; color: #888; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 4px; }
+  .v2 .top-grid .val { font-size: 22px; font-family: 'JetBrains Mono', monospace; font-weight: 700; }
+  .v2 .top-grid .val.green { color: #6dd388; }
+  .v2 .top-grid .val .small { font-size: 11px; color: #888; margin-left: 6px; font-weight: 400; }
+
+  .v2 .body { display: grid; grid-template-columns: 1fr 1fr 320px; height: 600px; border-bottom: 1px solid #2a2a2a; }
+  .v2 .panel { border-right: 1px solid #2a2a2a; display: flex; flex-direction: column; }
+  .v2 .panel:last-child { border-right: 0; }
+  .v2 .ph { padding: 8px 14px; border-bottom: 1px solid #2a2a2a; display: flex; justify-content: space-between; align-items: center; background: #131313; font-size: 11px; }
+  .v2 .ph .name { color: #e0e0e0; letter-spacing: 0.06em; font-weight: 600; }
+  .v2 .ph .meta { color: #6b6b6b; font-size: 10px; }
+
+  .v2 .tape { flex: 1; overflow: hidden; }
+  .v2 .tape-row { display: grid; grid-template-columns: 60px 70px 1fr 1fr 70px 50px; padding: 6px 14px; gap: 8px; font-size: 11px; border-bottom: 1px solid #1a1a1a; }
+  .v2 .tape-row.h { color: #6b6b6b; font-size: 10px; letter-spacing: 0.06em; padding-top: 8px; padding-bottom: 8px; background: #0f0f0f; }
+  .v2 .tape-row .t { color: #888; }
+  .v2 .tape-row .from { color: #d4a035; }
+  .v2 .tape-row .to { color: #d4a035; }
+  .v2 .tape-row .amt { color: #6dd388; text-align: right; }
+  .v2 .tape-row .px { color: #e0e0e0; text-align: right; }
+
+  .v2 .order-book { padding: 12px 14px; }
+  .v2 .order-book .row { display: grid; grid-template-columns: 50% 50%; gap: 6px; padding: 3px 0; font-size: 11px; }
+  .v2 .order-book .ask { color: #f06060; text-align: right; position: relative; }
+  .v2 .order-book .bid { color: #6dd388; text-align: right; position: relative; }
+  .v2 .order-book .bar { position: absolute; right: 0; top: 0; bottom: 0; opacity: 0.18; }
+  .v2 .order-book .ask .bar { background: #f06060; }
+  .v2 .order-book .bid .bar { background: #6dd388; }
+  .v2 .order-book .row .num { position: relative; padding-right: 4px; z-index: 1; }
+  .v2 .order-book .mid { padding: 8px 0; border-top: 1px solid #2a2a2a; border-bottom: 1px solid #2a2a2a; text-align: center; color: #6dd388; font-weight: 700; font-size: 14px; margin: 4px 0; }
+
+  .v2 .controls { padding: 18px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+  .v2 .controls .grp { display: grid; gap: 4px; }
+  .v2 .controls .grp .lbl { font-size: 10px; color: #888; letter-spacing: 0.06em; text-transform: uppercase; }
+  .v2 .controls .grp input { background: #131313; border: 1px solid #2a2a2a; color: #e0e0e0; padding: 8px 10px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; }
+  .v2 .controls .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .v2 .controls .btn-mint { background: #1a4a35; color: white; padding: 14px; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; border: 0; cursor: pointer; }
+  .v2 .controls .btn-freeze { background: #131313; color: #f06060; border: 1px solid #f06060; padding: 14px; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; cursor: pointer; }
+  .v2 .controls .pause-btn {
+    margin-top: auto;
+    background: #b91c1c; color: white; padding: 18px; font-weight: 700; letter-spacing: 0.12em; font-size: 13px; border: 0; cursor: pointer;
+    text-align: center;
+  }
+  .v2 .controls .pause-btn:hover { background: #d12626; }
+  .v2 .controls .pause-note { font-size: 10px; color: #888; text-align: center; }
+
+  .v2 .footer { padding: 6px 18px; display: flex; gap: 18px; font-size: 10px; color: #6b6b6b; background: #131313; }
+  .v2 .footer .ml { margin-left: auto; }
+
+  /* ====================== V3: MISSION CONTROL ====================== */
+  .v3 { background: #f0eee5; padding: 24px; height: 100%; }
+  .v3 .control { background: white; border: 1px solid #1a4a35; height: 100%; display: grid; grid-template-rows: 64px 1fr 56px; }
+  .v3 .top {
+    background: #1a4a35; color: white; padding: 0 24px;
+    display: flex; align-items: center; gap: 24px;
+    border-bottom: 4px solid #ffd23e;
+  }
+  .v3 .top .seal {
+    width: 36px; height: 36px; border: 2px solid #ffd23e; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; font-family: 'Source Serif 4', serif; font-weight: 700; color: #ffd23e;
+  }
+  .v3 .top h1 { font-size: 14px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+  .v3 .top .sub { font-size: 11px; opacity: 0.75; letter-spacing: 0.04em; }
+  .v3 .top .ml { margin-left: auto; display: flex; gap: 22px; align-items: center; font-size: 12px; }
+  .v3 .top .ml .item { display: flex; flex-direction: column; align-items: flex-end; }
+  .v3 .top .ml .item .l { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.6; }
+  .v3 .top .ml .item .v { font-family: 'IBM Plex Mono', monospace; font-weight: 700; }
+  .v3 .top .ml .green { color: #6dd388; }
+
+  .v3 .grid {
+    display: grid;
+    grid-template-columns: 280px 1fr 320px;
+    grid-template-rows: 1fr 240px;
+    gap: 1px;
+    background: #d8d4c8;
+  }
+  .v3 .pane { background: white; padding: 18px 20px; }
+  .v3 .pane h2 {
+    font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: #6b6b6b; font-weight: 700;
+    margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid #d8d4c8;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .v3 .pane h2 .live { display: inline-flex; align-items: center; gap: 6px; color: #1a4a35; font-size: 10px; }
+  .v3 .pane h2 .live .dot { width: 6px; height: 6px; background: #1a4a35; border-radius: 50%; box-shadow: 0 0 0 3px rgba(26,74,53,0.18); }
+
+  .v3 .roster { display: flex; flex-direction: column; gap: 10px; }
+  .v3 .ros-item { display: grid; grid-template-columns: 22px 1fr auto; align-items: center; gap: 10px; padding: 8px 10px; border: 1px solid #ecead8; border-radius: 2px; font-size: 12px; }
+  .v3 .ros-item .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .v3 .ros-item .dot.ok { background: #1a4a35; }
+  .v3 .ros-item .dot.frozen { background: #b91c1c; }
+  .v3 .ros-item .dot.pending { background: #d4a035; }
+  .v3 .ros-item .ens { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #1a2419; }
+  .v3 .ros-item .country { font-size: 10px; color: #6b6b6b; }
+  .v3 .ros-item .stat { font-size: 10px; padding: 2px 6px; }
+  .v3 .ros-item .stat.ok { color: #1a4a35; background: #ecf3ed; }
+  .v3 .ros-item .stat.frozen { color: #b91c1c; background: #fdecec; }
+  .v3 .ros-item .stat.pending { color: #b8782a; background: #f9efd9; }
+
+  .v3 .map-pane { padding: 0; display: grid; grid-template-rows: auto 1fr auto; }
+  .v3 .map-pane h2 { padding: 18px 24px 14px; margin-bottom: 0; }
+  .v3 .map-vis { padding: 14px 24px; position: relative; background: #f7f6ee; border-top: 1px solid #ecead8; border-bottom: 1px solid #ecead8; }
+  .v3 .map-vis svg { width: 100%; height: 320px; display: block; }
+  .v3 .map-pane .ticker { display: flex; gap: 32px; padding: 18px 24px; font-size: 11px; }
+  .v3 .map-pane .ticker .col { display: flex; flex-direction: column; }
+  .v3 .map-pane .ticker .col .l { font-size: 10px; color: #6b6b6b; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px; }
+  .v3 .map-pane .ticker .col .v { font-family: 'JetBrains Mono', monospace; font-size: 16px; font-weight: 700; color: #1a2419; }
+
+  .v3 .control-pane { display: grid; grid-template-rows: auto 1fr auto auto; }
+  .v3 .control-pane .actions { display: grid; gap: 8px; }
+  .v3 .control-pane .actions button { background: white; border: 1px solid #1a4a35; color: #1a4a35; padding: 10px 14px; font-size: 12px; font-weight: 600; cursor: pointer; text-align: left; display: flex; justify-content: space-between; align-items: center; }
+  .v3 .control-pane .actions button.primary { background: #1a4a35; color: white; }
+  .v3 .control-pane .pause-zone {
+    margin-top: 18px; padding: 18px; border: 2px solid #b91c1c; background: #fdecec;
+    text-align: center; display: grid; gap: 10px;
+  }
+  .v3 .control-pane .pause-zone .l { font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: #b91c1c; font-weight: 700; }
+  .v3 .control-pane .pause-zone button {
+    background: #b91c1c; color: white; padding: 16px; border: 0; font-weight: 700;
+    letter-spacing: 0.16em; font-size: 14px; cursor: pointer;
+  }
+  .v3 .control-pane .pause-zone p { font-size: 11px; color: #6b3030; line-height: 1.5; }
+
+  .v3 .feed { grid-column: 2 / 4; background: white; padding: 14px 24px; max-height: 240px; overflow: hidden; }
+  .v3 .feed table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  .v3 .feed th { text-align: left; padding: 6px 8px 8px; color: #6b6b6b; font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 600; border-bottom: 1px solid #d8d4c8; }
+  .v3 .feed td { padding: 6px 8px; border-bottom: 1px solid #f3f1e8; font-family: 'IBM Plex Mono', monospace; }
+  .v3 .feed td.ens { color: #d4a035; }
+  .v3 .feed td.amt { color: #1a4a35; font-weight: 600; text-align: right; }
+
+  .v3 .bottom-bar { background: #131313; color: #d0d0d0; display: flex; align-items: center; gap: 24px; padding: 0 24px; font-size: 11px; font-family: 'IBM Plex Mono', monospace; }
+  .v3 .bottom-bar .ok { color: #6dd388; }
+  .v3 .bottom-bar .ml { margin-left: auto; }
+
+  /* ====================== V4: REFERENCE CLONE ====================== */
+  .v4 { background: #f3f4f3; padding: 22px; display: flex; gap: 18px; height: 100%; }
+  .v4 .sidebar { width: 232px; background: white; border-radius: 12px; padding: 18px 12px; flex-shrink: 0; display: flex; flex-direction: column; gap: 2px; }
+  .v4 .brand { display: flex; align-items: center; gap: 10px; padding: 8px; padding-bottom: 14px; border-bottom: 1px solid #f0f0ed; margin-bottom: 12px; }
+  .v4 .brand .seal { width: 28px; height: 28px; border-radius: 6px; background: #1a4a35; color: white; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+  .v4 .brand .name { font-size: 13px; font-weight: 600; }
+  .v4 .brand .name small { display: block; font-size: 10px; color: #6b6b6b; font-weight: 400; }
+  .v4 .nav-section { font-size: 10px; color: #888; padding: 12px 8px 6px; letter-spacing: 0.04em; text-transform: uppercase; }
+  .v4 .nav-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 6px; color: #4a4a4a; font-size: 13px; cursor: pointer; text-decoration: none; }
+  .v4 .nav-item:hover { background: #f8f8f4; }
+  .v4 .nav-item.active { background: #ecf3ed; color: #1a4a35; font-weight: 500; }
+  .v4 .nav-item .ic { width: 14px; height: 14px; opacity: 0.75; }
+  .v4 .nav-item .ic svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 1.5; }
+  .v4 .nav-item .pill { margin-left: auto; font-size: 10px; padding: 1px 6px; border-radius: 100px; background: #fdecec; color: #b91c1c; font-weight: 600; }
+
+  .v4 .pause-card {
+    margin-top: auto; background: #fff5e8; border: 1px dashed #d4a035; border-radius: 10px; padding: 14px;
+  }
+  .v4 .pause-card h4 { font-size: 12px; color: #6b4a18; font-weight: 700; margin-bottom: 4px; }
+  .v4 .pause-card p { font-size: 11px; color: #8a6b40; line-height: 1.4; margin-bottom: 10px; }
+  .v4 .pause-card button { width: 100%; padding: 9px; background: #b91c1c; color: white; border: 0; border-radius: 6px; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; cursor: pointer; }
+
+  .v4 .main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 16px; overflow: hidden; }
+  .v4 .topbar { display: flex; justify-content: space-between; align-items: center; }
+  .v4 .topbar .crumb { font-size: 13px; color: #4a4a4a; display: flex; align-items: center; gap: 8px; }
+  .v4 .topbar .right { display: flex; align-items: center; gap: 12px; }
+  .v4 .topbar .upd { font-size: 12px; color: #888; }
+  .v4 .topbar button { padding: 8px 14px; border-radius: 6px; border: 1px solid #e0e0de; background: white; font-size: 13px; cursor: pointer; }
+  .v4 .topbar button.dark { background: #1a4a35; color: white; border-color: #1a4a35; }
+  .v4 .welcome { display: flex; align-items: baseline; justify-content: space-between; }
+  .v4 .welcome h1 { font-size: 30px; font-weight: 600; letter-spacing: -0.02em; }
+  .v4 .welcome .who { font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #d4a035; }
+
+  .v4 .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .v4 .kpi { background: white; border-radius: 10px; padding: 18px; }
+  .v4 .kpi .lbl { font-size: 11px; color: #6b6b6b; margin-bottom: 6px; }
+  .v4 .kpi .val { font-size: 26px; font-weight: 700; color: #1a2419; line-height: 1; margin-bottom: 8px; }
+  .v4 .kpi .delta { font-size: 11px; color: #6dd388; }
+  .v4 .kpi .delta.warn { color: #d4a035; }
+
+  .v4 .grid-2 { display: grid; grid-template-columns: 1.3fr 1fr; gap: 14px; }
+  .v4 .panel { background: white; border-radius: 10px; padding: 22px; }
+  .v4 .panel h3 { font-size: 14px; font-weight: 600; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
+  .v4 .panel h3 .pill { font-size: 10px; padding: 4px 10px; border-radius: 100px; border: 1px solid #ecead8; color: #6b6b6b; font-weight: 500; }
+
+  .v4 .audit { display: flex; flex-direction: column; }
+  .v4 .audit-row { display: grid; grid-template-columns: 60px 90px 1fr 90px; padding: 10px 0; gap: 10px; align-items: center; border-bottom: 1px solid #f6f6f4; font-size: 12px; }
+  .v4 .audit-row .t { font-family: 'IBM Plex Mono', monospace; color: #6b6b6b; font-size: 11px; }
+  .v4 .audit-row .who { font-family: 'IBM Plex Mono', monospace; color: #d4a035; }
+  .v4 .audit-row .amt { font-family: 'IBM Plex Mono', monospace; text-align: right; color: #1a2419; }
+  .v4 .audit-row .pill { display: inline-block; padding: 2px 8px; border-radius: 2px; font-size: 10px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+
+  .v4 .pi-mint { background: #ecf3ed; color: #1a4a35; }
+  .v4 .pi-freeze { background: #fdecec; color: #b91c1c; }
+  .v4 .pi-reg { background: #eaf0f7; color: #1b4f8a; }
+  .v4 .pi-swap { background: #f3efe5; color: #6b5a2a; }
+
+  .v4 .pending { display: flex; flex-direction: column; gap: 12px; }
+  .v4 .task { padding: 12px; border: 1px solid #f0f0ed; border-radius: 8px; }
+  .v4 .task .top-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+  .v4 .task .who { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #d4a035; }
+  .v4 .task .age { font-size: 10px; color: #888; }
+  .v4 .task p { font-size: 12px; color: #4a4a4a; margin-bottom: 10px; line-height: 1.5; }
+  .v4 .task .row { display: flex; gap: 6px; }
+  .v4 .task button { flex: 1; padding: 6px; font-size: 11px; border-radius: 6px; cursor: pointer; }
+  .v4 .task .approve { background: #1a4a35; color: white; border: 0; }
+  .v4 .task .reject { background: white; color: #4a4a4a; border: 1px solid #d8d4c8; }
+
+  /* ====================== V5: COURT DOCKET / CASE WORKFLOW ====================== */
+  .v5 { font-family: 'IBM Plex Sans', sans-serif; background: #fbfaf6; }
+  .v5 .strip {
+    background: #1a2419; color: #f3f1e8; padding: 8px 36px; font-size: 11px;
+    display: flex; gap: 16px; align-items: center; letter-spacing: 0.04em;
+  }
+  .v5 .strip .seal { font-family: 'Source Serif 4', serif; font-weight: 700; }
+  .v5 .strip .ml { margin-left: auto; display: flex; gap: 18px; }
+
+  .v5 .court-head {
+    border-bottom: 1px solid #d8d4c8; background: white; padding: 24px 36px;
+    display: grid; grid-template-columns: 1.6fr 1fr; gap: 36px; align-items: center;
+  }
+  .v5 .court-head .lockup .pre { font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: #6b6b6b; margin-bottom: 6px; }
+  .v5 .court-head h1 { font-family: 'Source Serif 4', serif; font-size: 30px; font-weight: 600; color: #1a2419; line-height: 1.1; letter-spacing: -0.005em; margin-bottom: 6px; }
+  .v5 .court-head h1 em { font-style: italic; color: #1a4a35; }
+  .v5 .court-head .sub { font-size: 13px; color: #4a4a4a; }
+  .v5 .court-head .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; border: 1px solid #d8d4c8; }
+  .v5 .court-head .stats > div { padding: 14px; border-right: 1px solid #d8d4c8; }
+  .v5 .court-head .stats > div:last-child { border-right: 0; }
+  .v5 .court-head .stats .l { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: #6b6b6b; margin-bottom: 4px; }
+  .v5 .court-head .stats .v { font-family: 'Source Serif 4', serif; font-size: 22px; font-weight: 600; color: #1a2419; }
+
+  .v5 .toolbar {
+    display: flex; gap: 0; padding: 0 36px; background: white; border-bottom: 1px solid #d8d4c8;
+  }
+  .v5 .toolbar a { padding: 12px 20px; font-size: 13px; color: #4a4a4a; text-decoration: none; border-bottom: 2px solid transparent; }
+  .v5 .toolbar a.active { border-bottom-color: #1a4a35; color: #1a4a35; font-weight: 600; }
+  .v5 .toolbar a .count { font-size: 10px; padding: 2px 6px; border-radius: 100px; background: #f3f1e8; color: #6b6b6b; margin-left: 6px; vertical-align: 1px; }
+  .v5 .toolbar a.active .count { background: #1a4a35; color: white; }
+  .v5 .toolbar .ml { margin-left: auto; padding: 8px 0; display: flex; gap: 8px; }
+  .v5 .toolbar .ml input { padding: 6px 10px; border: 1px solid #d8d4c8; font-size: 12px; width: 220px; background: #fbfaf6; }
+  .v5 .toolbar .ml button { padding: 6px 14px; background: #1a4a35; color: white; border: 0; font-size: 12px; font-weight: 600; cursor: pointer; }
+
+  .v5 .docket-grid { display: grid; grid-template-columns: 1fr 320px; gap: 0; }
+  .v5 .docket-list { background: white; }
+  .v5 .docket-list .row {
+    display: grid; grid-template-columns: 80px 100px 1fr 100px 100px 100px; gap: 14px; padding: 14px 36px;
+    border-bottom: 1px solid #ecead8; align-items: center; font-size: 13px;
+  }
+  .v5 .docket-list .row:hover { background: #fbfaf6; }
+  .v5 .docket-list .row.h { background: #f3f1e8; padding-top: 10px; padding-bottom: 10px; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: #6b6b6b; font-weight: 600; }
+  .v5 .docket-list .case-no { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #1a2419; font-weight: 600; }
+  .v5 .docket-list .who { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #d4a035; }
+  .v5 .docket-list .matter { font-family: 'Source Serif 4', serif; color: #1a2419; }
+  .v5 .docket-list .matter small { display: block; font-family: 'IBM Plex Sans', sans-serif; font-size: 11px; color: #6b6b6b; margin-top: 2px; }
+  .v5 .docket-list .pill { display: inline-block; padding: 2px 8px; border-radius: 2px; font-size: 10px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+  .v5 .docket-list .filed { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #6b6b6b; }
+  .v5 .docket-list .action a { color: #1a4a35; text-decoration: underline; font-size: 11px; }
+
+  .v5 .side { background: #f3f1e8; padding: 28px 28px; border-left: 1px solid #d8d4c8; }
+  .v5 .side h2 { font-family: 'Source Serif 4', serif; font-size: 17px; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid #d8d4c8; font-weight: 600; }
+  .v5 .side .quick { display: flex; flex-direction: column; gap: 6px; margin-bottom: 24px; }
+  .v5 .side .quick a { padding: 10px 12px; background: white; border: 1px solid #d8d4c8; text-decoration: none; color: #1a2419; font-size: 13px; display: flex; justify-content: space-between; align-items: center; font-weight: 500; }
+  .v5 .side .quick a:hover { border-color: #1a4a35; }
+  .v5 .side .quick .desc { font-size: 11px; color: #6b6b6b; font-weight: 400; }
+  .v5 .side .pause-zone { background: white; border: 2px solid #b91c1c; padding: 18px; }
+  .v5 .side .pause-zone .l { font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: #b91c1c; font-weight: 700; margin-bottom: 6px; }
+  .v5 .side .pause-zone h4 { font-family: 'Source Serif 4', serif; font-size: 16px; color: #1a2419; margin-bottom: 8px; }
+  .v5 .side .pause-zone p { font-size: 12px; color: #6b6b6b; margin-bottom: 14px; line-height: 1.5; }
+  .v5 .side .pause-zone button { width: 100%; background: #b91c1c; color: white; padding: 14px; border: 0; font-weight: 700; letter-spacing: 0.16em; font-size: 13px; cursor: pointer; }
+  .v5 .side .pause-zone .small { font-size: 10px; color: #6b6b6b; margin-top: 8px; text-align: center; font-family: 'IBM Plex Mono', monospace; }
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <h1>Regulator portal — landing page directions</h1>
+  <p>Five takes on the EU ETS Authority's home dashboard. Civil-servant aesthetics; the PAUSE button is treated as a legal instrument throughout.</p>
+</div>
+
+<div class="variants">
+
+  <!-- =========== V1: BUREAUCRATIC CASE FILE =========== -->
+  <div class="variant">
+    <div class="variant-label"><span class="num">01</span><span>Bureaucratic Case File</span><span class="desc">Civil-servant interface · serif heads · case-style metadata · neutral palette</span></div>
+    <div class="frame v1">
+      <div class="gov-strip">
+        <span class="tag">EU ETS</span>
+        <span>Directorate-General for Climate Action · Authority Console</span>
+        <span class="right">
+          <span><span class="pulse"></span> System nominal</span>
+          <span>Block 18,294,441</span>
+          <span>14:32 UTC · 14 May 2026</span>
+        </span>
+      </div>
+
+      <div class="head">
+        <div class="head-left">
+          <div class="seal-row">
+            <div class="seal">EU</div>
+            <div class="titles">
+              <small>European Commission · DG Climate Action</small>
+              <h1>Carbon DEX — Authority Console</h1>
+            </div>
+          </div>
+        </div>
+        <div class="head-meta">
+          Operator <strong>eu-ets-authority.eth</strong><br>
+          Wallet 0x5f3a…b291<br>
+          Network <strong>Base Sepolia</strong> · Chain ID 84532
+        </div>
+      </div>
+
+      <nav class="tabs">
+        <a class="active" href="#">Dashboard</a>
+        <a href="#">Mint allowances</a>
+        <a href="#">Compliance registry</a>
+        <a href="#">Live feed</a>
+        <a href="#">Audit log</a>
+        <a href="#">Pause control</a>
+        <div class="right">
+          <input value="search by ENS, tx hash, case no.">
+          <button>Open case</button>
+        </div>
+      </nav>
+
+      <div class="case-body">
+        <aside class="case-side">
+          <div class="case-no">CASE NO. ETS-2026-Q2-1147</div>
+          <h3>Quarterly compliance window — Q2 2026</h3>
+          <dl>
+            <div class="dl-row"><dt>Phase</dt><dd>IV (2021–2030)</dd></div>
+            <div class="dl-row"><dt>Auctions</dt><dd>34 / 64 complete</dd></div>
+            <div class="dl-row"><dt>LRF target</dt><dd>−4.3% / yr</dd></div>
+            <div class="dl-row"><dt>Methodology</dt><dd>EU-ETS-P4-001</dd></div>
+            <div class="dl-row"><dt>Authority</dt><dd>eu-ets-authority.eth</dd></div>
+            <div class="dl-row"><dt>Counsel</dt><dd>DG-CLIMA Legal</dd></div>
+          </dl>
+          <div class="status-block">
+            <strong>Status: open · in good standing</strong>
+            <p>No outstanding flags. 4 KYC applications awaiting review (see docket).</p>
+          </div>
+        </aside>
+
+        <main class="case-main">
+          <div class="stamp-row">
+            <div class="stamp">
+              <span class="lbl">Total in circulation</span>
+              <span class="val">4,503</span>
+              <span class="sub">EUA · ▲ 1,000 this week</span>
+            </div>
+            <div class="stamp">
+              <span class="lbl">Verified entities</span>
+              <span class="val">12</span>
+              <span class="sub">8 emitters · 4 buyers</span>
+            </div>
+            <div class="stamp">
+              <span class="lbl">Trades, today</span>
+              <span class="val">47</span>
+              <span class="sub">125,000 EURS volume</span>
+            </div>
+            <div class="stamp">
+              <span class="lbl">DEX status</span>
+              <span class="val" style="color:#1a4a35;">Active</span>
+              <span class="sub">Last paused 12 Jan 2026</span>
+            </div>
+          </div>
+
+          <section class="docket">
+            <div class="docket-head">
+              <h4>Recent regulatory actions</h4>
+              <div class="filt">
+                <button class="active">All</button><button>Mint</button><button>Freeze</button><button>Pause</button><button>Register</button>
+              </div>
+            </div>
+            <table>
+              <thead><tr><th>Time UTC</th><th>Action</th><th>Target</th><th>Detail</th><th>Tx</th></tr></thead>
+              <tbody>
+                <tr><td>14:32:07</td><td class="action"><span class="pill pill-mint">Mint</span></td><td>company-a.eth</td><td>1,000 EUA · Energy · 2024 · DE</td><td>0x3f7a…b291 ↗</td></tr>
+                <tr><td>14:18:22</td><td class="action"><span class="pill pill-swap">Swap</span></td><td>company-b.eth</td><td>500 EUA → 1,250 EURS @ 2.50</td><td>0x9c2e…44a8 ↗</td></tr>
+                <tr><td>13:55:01</td><td class="action"><span class="pill pill-reg">Register</span></td><td>company-c.eth</td><td>Buyer · Netherlands</td><td>0x4b81…ee10 ↗</td></tr>
+                <tr><td>13:40:18</td><td class="action"><span class="pill pill-freeze">Freeze</span></td><td>company-d.eth</td><td>Suspicious counter-trade pattern</td><td>0xb2c1…7f88 ↗</td></tr>
+                <tr><td>11:02:44</td><td class="action"><span class="pill pill-mint">Mint</span></td><td>company-e.eth</td><td>2,500 EUA · Industry · 2024 · FR</td><td>0x71a0…2253 ↗</td></tr>
+                <tr><td>09:18:11</td><td class="action"><span class="pill pill-reg">Register</span></td><td>company-f.eth</td><td>Emitter · Sweden</td><td>0xd44c…0019 ↗</td></tr>
+              </tbody>
+            </table>
+          </section>
+
+          <div class="quick-actions">
+            <a href="#">Mint new allowance →</a>
+            <a href="#">Approve KYC <span style="color:#b8782a;font-family:'IBM Plex Mono',monospace;">4 pending</span></a>
+            <a href="#">Open live feed →</a>
+            <a class="danger" href="#">Emergency pause →</a>
+          </div>
+        </main>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========== V2: TRADING DESK =========== -->
+  <div class="variant">
+    <div class="variant-label"><span class="num">02</span><span>Trading Desk</span><span class="desc">Bloomberg-density · monospace · dark theme · order-book · prominent pause</span></div>
+    <div class="frame v2">
+      <div class="strip">
+        <span class="pill">REGULATOR</span>
+        <span class="grey">eu-ets-authority.eth · 0x5f3a…b291</span>
+        <span class="grey">|</span>
+        <span><span class="blink"></span> &nbsp;DEX <span class="green">ACTIVE</span></span>
+        <span class="grey">|</span>
+        <span class="grey">BLOCK</span> <span>18,294,441</span>
+        <span class="grey">|</span>
+        <span class="grey">GAS</span> <span class="green">0.08 gwei</span>
+        <span class="ml grey">14:32:07.412 UTC · 14-MAY-2026</span>
+      </div>
+
+      <div class="top-grid">
+        <div>
+          <div class="lbl">EUA / EURS · spot</div>
+          <div class="val green">2.50<span class="small">EURS</span> <span class="small" style="color:#6dd388;">+0.4% 24h</span></div>
+        </div>
+        <div>
+          <div class="lbl">Volume · 24h</div>
+          <div class="val">125,000<span class="small">EURS</span></div>
+        </div>
+        <div>
+          <div class="lbl">Open trades · Today</div>
+          <div class="val">47</div>
+        </div>
+      </div>
+
+      <div class="body">
+        <div class="panel">
+          <div class="ph"><span class="name">TIME &amp; SALES</span><span class="meta">All trades · current session</span></div>
+          <div class="tape">
+            <div class="tape-row h"><span>TIME</span><span>SIDE</span><span>FROM</span><span>TO</span><span>EUA</span><span>EURS</span></div>
+            <div class="tape-row"><span class="t">14:32:07</span><span style="color:#6dd388;">SWAP</span><span class="from">company-a.eth</span><span class="to">company-b.eth</span><span class="amt">500</span><span class="px">2.50</span></div>
+            <div class="tape-row"><span class="t">14:18:22</span><span style="color:#6dd388;">SWAP</span><span class="from">company-b.eth</span><span class="to">company-a.eth</span><span class="amt">200</span><span class="px">2.51</span></div>
+            <div class="tape-row"><span class="t">13:55:01</span><span style="color:#6dd388;">SWAP</span><span class="from">company-a.eth</span><span class="to">company-b.eth</span><span class="amt">1,000</span><span class="px">2.49</span></div>
+            <div class="tape-row"><span class="t">13:40:18</span><span style="color:#f06060;">FREEZE</span><span class="from">eu-ets-auth.eth</span><span class="to">company-d.eth</span><span class="amt" style="color:#f06060;">—</span><span class="px">—</span></div>
+            <div class="tape-row"><span class="t">12:02:44</span><span style="color:#d4a035;">MINT</span><span class="from">eu-ets-auth.eth</span><span class="to">company-e.eth</span><span class="amt">2,500</span><span class="px">—</span></div>
+            <div class="tape-row"><span class="t">11:55:33</span><span style="color:#6dd388;">SWAP</span><span class="from">company-e.eth</span><span class="to">company-c.eth</span><span class="amt">300</span><span class="px">2.50</span></div>
+            <div class="tape-row"><span class="t">11:18:00</span><span style="color:#6dd388;">SWAP</span><span class="from">company-a.eth</span><span class="to">company-c.eth</span><span class="amt">600</span><span class="px">2.50</span></div>
+            <div class="tape-row"><span class="t">10:42:11</span><span style="color:#6dd388;">SWAP</span><span class="from">company-c.eth</span><span class="to">company-b.eth</span><span class="amt">450</span><span class="px">2.51</span></div>
+            <div class="tape-row"><span class="t">10:08:55</span><span style="color:#6dd388;">SWAP</span><span class="from">company-b.eth</span><span class="to">company-e.eth</span><span class="amt">1,200</span><span class="px">2.49</span></div>
+            <div class="tape-row"><span class="t">09:34:18</span><span style="color:#d4a035;">REG</span><span class="from">eu-ets-auth.eth</span><span class="to">company-f.eth</span><span class="amt">—</span><span class="px">—</span></div>
+            <div class="tape-row"><span class="t">09:01:27</span><span style="color:#6dd388;">SWAP</span><span class="from">company-a.eth</span><span class="to">company-d.eth</span><span class="amt">800</span><span class="px">2.51</span></div>
+            <div class="tape-row"><span class="t">08:42:02</span><span style="color:#6dd388;">SWAP</span><span class="from">company-c.eth</span><span class="to">company-a.eth</span><span class="amt">350</span><span class="px">2.50</span></div>
+            <div class="tape-row"><span class="t">08:18:51</span><span style="color:#6dd388;">SWAP</span><span class="from">company-e.eth</span><span class="to">company-b.eth</span><span class="amt">700</span><span class="px">2.49</span></div>
+            <div class="tape-row"><span class="t">07:55:30</span><span style="color:#6dd388;">SWAP</span><span class="from">company-b.eth</span><span class="to">company-c.eth</span><span class="amt">220</span><span class="px">2.50</span></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="ph"><span class="name">DEPTH · EUA / EURS</span><span class="meta">AMM, x*y=k</span></div>
+          <div class="order-book">
+            <div class="row"><span class="ask"><span class="bar" style="width:70%;"></span><span class="num">2.62 · 1,400</span></span><span></span></div>
+            <div class="row"><span class="ask"><span class="bar" style="width:55%;"></span><span class="num">2.58 · 1,100</span></span><span></span></div>
+            <div class="row"><span class="ask"><span class="bar" style="width:42%;"></span><span class="num">2.55 · 850</span></span><span></span></div>
+            <div class="row"><span class="ask"><span class="bar" style="width:28%;"></span><span class="num">2.53 · 560</span></span><span></span></div>
+            <div class="row"><span class="ask"><span class="bar" style="width:18%;"></span><span class="num">2.51 · 360</span></span><span></span></div>
+            <div class="mid">2.50 EURS · MID</div>
+            <div class="row"><span></span><span class="bid"><span class="bar" style="width:20%;"></span><span class="num">380 · 2.49</span></span></div>
+            <div class="row"><span></span><span class="bid"><span class="bar" style="width:32%;"></span><span class="num">640 · 2.47</span></span></div>
+            <div class="row"><span></span><span class="bid"><span class="bar" style="width:48%;"></span><span class="num">960 · 2.45</span></span></div>
+            <div class="row"><span></span><span class="bid"><span class="bar" style="width:60%;"></span><span class="num">1,200 · 2.42</span></span></div>
+            <div class="row"><span></span><span class="bid"><span class="bar" style="width:75%;"></span><span class="num">1,500 · 2.38</span></span></div>
+          </div>
+          <div class="ph" style="border-top:1px solid #2a2a2a;border-bottom:0;margin-top:auto;"><span class="name">RESERVES</span></div>
+          <div style="padding:14px;font-size:12px;display:grid;gap:6px;">
+            <div style="display:flex;justify-content:space-between;"><span style="color:#888;">EURS</span><span>125,000.00</span></div>
+            <div style="display:flex;justify-content:space-between;"><span style="color:#888;">EUA</span><span>50,000</span></div>
+            <div style="display:flex;justify-content:space-between;"><span style="color:#888;">k</span><span>6.250e9</span></div>
+            <div style="display:flex;justify-content:space-between;"><span style="color:#888;">LP supply</span><span>79,056</span></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="ph"><span class="name">ACTIONS</span><span class="meta">Authority only</span></div>
+          <div class="controls">
+            <div class="grp"><span class="lbl">Recipient · ENS / 0x</span><input value="company-a.eth"></div>
+            <div class="grp"><span class="lbl">Amount · EUA</span><input value="1000"></div>
+            <div class="grp"><span class="lbl">Vintage · Sector · Origin</span><input value="2024 · Energy · DE"></div>
+            <div class="btn-group">
+              <button class="btn-mint">MINT</button>
+              <button class="btn-freeze">FREEZE</button>
+            </div>
+            <button class="pause-btn">■ PAUSE DEX</button>
+            <div class="pause-note">Halts every swap. Confirms via wallet + typed phrase.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer">
+        <span>SOURCIFY ✓ All four contracts verified</span>
+        <span>RPC base-sepolia.g.alchemy.com · 22ms</span>
+        <span class="ml">F1 help · F8 mint · F11 freeze · F12 pause</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========== V3: MISSION CONTROL =========== -->
+  <div class="variant">
+    <div class="variant-label"><span class="num">03</span><span>Mission Control</span><span class="desc">Operations-room layout · live map · pulse roster · large pause as instrument</span></div>
+    <div class="frame v3">
+      <div class="control">
+        <div class="top">
+          <div class="seal">EU</div>
+          <div>
+            <h1>EU ETS Authority · Mission Control</h1>
+            <div class="sub">Carbon DEX · Phase IV · Base Sepolia · Watch officer eu-ets-authority.eth</div>
+          </div>
+          <div class="ml">
+            <div class="item"><span class="l">Block</span><span class="v">18,294,441</span></div>
+            <div class="item"><span class="l">UTC</span><span class="v">14:32:07</span></div>
+            <div class="item"><span class="l">DEX</span><span class="v green">● ACTIVE</span></div>
+            <div class="item"><span class="l">RPC</span><span class="v green">22ms ✓</span></div>
+          </div>
+        </div>
+
+        <div class="grid">
+          <!-- Left: roster -->
+          <section class="pane">
+            <h2>Verified entities <span style="font-family:'IBM Plex Mono',monospace;color:#1a2419;">12</span></h2>
+            <div class="roster">
+              <div class="ros-item"><span class="dot ok"></span><span><span class="ens">company-a.eth</span><br><span class="country">DE · Energy · Emitter</span></span><span class="stat ok">VERIFIED</span></div>
+              <div class="ros-item"><span class="dot ok"></span><span><span class="ens">company-b.eth</span><br><span class="country">FR · Industry · Buyer</span></span><span class="stat ok">VERIFIED</span></div>
+              <div class="ros-item"><span class="dot ok"></span><span><span class="ens">company-c.eth</span><br><span class="country">NL · Aviation · Buyer</span></span><span class="stat ok">VERIFIED</span></div>
+              <div class="ros-item"><span class="dot frozen"></span><span><span class="ens">company-d.eth</span><br><span class="country">PL · Industry · Buyer</span></span><span class="stat frozen">FROZEN</span></div>
+              <div class="ros-item"><span class="dot ok"></span><span><span class="ens">company-e.eth</span><br><span class="country">SE · Energy · Emitter</span></span><span class="stat ok">VERIFIED</span></div>
+              <div class="ros-item"><span class="dot pending"></span><span><span class="ens">0x9f2c…4a1b</span><br><span class="country">IT · Pending review</span></span><span class="stat pending">PENDING</span></div>
+              <div class="ros-item"><span class="dot ok"></span><span><span class="ens">company-g.eth</span><br><span class="country">ES · Industry · Emitter</span></span><span class="stat ok">VERIFIED</span></div>
+              <div class="ros-item"><span class="dot pending"></span><span><span class="ens">0xc01a…77ed</span><br><span class="country">DK · Pending review</span></span><span class="stat pending">PENDING</span></div>
+              <div class="ros-item"><span class="dot ok"></span><span><span class="ens">company-i.eth</span><br><span class="country">FI · Energy · Emitter</span></span><span class="stat ok">VERIFIED</span></div>
+              <div class="ros-item"><span class="dot ok"></span><span><span class="ens">company-j.eth</span><br><span class="country">BE · Aviation · Buyer</span></span><span class="stat ok">VERIFIED</span></div>
+            </div>
+          </section>
+
+          <!-- Center: map -->
+          <section class="map-pane">
+            <h2>Activity map · 24h <span class="live"><span class="dot"></span> LIVE</span></h2>
+            <div class="map-vis">
+              <svg viewBox="0 0 600 320">
+                <!-- stylized europe blob -->
+                <path d="M120 60 Q90 40 130 30 Q200 10 280 25 Q350 15 420 40 Q480 30 510 60 Q540 100 510 160 Q540 220 480 260 Q420 290 340 270 Q270 290 200 260 Q130 270 110 200 Q70 150 90 100 Q100 80 120 60 Z" fill="#ecf3ed" stroke="#1a4a35" stroke-width="1"/>
+                <!-- nodes -->
+                <g font-family="IBM Plex Mono" font-size="9">
+                  <!-- DE -->
+                  <circle cx="280" cy="120" r="18" fill="#1a4a35" opacity="0.18"/>
+                  <circle cx="280" cy="120" r="5" fill="#1a4a35"/>
+                  <text x="290" y="118" fill="#1a2419">DE · 1,200 EUA</text>
+                  <text x="290" y="130" fill="#6b6b6b" font-size="8">Vattenfall · Energy</text>
+                  <!-- FR -->
+                  <circle cx="220" cy="170" r="14" fill="#1a4a35" opacity="0.15"/>
+                  <circle cx="220" cy="170" r="4" fill="#1a4a35"/>
+                  <text x="230" y="168" fill="#1a2419">FR · 980 EUA</text>
+                  <text x="230" y="180" fill="#6b6b6b" font-size="8">ArcelorMittal · Industry</text>
+                  <!-- NL -->
+                  <circle cx="250" cy="100" r="11" fill="#1a4a35" opacity="0.15"/>
+                  <circle cx="250" cy="100" r="3" fill="#1a4a35"/>
+                  <text x="262" y="100" fill="#1a2419" font-size="8">NL · 540 EUA</text>
+                  <!-- SE -->
+                  <circle cx="320" cy="50" r="12" fill="#1a4a35" opacity="0.15"/>
+                  <circle cx="320" cy="50" r="3" fill="#1a4a35"/>
+                  <text x="332" y="52" fill="#1a2419" font-size="8">SE · 730 EUA</text>
+                  <!-- ES -->
+                  <circle cx="170" cy="230" r="13" fill="#1a4a35" opacity="0.15"/>
+                  <circle cx="170" cy="230" r="4" fill="#1a4a35"/>
+                  <text x="180" y="230" fill="#1a2419" font-size="8">ES · 650 EUA</text>
+                  <!-- PL frozen -->
+                  <circle cx="360" cy="130" r="14" fill="#b91c1c" opacity="0.18"/>
+                  <circle cx="360" cy="130" r="4" fill="#b91c1c"/>
+                  <text x="370" y="132" fill="#b91c1c" font-size="8">PL · FROZEN</text>
+                  <!-- IT pending -->
+                  <circle cx="290" cy="210" r="11" fill="#d4a035" opacity="0.18"/>
+                  <circle cx="290" cy="210" r="3" fill="#d4a035"/>
+                  <text x="300" y="212" fill="#b8782a" font-size="8">IT · PENDING</text>
+                  <!-- arcs -->
+                  <path d="M280 120 Q255 145 220 170" fill="none" stroke="#1a4a35" stroke-width="1.2" stroke-dasharray="3 2" opacity="0.7"/>
+                  <path d="M220 170 Q210 200 170 230" fill="none" stroke="#1a4a35" stroke-width="1.2" stroke-dasharray="3 2" opacity="0.7"/>
+                  <path d="M280 120 Q300 110 320 50" fill="none" stroke="#1a4a35" stroke-width="1.2" stroke-dasharray="3 2" opacity="0.7"/>
+                </g>
+              </svg>
+            </div>
+            <div class="ticker">
+              <div class="col"><span class="l">Issuances 7d</span><span class="v">4,500</span></div>
+              <div class="col"><span class="l">Trades 24h</span><span class="v">47</span></div>
+              <div class="col"><span class="l">Frozen</span><span class="v" style="color:#b91c1c;">1</span></div>
+              <div class="col"><span class="l">Pending KYC</span><span class="v" style="color:#d4a035;">4</span></div>
+            </div>
+          </section>
+
+          <!-- Right: control deck -->
+          <section class="pane control-pane">
+            <h2>Control deck</h2>
+            <div class="actions">
+              <button class="primary">Mint allowance →</button>
+              <button>Approve KYC <span style="background:#fff5e8;color:#b8782a;padding:2px 6px;font-size:10px;">4 PENDING</span></button>
+              <button>Freeze entity →</button>
+              <button>Open audit log →</button>
+            </div>
+            <div class="pause-zone">
+              <span class="l">EMERGENCY INSTRUMENT</span>
+              <button>■&nbsp;&nbsp;PAUSE&nbsp;DEX</button>
+              <p>Type PAUSE in the next dialog and sign with the multisig hardware key.</p>
+            </div>
+          </section>
+
+          <section class="feed">
+            <h2 style="font-size:11px; letter-spacing: 0.12em; text-transform: uppercase; color: #6b6b6b; font-weight: 700; margin-bottom:8px; padding-bottom:4px; border-bottom:1px solid #d8d4c8;">Latest tape <span style="color:#1a4a35;">●&nbsp;LIVE</span></h2>
+            <table>
+              <thead><tr><th>Time</th><th>Action</th><th>From</th><th>To</th><th style="text-align:right;">EUA</th><th style="text-align:right;">EURS/EUA</th><th>Tx</th></tr></thead>
+              <tbody>
+                <tr><td>14:32:07</td><td>SWAP</td><td class="ens">company-a.eth</td><td class="ens">company-b.eth</td><td class="amt">500</td><td class="amt">2.50</td><td>0x3f7a…b291 ↗</td></tr>
+                <tr><td>14:18:22</td><td>SWAP</td><td class="ens">company-b.eth</td><td class="ens">company-a.eth</td><td class="amt">200</td><td class="amt">2.51</td><td>0x9c2e…44a8 ↗</td></tr>
+                <tr><td>13:55:01</td><td>SWAP</td><td class="ens">company-a.eth</td><td class="ens">company-b.eth</td><td class="amt">1,000</td><td class="amt">2.49</td><td>0x4b81…ee10 ↗</td></tr>
+                <tr><td>13:40:18</td><td style="color:#b91c1c;">FREEZE</td><td class="ens">eu-ets-auth.eth</td><td class="ens">company-d.eth</td><td class="amt">—</td><td class="amt">—</td><td>0xb2c1…7f88 ↗</td></tr>
+                <tr><td>12:02:44</td><td style="color:#1a4a35;">MINT</td><td class="ens">eu-ets-auth.eth</td><td class="ens">company-e.eth</td><td class="amt">2,500</td><td class="amt">—</td><td>0x71a0…2253 ↗</td></tr>
+              </tbody>
+            </table>
+          </section>
+        </div>
+
+        <div class="bottom-bar">
+          <span>SHIFT ACTIVE · 14:00–22:00 UTC</span>
+          <span>WATCH OFFICER · L. Hansen</span>
+          <span class="ok">✓ ALL CONTRACTS VERIFIED ON SOURCIFY</span>
+          <span class="ml">CTRL+M MINT · CTRL+F FREEZE · CTRL+P PAUSE · CTRL+L LOG</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========== V4: REFERENCE CLONE =========== -->
+  <div class="variant">
+    <div class="variant-label"><span class="num">04</span><span>Reference Clone — Authority Console</span><span class="desc">Same dashboard rhythm as supplied reference, refit for regulator workflow</span></div>
+    <div class="frame v4">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="seal">EU</div>
+          <div class="name">Authority<small>Carbon DEX console</small></div>
+        </div>
+        <a class="nav-item" href="#"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M16 16l4 4"/></svg></span>Search</a>
+        <a class="nav-item active" href="#"><span class="ic"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6"/><rect x="14" y="4" width="6" height="6"/><rect x="4" y="14" width="6" height="6"/><rect x="14" y="14" width="6" height="6"/></svg></span>Overview</a>
+        <a class="nav-item" href="#"><span class="ic"><svg viewBox="0 0 24 24"><path d="M12 3v18M5 10l7-7 7 7"/></svg></span>Mint</a>
+        <a class="nav-item" href="#"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg></span>Compliance <span class="pill">4</span></a>
+        <a class="nav-item" href="#"><span class="ic"><svg viewBox="0 0 24 24"><path d="M3 12h18M3 6h18M3 18h12"/></svg></span>Live feed</a>
+        <a class="nav-item" href="#"><span class="ic"><svg viewBox="0 0 24 24"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/></svg></span>Audit log</a>
+        <div class="nav-section">Folders</div>
+        <a class="nav-item" href="#"><span class="ic"><svg viewBox="0 0 24 24"><path d="M3 7l4-4h4l2 2h8a1 1 0 0 1 1 1v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill="#999" stroke="none"/></svg></span>Member states</a>
+        <a class="nav-item" href="#"><span class="ic"><svg viewBox="0 0 24 24"><path d="M3 7l4-4h4l2 2h8a1 1 0 0 1 1 1v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill="#999" stroke="none"/></svg></span>Q2 2026 case file</a>
+        <a class="nav-item" href="#"><span class="ic"><svg viewBox="0 0 24 24"><path d="M3 7l4-4h4l2 2h8a1 1 0 0 1 1 1v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill="#999" stroke="none"/></svg></span>Frozen accounts</a>
+
+        <div class="pause-card">
+          <h4>Emergency pause</h4>
+          <p>Halts every swap on the DEX. Use only if there's a verified breach.</p>
+          <button>■ PAUSE DEX</button>
+        </div>
+      </aside>
+
+      <section class="main">
+        <div class="topbar">
+          <div class="crumb">Overview · Q2 2026 · Phase IV</div>
+          <div class="right">
+            <span class="upd">Updated 14:32 UTC</span>
+            <button>Export CSV</button>
+            <button class="dark">+ New action</button>
+          </div>
+        </div>
+        <div class="welcome">
+          <h1>Good afternoon, eu-ets-authority.<span style="color:#999;">eth</span></h1>
+          <span class="who">Block 18,294,441 · System nominal</span>
+        </div>
+
+        <div class="kpis">
+          <div class="kpi"><div class="lbl">In circulation</div><div class="val">4,503 EUA</div><div class="delta">▲ 1,000 this week</div></div>
+          <div class="kpi"><div class="lbl">Verified entities</div><div class="val">12</div><div class="delta">+2 since Apr</div></div>
+          <div class="kpi"><div class="lbl">Pending KYC</div><div class="val">4</div><div class="delta warn">2 awaiting review &gt; 24h</div></div>
+          <div class="kpi"><div class="lbl">Frozen</div><div class="val" style="color:#b91c1c;">1</div><div class="delta warn">company-d.eth · 13:40 UTC</div></div>
+        </div>
+
+        <div class="grid-2">
+          <div class="panel">
+            <h3>Recent regulatory actions <span class="pill">All actions</span></h3>
+            <div class="audit">
+              <div class="audit-row"><span class="t">14:32</span><span class="pill pi-mint">MINT</span><span><span class="who">company-a.eth</span> &nbsp;<small style="color:#6b6b6b;font-size:11px;">1,000 EUA · Energy · 2024 · DE</small></span><span class="amt">+1,000 EUA</span></div>
+              <div class="audit-row"><span class="t">14:18</span><span class="pill pi-swap">SWAP</span><span><span class="who">company-b.eth</span> ↔ <span class="who">company-a.eth</span></span><span class="amt">500 @ 2.50</span></div>
+              <div class="audit-row"><span class="t">13:55</span><span class="pill pi-reg">REG</span><span><span class="who">company-c.eth</span> &nbsp;<small style="color:#6b6b6b;font-size:11px;">Buyer · Netherlands</small></span><span class="amt">—</span></div>
+              <div class="audit-row"><span class="t">13:40</span><span class="pill pi-freeze">FREEZE</span><span><span class="who">company-d.eth</span> &nbsp;<small style="color:#6b6b6b;font-size:11px;">Suspicious counter-trade pattern</small></span><span class="amt">—</span></div>
+              <div class="audit-row"><span class="t">11:02</span><span class="pill pi-mint">MINT</span><span><span class="who">company-e.eth</span> &nbsp;<small style="color:#6b6b6b;font-size:11px;">2,500 EUA · Industry · 2024 · FR</small></span><span class="amt">+2,500 EUA</span></div>
+              <div class="audit-row"><span class="t">09:18</span><span class="pill pi-reg">REG</span><span><span class="who">company-f.eth</span> &nbsp;<small style="color:#6b6b6b;font-size:11px;">Emitter · Sweden</small></span><span class="amt">—</span></div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h3>Awaiting your review</h3>
+            <div class="pending">
+              <div class="task">
+                <div class="top-row"><span class="who">0x9f2c…4a1b</span><span class="age">3h ago</span></div>
+                <p><strong>KYC application</strong> · Italy · Industry · Buyer. Documentation complete.</p>
+                <div class="row"><button class="approve">Approve</button><button class="reject">Reject</button></div>
+              </div>
+              <div class="task">
+                <div class="top-row"><span class="who">0xc01a…77ed</span><span class="age">28h ago</span></div>
+                <p><strong>KYC application</strong> · Denmark · Energy · Emitter. Awaiting LEI verification.</p>
+                <div class="row"><button class="approve">Approve</button><button class="reject">Reject</button></div>
+              </div>
+              <div class="task">
+                <div class="top-row"><span class="who">company-d.eth</span><span class="age">52m</span></div>
+                <p><strong>Frozen — review</strong> · pattern flag, automated. Confirm or release.</p>
+                <div class="row"><button class="approve" style="background:#b91c1c;">Keep frozen</button><button class="reject">Release</button></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- =========== V5: COURT DOCKET =========== -->
+  <div class="variant">
+    <div class="variant-label"><span class="num">05</span><span>Court Docket / Caseworker</span><span class="desc">Case-management language · serif heads · numbered docket · pause framed as motion</span></div>
+    <div class="frame v5">
+      <div class="strip">
+        <span class="seal">EU</span>
+        <span>European Commission · Directorate-General for Climate Action · Carbon DEX Authority</span>
+        <span class="ml">Term Q2 2026 · Block 18,294,441 · 14:32 UTC</span>
+      </div>
+
+      <div class="court-head">
+        <div class="lockup">
+          <div class="pre">In the matter of · EU ETS Phase IV · 2024 vintage</div>
+          <h1>Authority docket — <em>open cases &amp; today&rsquo;s motions</em>.</h1>
+          <div class="sub">Sitting officer eu-ets-authority.eth · 47 trades cleared today · 4 KYC matters scheduled.</div>
+        </div>
+        <div class="stats">
+          <div><div class="l">Cases open</div><div class="v">14</div></div>
+          <div><div class="l">Motions today</div><div class="v">7</div></div>
+          <div><div class="l">Pending</div><div class="v">4</div></div>
+        </div>
+      </div>
+
+      <nav class="toolbar">
+        <a class="active" href="#">Today's docket <span class="count">7</span></a>
+        <a href="#">All cases <span class="count">14</span></a>
+        <a href="#">KYC applications <span class="count">4</span></a>
+        <a href="#">Frozen <span class="count">1</span></a>
+        <a href="#">Closed <span class="count">128</span></a>
+        <div class="ml">
+          <input value="search docket no., ENS, sector">
+          <button>+ File new motion</button>
+        </div>
+      </nav>
+
+      <div class="docket-grid">
+        <section class="docket-list">
+          <div class="row h">
+            <span>DOCKET NO.</span><span>FILED</span><span>MATTER</span><span>PARTY</span><span>STATUS</span><span>ACTION</span>
+          </div>
+          <div class="row">
+            <span class="case-no">2026-Q2-0147</span>
+            <span class="filed">14:32 UTC</span>
+            <div class="matter">Issuance of allowance — 1,000 EUA<small>Energy · 2024 · DE · methodology EU-ETS-P4-001</small></div>
+            <span class="who">company-a.eth</span>
+            <span class="pill pi-mint" style="background:#ecf3ed;color:#1a4a35;">EXECUTED</span>
+            <span class="action"><a href="#">View record →</a></span>
+          </div>
+          <div class="row">
+            <span class="case-no">2026-Q2-0146</span>
+            <span class="filed">13:40 UTC</span>
+            <div class="matter">Order of freezure<small>Counter-trade pattern flagged by auto-monitor on 13:32 UTC</small></div>
+            <span class="who">company-d.eth</span>
+            <span class="pill pi-freeze" style="background:#fdecec;color:#b91c1c;">IN EFFECT</span>
+            <span class="action"><a href="#">Open file →</a></span>
+          </div>
+          <div class="row">
+            <span class="case-no">2026-Q2-0145</span>
+            <span class="filed">13:55 UTC</span>
+            <div class="matter">Application — verified entity (Buyer)<small>Netherlands · Aviation · LEI verified · documentation complete</small></div>
+            <span class="who">company-c.eth</span>
+            <span class="pill pi-reg" style="background:#eaf0f7;color:#1b4f8a;">APPROVED</span>
+            <span class="action"><a href="#">View record →</a></span>
+          </div>
+          <div class="row">
+            <span class="case-no">2026-Q2-0144</span>
+            <span class="filed">11:02 UTC</span>
+            <div class="matter">Issuance of allowance — 2,500 EUA<small>Industry · 2024 · FR · scheduled batch #002</small></div>
+            <span class="who">company-e.eth</span>
+            <span class="pill pi-mint" style="background:#ecf3ed;color:#1a4a35;">EXECUTED</span>
+            <span class="action"><a href="#">View record →</a></span>
+          </div>
+          <div class="row">
+            <span class="case-no">2026-Q2-0143</span>
+            <span class="filed">11:18 UTC</span>
+            <div class="matter">Application — verified entity (Emitter)<small>Italy · Industry · awaiting LEI cross-check from local authority</small></div>
+            <span class="who">0x9f2c…4a1b</span>
+            <span class="pill pi-reg" style="background:#fff5e8;color:#b8782a;">PENDING</span>
+            <span class="action"><a href="#">Open file →</a></span>
+          </div>
+          <div class="row">
+            <span class="case-no">2026-Q2-0142</span>
+            <span class="filed">10:08 UTC</span>
+            <div class="matter">Application — verified entity (Emitter)<small>Denmark · Energy · LEI matches submitted by counsel</small></div>
+            <span class="who">0xc01a…77ed</span>
+            <span class="pill pi-reg" style="background:#fff5e8;color:#b8782a;">PENDING</span>
+            <span class="action"><a href="#">Open file →</a></span>
+          </div>
+          <div class="row">
+            <span class="case-no">2026-Q2-0141</span>
+            <span class="filed">09:18 UTC</span>
+            <div class="matter">Application — verified entity (Emitter)<small>Sweden · Energy · Vattenfall AB · operator subsidiary</small></div>
+            <span class="who">company-f.eth</span>
+            <span class="pill pi-reg" style="background:#eaf0f7;color:#1b4f8a;">APPROVED</span>
+            <span class="action"><a href="#">View record →</a></span>
+          </div>
+        </section>
+
+        <aside class="side">
+          <h2>File a new motion</h2>
+          <div class="quick">
+            <a href="#"><span>Issue allowance<br><span class="desc">Mint to a verified entity</span></span><span>›</span></a>
+            <a href="#"><span>Approve KYC<br><span class="desc">4 awaiting review</span></span><span style="color:#b8782a;">●</span></a>
+            <a href="#"><span>Freeze entity<br><span class="desc">Halt single account</span></span><span>›</span></a>
+            <a href="#"><span>Open audit log<br><span class="desc">Filings since 1 Jan 2024</span></span><span>›</span></a>
+          </div>
+
+          <div class="pause-zone">
+            <span class="l">EXTRAORDINARY MOTION</span>
+            <h4>Motion to pause the DEX</h4>
+            <p>Halts every swap chain-wide. Issuance, retirement and KYC remain available. Reversible by motion to resume.</p>
+            <button>■&nbsp;&nbsp;FILE PAUSE&nbsp;MOTION</button>
+            <div class="small">Requires hardware-key signature</div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
