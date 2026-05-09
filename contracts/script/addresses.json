@@ -35,30 +35,30 @@
   },
 
   "ens": {
-    "_naming": "Subdomain scheme: 'verified-entity.eth' is owned by the regulator (institutional namespace). Each verified company gets a subdomain on registration. Regulator itself uses bare 'eu-ets-authority.eth'. To be registered on Sepolia ENS post-deploy.",
+    "_naming": "Subdomain scheme: 'verified-entity.eth' is owned by the regulator (institutional namespace). Each verified company gets a subdomain on registration. Regulator itself uses bare 'eu-ets-authority.eth'. Live on Sepolia ENS as of 2026-05-10 — Parth registered the two .eth names then transferred to our deployer; we created the two subdomains. All four names resolve correctly via cast resolve-name.",
     "regulator": {
       "name": "eu-ets-authority.eth",
       "address": "0xE6fff6076BD6d82d3071b451BAba308C0fA97E1c",
-      "registered": false
+      "registered": true
     },
     "namespace": {
       "name": "verified-entity.eth",
       "controller": "regulator",
-      "registered": false
+      "registered": true
     },
     "companyA": {
       "name": "cement-mainz.verified-entity.eth",
       "address": "0xEd271DB443dc53533D2edB3A5d4b3BF0F3DE70ED",
       "role": "Operator",
       "country": "DE",
-      "registered": false
+      "registered": true
     },
     "companyB": {
       "name": "aluminium-bratislava.verified-entity.eth",
       "address": "0x6B6Fdc8Ed3d79812d0C28ed4C219e760817B9a5d",
       "role": "Operator",
       "country": "SK",
-      "registered": false
+      "registered": true
     }
   },
 
