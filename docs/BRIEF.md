@@ -146,7 +146,7 @@ Every action shows: tx hash, Sourcify-verified contract badge, plain-English des
 
 ## 5. The demo flow — happy path (primary, 3 beats)
 
-Spine of the live demo. Three screens on stage (`/company`, `/regulator`, `/public`). **Updated 2026-05-09 — single-actor narrative.** Company A (`cement-mainz.eth`) is the protagonist on `/company` for the entire flow. Company B exists on-chain as the unseen counterparty in Beat 2 — never appears in any UI. This collapses to one Company laptop, no role-switching, full-lifecycle storytelling.
+Spine of the live demo. Three screens on stage (`/company`, `/regulator`, `/public`). **Updated 2026-05-09 — single-actor narrative.** Company A (`cement-mainz.verified-entity.eth`) is the protagonist on `/company` for the entire flow. Company B (`aluminium-bratislava.verified-entity.eth`) exists on-chain as the unseen counterparty in Beat 2 — never appears in any UI. This collapses to one Company laptop, no role-switching, full-lifecycle storytelling.
 
 The narrative is *"an efficient cement producer received their free allocation, sold their surplus on the secondary market, and retired the rest against verified emissions."* That's exactly what cap-and-trade is designed to incentivise.
 
@@ -226,7 +226,7 @@ Targeting these naturally; not optimising for any single one. Building the core 
 | Network Economy | $2,500 | Earned by core build |
 | Future Society | $2,500 | Earned by core build |
 | Sourcify | $4,000 | **Yes** — verify all contracts, badge in UI |
-| ENS | up to $4,000 | **Yes** — `eu-ets-authority.eth`, `company-a.eth`, etc. |
+| ENS | up to $4,000 | **Yes** — subdomain scheme: `eu-ets-authority.eth` for the regulator, `verified-entity.eth` as the institutional namespace, `cement-mainz.verified-entity.eth` / `aluminium-bratislava.verified-entity.eth` for verified companies. |
 | Best UX Flow | $500 | Stretch (account abstraction) |
 | Best Privacy by Design | $500 | Skipped V1 (would need zk) |
 | Apify | $3,700 | Stretch (live ETS price feed) |
@@ -254,7 +254,7 @@ All §11 architecture-open items from the previous draft are now resolved:
 |---|---|
 | Permission model | **Hard whitelist** — only verified addresses can hold or trade |
 | Sourcify integration | **In scope** — story-coherent (regulator needs verifiable contracts) and high-value prize |
-| ENS integration | **In scope** — bonus reason: makes the demo readable on stage (`eu-ets-authority.eth froze company-b.eth's trade` >>> raw hex) |
+| ENS integration | **In scope** — subdomain scheme: regulator owns `verified-entity.eth` and issues subdomains (`cement-mainz.verified-entity.eth`) to verified companies; regulator itself uses bare `eu-ets-authority.eth`. Bonus: institutional structure visible on-chain — judges can tell at a glance which addresses are verified entities just from the ENS name. |
 | Account Abstraction | **Stretch only** — small prize, demo-fragility risk if half-shipped, wallet popups acceptable for crypto-native judges |
 | Apify (live ETS price feed) | **Stretch only** — purely cosmetic; dashboard number that doesn't change demo's emotional shape; live API call adds failure surface |
 | Chain for live demo | Decide during build (Fredrik + Parth) — recommendation Base Sepolia |

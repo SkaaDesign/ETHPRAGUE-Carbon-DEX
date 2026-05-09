@@ -9,11 +9,49 @@ Plain-English log of scope and infrastructure changes since the locked baseline.
 
 ## In flight
 
+- **Frontend ENS strings** — `web/lib/demo-state.ts` + `web/app/company/page.tsx` + `web/app/regulator/page.tsx` still use flat names (`cement-mainz.eth` etc.). Next frontend pass should switch to subdomain scheme to match BRIEF. Not blocking the merge.
 - **Sepolia onboarding** — Alchemy account + RPC URL + faucet ETH for the deployer wallet. Then `forge script script/Deploy.s.sol:Deploy --rpc-url $SEPOLIA_RPC_URL --broadcast --verify --verifier sourcify`.
-- **ENS registrations on Sepolia** — `eu-ets-authority.eth`, `cement-mainz.eth`, `aluminium-bratislava.eth`.
+- **ENS registrations on Sepolia** — subdomain scheme: `eu-ets-authority.eth` (regulator), `verified-entity.eth` (institutional namespace), `cement-mainz.verified-entity.eth` + `aluminium-bratislava.verified-entity.eth` (verified companies). See `contracts/script/addresses.example.json`.
 - **Frontend wiring to live contracts** — Happy Path UI is built against `stateAt(beat)` simulation; next step is replacing `stateAt` calls with viem event reads once Sepolia addresses land. Three routes already shape-correct — only the data source changes.
 - **`docs/design/happy-flow.md` cleanup** — non-blocking. The doc still references the old two-actor flow; UI was already built against the new single-actor narrative (BRIEF §5 is the source of truth). Sync when convenient.
 - **Parth ping + merge** — `docs/scope-update` → `main` PR. Will tag Parth's last commit as `parth-archive` before merge.
+
+---
+
+## 2026-05-10 — Pre-merge consolidation: Parth lifts + delete `my-smart-contract/`
+
+**Branch:** `docs/scope-update`. Two commits: one for lifts, one for the deletion + merge from origin/main.
+
+### What this is
+
+Final pre-merge cleanup. Brings origin/main into our branch (so the eventual PR is a clean fast-forward), lifts the bits worth keeping from Parth's parallel work, deletes his `my-smart-contract/` folder so main has a single source of truth (`contracts/`).
+
+### Lifts from Parth (written fresh, attributed)
+
+- **`contracts/script/addresses.example.json`** — deployment-address registry template, modelled on Parth's `my-smart-contract/script/addresses.json` (commit `2e36c93`). Adds Sepolia placeholder section + an `ens.namespace` field to make the subdomain scheme explicit. Real `addresses.json` (gitignored) gets populated post-deploy.
+- **ENS subdomain naming scheme** — Parth proposed `cement-mainz.verified-entity.eth` (subdomain-on-namespace) instead of bare `cement-mainz.eth`. Adopted across BRIEF (§5, §9 prize stack, §11 trade-offs), HANDOFF (§5 next-moves), CHANGELOG, and Demo.s.sol comments. Rationale: `verified-entity.eth` becomes the regulator-owned institutional namespace; subdomains are issued to verified companies on registration. Makes the institutional structure visible on-chain — judges can tell at a glance which addresses are verified entities just from the ENS name. The regulator itself stays bare: `eu-ets-authority.eth`.
+
+### What we did NOT lift
+
+Reviewed Parth's recent commits (parallel work since the consolidation snapshot):
+- `9accc31` — converted his `CarbonCredit` from ERC-1155 → ERC-20 (matches our pivot, but his version still lacks vintage/sector/origin event metadata)
+- `7e5447e` — unit tests
+- `f9e6f68` + `251e52c` + `ee249a7` — local-chain seeding scripts
+- `3962fb4` — retirement-contract fix
+
+None of these supersede our 72-test version with full Regulator scope, audit-log event stream, exact-output swaps, or DA-reviewed CPMM. Our version remains canonical.
+
+### Folder deletion
+
+`git rm -r my-smart-contract/` — Parth's standalone Foundry project removed from the branch. After merge, main has a single contracts directory: `contracts/`. His work is preserved at the tag `parth-archive` (set at `2e36c93` — his last commit on origin/main pre-merge) so anyone can `git checkout parth-archive` to see his version.
+
+### Frontend follow-up flagged
+
+Frontend's `web/lib/demo-state.ts` + page.tsx files still use flat ENS names. Updating to subdomain scheme is non-blocking but should land on the next frontend pass. Note added to CHANGELOG In flight.
+
+### Merge mechanics
+
+Did `git merge origin/main` to bring Parth's commits onto our branch first (so the eventual PR reads as a clean fast-forward + branch deletes). Created merge commit `84bd740`. No conflicts — Parth's work was all in `my-smart-contract/`; our work was in `contracts/` + `docs/` + `web/`. Disjoint.
 
 ---
 

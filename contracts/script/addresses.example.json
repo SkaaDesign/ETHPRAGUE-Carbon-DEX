@@ -1,0 +1,61 @@
+{
+  "_doc": "Deployment-address registry for Carbon DEX. Copy to addresses.json (gitignored) when you do a real deploy. anvil-local section is the deterministic CREATE chain that Deploy.s.sol produces against anvil's default funded key (account 0); Sepolia and mainnet sections are populated post-broadcast. ENS naming is a subdomain scheme: regulator owns verified-entity.eth, issues subdomains to verified companies. Pattern adapted from Parth's earlier addresses.json (2e36c93).",
+
+  "networks": {
+    "anvil-local": {
+      "chainId": 31337,
+      "rpcUrl": "http://localhost:8545",
+      "deployedAt": "2026-05-09",
+      "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+      "contracts": {
+        "EURS": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+        "ComplianceRegistry": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
+        "CarbonCredit": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
+        "Retirement": "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
+        "CarbonDEX": "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9",
+        "Regulator": "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707"
+      }
+    },
+    "sepolia": {
+      "chainId": 11155111,
+      "rpcUrl": "https://eth-sepolia.g.alchemy.com/v2/YOUR_KEY",
+      "deployedAt": null,
+      "deployer": null,
+      "contracts": {
+        "EURS": null,
+        "ComplianceRegistry": null,
+        "CarbonCredit": null,
+        "Retirement": null,
+        "CarbonDEX": null,
+        "Regulator": null
+      },
+      "_note": "Populated by Deploy.s.sol --broadcast --verify --verifier sourcify"
+    }
+  },
+
+  "ens": {
+    "_naming": "Subdomain scheme: 'verified-entity.eth' is owned by the regulator and acts as the institutional namespace. Each verified company gets a subdomain on registration. The regulator itself uses the bare 'eu-ets-authority.eth'. This makes the institutional structure on-chain visible — judges + auditors can see at a glance which addresses are verified entities just from the ENS name.",
+    "regulator": {
+      "name": "eu-ets-authority.eth",
+      "address": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+    },
+    "namespace": {
+      "name": "verified-entity.eth",
+      "controller": "regulator"
+    },
+    "companyA": {
+      "name": "cement-mainz.verified-entity.eth",
+      "address": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+      "role": "Operator",
+      "country": "DE"
+    },
+    "companyB": {
+      "name": "aluminium-bratislava.verified-entity.eth",
+      "address": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+      "role": "Operator",
+      "country": "SK"
+    }
+  },
+
+  "defaultNetwork": "anvil-local"
+}

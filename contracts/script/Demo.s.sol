@@ -19,8 +19,8 @@ import {Regulator} from "../src/Regulator.sol";
 ///
 /// @dev    Required env (multi-key — realistic Sepolia setup):
 ///           OPERATOR_PK    — regulator OPERATOR_ROLE holder + initial LP
-///           COMPANY_A_PK   — Company A signer (cement-mainz.eth)
-///           COMPANY_B_PK   — Company B signer (aluminium-bratislava.eth) — off-stage actor
+///           COMPANY_A_PK   — Company A signer (cement-mainz.verified-entity.eth)
+///           COMPANY_B_PK   — Company B signer (aluminium-bratislava.verified-entity.eth) — off-stage actor
 ///
 ///         Run with:
 ///           forge script script/Demo.s.sol:Demo --rpc-url $RPC_URL --broadcast \
