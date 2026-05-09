@@ -7,11 +7,44 @@ Plain-English log of scope and infrastructure changes since the locked baseline.
 
 ---
 
-## In flight (uncommitted)
+## In flight
 
-- **Research:** `research-specialist` agent running on the six EU-ETS-reality-check questions (HANDOFF §8). Output lands in `research/eu-ets-reality-check.md`. Non-blocking; doc edits and demo narration tweaks wait on findings.
-- **`.gitignore` follow-up:** the Foundry-side names (`lib/`, `dependencies/`, `out/`, `cache/`, `broadcast/`, `.foundry/`) need to be scoped to `contracts/` so they don't accidentally match `web/lib/`, `web/out/`, etc. Patch pending; not urgent until scaffolds exist.
-- **Scaffolds (`forge init contracts/`, Next.js in `web/`):** held pending research kickoff and gitignore patch.
+- **`.gitignore` follow-up:** scope Foundry-side names (`lib/`, `dependencies/`, `out/`, `cache/`, `broadcast/`, `.foundry/`) to `contracts/`. Now more important — Parth's contracts live at `contracts/` on `origin/main`, and `web/lib/contracts.ts` is in BRIEF §4. Patch pending.
+- **Branch reconciliation:** `docs/scope-update` (this branch) carries today's research, ERC-20 pivot, happy flow, and bridge framing. `origin/main` carries Parth's contracts (`c40abad`, `995fad9`). Eventually opens a PR `docs/scope-update` → `main` to integrate.
+- **Frontend scaffold:** Next.js + viem init in `web/` not yet started.
+
+---
+
+## 2026-05-09 — Research, ERC-20 pivot, happy-flow demo, bridge framing
+
+**Branch:** `docs/scope-update`. Six commits (`f11938a` … `6eb278b`).
+
+### For Nahin (pitch / Q&A)
+
+- **`research/eu-ets-reality-check.md`** landed. Six-question primary-source brief on EU ETS regulator behaviour. Cites EUR-Lex (2003/87/EC, 2019/1122, 2010/23/EU), Europol, Commission climate.ec.europa.eu. Use for judge Q&A defensibility on national administrator powers, 2010 VAT carousel fraud, 2022 Russian-linked freeze (low-medium confidence — public reporting thin), institutional tokenisation sketches (JPM Kinexys / CIX / ACX / Carbonplace), MiFID II venue requirements, Union Registry architecture.
+- **BRIEF §14 Regulator-MEV Q&A** — deferred stub replaced with the actual answer. Forward-only freeze is *more* faithful to real EU ETS, not less; cites Reg. 2019/1122 Art. 30 + the 2010-11 phishing precedent (Commission suspended *future* trading rather than reverse settled transfers).
+- **BRIEF §14 Bridge Q&A (new)** — pre-empts *"how do real EUAs get on-chain?"* with the v1 wrapped / v2 native / v3 auction roadmap.
+- **BRIEF §14 Demo narration / Hero action / Numbers updated** for happy-flow primary. Regulator's hero action reframes from freeze → **issuance** (Beat 1). Numbers section gains research-backed Phase 4 figures: cap ~1.39 Gt, LRF 4.4%/yr, EUA price ~€65–70, surrender deadline 30 Sept, €100/t penalty, EEX cadence ~1–1.5M EUAs/day. **The €800B market-size figure is flagged for verification before pitch** — research didn't pin it.
+- **Sanctions narration caveat:** research found no public evidence of a discrete EU action specifically freezing named Russian operator accounts in 2022; mechanic is automatic application of sanctions regulations (Council Reg. 2022/328) executed by national administrators. **Don't assert "the regulator froze Russian operators"** — say "EU sanctions regulations automatically freeze sanctioned holdings."
+
+### For Lin (UI / demo staging)
+
+- **`design/happy-flow.md`** added — self-contained design spec for the live demo. Three beats × three screens (`/company`, `/regulator`, `/public`) with cast in ENS, design-system constraints (Scandinavian / institutional, IBM Plex + Fraunces, no crypto-kitsch), token-model note, what's-NOT-in-this-demo list, and open design questions for your judgement.
+- **BRIEF §5 rewritten as happy flow** (3 beats — issuance, trade, surrender). **Freeze flow preserved as §5b alternate.** Closing visual: cap-accounting widget on `/public` showing `1,000 issued · 200 retired · 800 in circulation`.
+- Decisions in `design/happy-flow.md §10` are firm; everything else is open to design judgement.
+
+### For Parth (dev)
+
+- **`CarbonCredit` pivots from ERC-1155 → ERC-20.** Two reasons: (1) the V2 fork doesn't compose with ERC-1155 natively — would have forced a per-id wrapper or non-V2 AMM; (2) real EU ETS treats EUAs as fungible within a Phase (a 2024 EUA satisfies a 2026 surrender). Vintage / sector / origin / methodology metadata moves to event payloads on `CreditMinted` and `CreditRetired`. Provenance still recoverable from event logs.
+- **`Retirement.retire()` signature changed** — drops `tokenId` param. New: `retire(amount, beneficiary, reasonURI)`.
+- **Heads-up on reconciliation:** if your contracts on `origin/main` already implement ERC-1155, they need adjustment when this branch merges into `main`.
+- **BRIEF §3.5 (new)** pins where Carbon DEX sits — secondary market settlement layer, **not** registry replacement. Same contracts compose across the v1 wrapped / v2 native / v3 auction roadmap.
+
+### Repo plumbing
+
+- **New branch `docs/scope-update`** carries today's work. Local `main` (with `ef5aacc` CHANGELOG) is 1 ahead of `origin/main`; `origin/main` is 2 ahead with Parth's contracts. PR `docs/scope-update` → `main` reconciles when ready.
+- **`design/`** folder added — new lane for design handoff materials.
+- **`research/`** folder added — for research artefacts.
 
 ---
 
