@@ -44,6 +44,27 @@ Regulatory framing for backup:
 
 ---
 
+## 3.5. Where Carbon DEX sits in the ETS landscape
+
+Carbon DEX is the **on-chain settlement layer for the EU ETS secondary market.** It does *not* replace the EU registry. We sit downstream of allowance issuance (free allocation + EEX auction) and upstream of compliance surrender. This framing holds across all roadmap stages — the contracts don't change between v1 and v3.
+
+| Stage | Token issuance | Trading layer | Status |
+|---|---|---|---|
+| **v1 — Wrapped secondary** *(this prototype)* | Licensed custodian holds real EUAs in Union Registry; mints 1:1 backed tokens on-chain (wBTC pattern). MiCA + DLT Pilot Regime path. | Carbon DEX (these contracts) | **Demoable today**; needs custodian for production |
+| **v2 — Native settlement** | Union Registry interoperates with public chain; allowances issued natively as tokens by the Commission / national administrators. | Carbon DEX (unchanged) | EU policy decision, 1–5 yr arc |
+| **v3 — Native auction** | Auction itself moves on-chain (sealed-bid or Dutch via smart contract); cuts EEX/ECC out. | Carbon DEX + auction layer | After v2; longest-horizon |
+
+**Why this framing matters:**
+- The same trading + surrender + supervision logic works at every stage. Our contracts are durable across the roadmap.
+- We pre-empt the *"are you replacing the EU registry?"* question with an honest *"no — we're the secondary market; here's how the rest connects."*
+- The bridge gap (custodian-wrap in v1) is acknowledged, not hidden. Faking native issuance for the demo and pretending there's no bridge is the failure mode.
+
+**For the live demo:** `Regulator.mint()` represents either custodian-wrap (real EUA arrives → token minted) or native issuance (v2/v3 sovereign mint). Same opcode, different upstream story. We don't pick on stage; the narrator clarifies if asked.
+
+For real EU ETS regulator powers, allocation calendar, surrender mechanics, and Union Registry architecture, see `research/eu-ets-reality-check.md`.
+
+---
+
 ## 4. Architecture — what we're building
 
 ### Repo layout
@@ -283,24 +304,26 @@ Open with: *"Compliance carbon is a €800B/yr market. None of it trades on-chai
 3. **Solution** — Carbon DEX with regulator as first-class on-chain participant
 4. **Proof** — live demo
 
-### Demo narration (4 beats, not 5)
-Mint → trade → freeze → retire. The "regulator sees provenance" beat from §5 collapses into the trade beat — the regulator dashboard is shown *during* the trade, not as a separate step. Tighter, no time lost.
+### Demo narration
+Default to **happy flow** (§5): three beats — issuance → trade → surrender. Use §5b's freeze flow inserts only when the venue calls for the regulator-power emphasis. The `/regulator` dashboard is visible throughout all three beats, not as a separate "regulator sees provenance" step — the provenance arrow that lights up during Beat 2 (trade) is the regulator-sees-everything moment.
 
 ### Hero action per role (for narration only)
-- **Regulator:** freeze (the climax)
-- **Company B:** retire (the offset proof)
-- **Company A:** seller — no hero action; exists as foil
+- **Regulator:** issuance (Beat 1) is the hero action in happy flow — legitimate authority, not only enforcement. In §5b alternate, the freeze becomes the hero.
+- **Company B:** surrender (Beat 3) — the offset proof. Same in both flows.
+- **Company A:** receives allocation (Beat 1); no further hero action; exists as foil.
 
-Mint becomes setup, not hero. Doesn't change contracts or demo flow — only the pitch script.
+Reframes the regulator's first visible on-chain action as legitimate authority (issuance) rather than only enforcement (freeze). Doesn't change contracts — only the pitch script.
 
 ### Pre-empt the "isn't on-chain carbon dead?" objection
 Add a single deck slide: *"You're thinking of the wrong market."* Show voluntary vs. compliance split. Disarm before judges raise it.
 
 ### Numbers to memorise (whoever pitches)
-- EU ETS market size: **~€800B annual volume**
+- EU ETS market size: **~€800B annual volume** (combined spot + derivatives — verify before pitch)
 - Compliance vs voluntary: **~375× larger**
 - EU-regulated companies subject to ETS: **10,000+**
-- Demo facts: 1,000 credits minted, 1 trade, 1 retirement, 1 live freeze
+- Phase 4 cap (2024): **~1.39 Gt CO₂** | Linear Reduction Factor: **4.4%/yr** | EUA price: **~€65–70** | Surrender deadline: **30 September** | Excess-emission penalty: **€100/t shortfall** (effective price ceiling)
+- EEX auction cadence: **~1–1.5M EUAs/day**, Mon/Tue/Thu/Fri-DE
+- Demo facts (happy flow): **1,000 EUAs issued · 200 traded · 200 retired · 800 in circulation** (§5b adds 1 live freeze)
 
 ### "What we punted" slide
 Honest scope acknowledgement builds credibility. List: real EU registry oracle, production-grade KYC, zk-privacy on trades, account abstraction, real fiat on/off-ramp, MiCA compliance audit.
@@ -312,7 +335,10 @@ Takeaway #12 warns against bolt-on bounty features. Pre-prepared answer if a jud
 *"What about futures and options?"* — *"Spot only in V1. Real EU ETS is dominated by derivatives — futures and options on EEX and ICE Endex run roughly 10–15× spot volume — and the legitimate uses (hedging, capital planning, liquidity) are real. Adding a perpetual or fixed-date forward on top of our spot DEX is mechanical, not architectural — it's the natural next layer. EU ETS itself developed in that order: spot launched 2005, derivatives matured afterward. We chose not to make a speculative market our V1 contribution."*
 
 ### Regulator-MEV Q&A
-**Deferred until research is done** (HANDOFF §8). Our contracts are post-hoc by EVM design — there is no mempool-watching primitive, no front-run hook, no transaction-ordering capability. The framing of *whether this is faithful to real EU ETS or a deliberate divergence* depends on what powers the Union Registry administrators actually have. Don't lock pitch language for this Q&A entry until that's known.
+*"Isn't an on-chain regulator just MEV?"* — *"No, and the architecture is more faithful to real EU ETS than the question assumes. Our regulator has mint, freeze, and audit powers — never trade, take fees, or reorder transactions. EVM atomicity means no mid-flight intercept window; freezes are forward-only. That matches real EU ETS enforcement exactly: Reg. 2019/1122 Art. 30 lets national administrators suspend account access for up to 4 weeks, but the Union Registry has no transfer-reversal primitive. Even after the 2010-11 phishing thefts (~€7M of EUAs stolen), the Commission suspended *future* spot trading EU-wide for ~10 days rather than rollback. Forward-only freeze is the regulator's actual toolkit — we matched it deliberately."* (Source: `research/eu-ets-reality-check.md` §1.)
+
+### Bridge / "how do EUAs get on-chain?" Q&A
+*"How do real EUAs get into your DEX? You can't just mint EU regulatory instruments."* — *"Correct — that's the bridge problem, and we name it explicitly. v1 production runs through a licensed custodian under MiCA + the EU's DLT Pilot Regime: real EUAs sit in the custodian's Union Registry account; 1:1 backed tokens flow through our contracts (the wBTC pattern, well-precedented). v2 — 1–5 year arc — the Union Registry itself migrates on-chain and the bridge goes away. The trading + surrender + supervision logic in our contracts is the same regardless of which model is upstream. For the demo, `Regulator.mint()` collapses both — we don't pretend native issuance exists today, but the on-chain layer is real and reusable."* (See §3.5 for the full v1/v2/v3 roadmap.)
 
 ### Aesthetic
 Institutional / Scandinavian-industrial. No crypto-kitsch, no gradients, no marketing language. Judges from TradFi or policy backgrounds respond to clean, sparse, structured design — the brief already aligns Lin to this.
