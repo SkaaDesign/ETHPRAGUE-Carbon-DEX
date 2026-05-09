@@ -51,8 +51,9 @@ contract DeployCarbonSystem is Script {
         );
         console.log("Regulator deployed at:", address(regulator));
         
-        // Set up permissions
+        // --- Set up permissions ---
         carbonCredit.setRegulator(address(regulator));
+        complianceRegistry.setRegulator(address(regulator)); // <-- ADDED THIS LINE TO FIX THE ONLY REGULATOR REVERT
         carbonDEX.unpause(); // Ensure DEX starts unpaused
         
         console.log("\n=== Deployment Complete ===");

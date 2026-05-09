@@ -4,8 +4,9 @@ pragma solidity ^0.8.23;
 import "./CarbonCredit.sol";
 import "./EURS.sol";
 import "./ComplianceRegistry.sol";
+import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 
-contract CarbonDEX {
+contract CarbonDEX is ERC1155Holder {
     struct Pool {
         uint256 reserveEURS;
         uint256 reserveCarbon;
@@ -136,12 +137,9 @@ contract CarbonDEX {
         carbonOutput = getOutputAmount(eursInput, pool.reserveEURS, pool.reserveCarbon);
         require(carbonOutput >= minCarbonOutput, "slippage too high");
         
-        // Apply fee
-        uint256 feeAmount = (eursInput * FEE) / FEE_DENOMINATOR;
-        uint256 eursInputMinusFee = eursInput - feeAmount;
-        
-        // Update reserves (fee stays in pool)
-        pool.reserveEURS += eursInputMinusFee;
+        // Corrected: Update reserve with the FULL incoming amount. 
+        // The fee stays inside the pool to increase liquidity value.
+        pool.reserveEURS += eursInput;
         pool.reserveCarbon -= carbonOutput;
         
         // Transfer
@@ -162,12 +160,8 @@ contract CarbonDEX {
         eursOutput = getOutputAmount(carbonInput, pool.reserveCarbon, pool.reserveEURS);
         require(eursOutput >= minEURSOutput, "slippage too high");
         
-        // Apply fee
-        uint256 feeAmount = (carbonInput * FEE) / FEE_DENOMINATOR;
-        uint256 carbonInputMinusFee = carbonInput - feeAmount;
-        
-        // Update reserves
-        pool.reserveCarbon += carbonInputMinusFee;
+        // Corrected: Update reserve with the FULL incoming amount.
+        pool.reserveCarbon += carbonInput;
         pool.reserveEURS -= eursOutput;
         
         // Transfer
@@ -178,7 +172,7 @@ contract CarbonDEX {
     }
     
     function getOutputAmount(uint256 inputAmount, uint256 inputReserve, uint256 outputReserve) 
-        private 
+        public 
         pure 
         returns (uint256) 
     {
@@ -213,5 +207,10 @@ contract CarbonDEX {
         } else if (y != 0) {
             z = 1;
         }
+    }
+
+    // Explicitly override to resolve interface inheritance trees if using OpenZeppelin v5+
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC1155Holder) returns (bool) {
+        return super.supportsInterface(interfaceId);
     }
 }
