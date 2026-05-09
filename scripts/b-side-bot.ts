@@ -1,28 +1,24 @@
-// b-side-bot.ts — Off-stage automation for Company B's matching DEX purchase.
+// b-side-bot.ts — Off-stage automation for Company B's matching DEX trade.
 //
-// During the live demo, Company A clicks "Sell" on /company. That fires
-// CarbonDEX.swapCreditForEURS on Sepolia. This bot watches the chain for
-// that event; the moment it sees A's swap, it fires B's matching
-// swapEURSForCreditExactOut so the 200 EUA flow from A → pool → B in real
-// time. Audience sees the /public ticker tick twice within ~5 seconds:
-// "A sold 200 EUA · B bought 200 EUA". Narrator: "the AMM matched her sale
-// with the next compliance buyer."
+// Mirrors A's trades in BOTH directions so A can trade freely on stage:
+//   A sells N EUA → bot fires B's swapEURSForCreditExactOut(N, maxIn)  → B buys N
+//   A buys  N EUA → bot fires B's swapCreditForEURS(N, 0)              → B sells N
 //
-// Run from repo root:
-//   bun run scripts/b-side-bot.ts
+// Pool returns near-balanced after each pair; LP fees accrue. Audience sees
+// /public ticker tick twice within ~5 seconds; narrator: "the AMM matched
+// her trade with the next compliance counterparty."
 //
-// Required env (loaded from contracts/.env automatically — see Bun docs):
+// Pre-seed: B needs both EURS (auto-faucets at startup) AND CarbonCredit
+// inventory (Deploy.s.sol pre-issues 500 EUA to B at deploy time). B also
+// pre-approves the DEX for both tokens at startup.
+//
+// Run from repo root:  bash scripts/run-b-bot.sh
+//
+// Required env (loaded from contracts/.env via the wrapper):
 //   SEPOLIA_RPC_URL   — Alchemy/Infura/etc.
 //   COMPANY_B_PK      — Company B's private key
 //
-// On startup, the bot:
-//   1. Reads DEX + EURS addresses from contracts/script/addresses.json
-//   2. Faucets B with 20k EURS if balance is low
-//   3. Approves DEX for unlimited EURS spend (one-time per DEX address)
-//   4. Subscribes to DEX Swap events
-//   5. On A's sell → fires B's matching exact-output buy
-//
-// After a fresh redeploy (new DEX address), restart the bot.
+// After every fresh redeploy (new DEX address), restart the bot.
 
 import {
   createPublicClient,
@@ -54,6 +50,7 @@ if (!COMPANY_B_PK || !COMPANY_B_PK.startsWith("0x")) {
 const sepoliaContracts = addresses.networks.sepolia.contracts;
 const DEX: Address = getAddress(sepoliaContracts.CarbonDEX);
 const EURS: Address = getAddress(sepoliaContracts.EURS);
+const CARBON_CREDIT: Address = getAddress(sepoliaContracts.CarbonCredit);
 const COMPANY_A: Address = getAddress(addresses.ens.companyA.address);
 
 const account = privateKeyToAccount(COMPANY_B_PK);
@@ -64,6 +61,7 @@ const COMPANY_B: Address = account.address;
 const DEX_ABI = parseAbi([
   "event Swap(address indexed sender, uint256 amountIn, uint256 amountOut, bool isEURSIn)",
   "function swapEURSForCreditExactOut(uint256 amountOut, uint256 maxAmountIn) returns (uint256)",
+  "function swapCreditForEURS(uint256 amountIn, uint256 minAmountOut) returns (uint256)",
   "function reserveEURS() view returns (uint256)",
   "function reserveCredit() view returns (uint256)",
 ]);
@@ -74,6 +72,12 @@ const EURS_ABI = parseAbi([
   "function allowance(address owner, address spender) view returns (uint256)",
   "function faucet(uint256 amount)",
   "function FAUCET_MAX() view returns (uint256)",
+]);
+
+const ERC20_ABI = parseAbi([
+  "function approve(address spender, uint256 amount) returns (bool)",
+  "function balanceOf(address) view returns (uint256)",
+  "function allowance(address owner, address spender) view returns (uint256)",
 ]);
 
 // ─── Clients ───────────────────────────────────────────────────────────────
@@ -124,27 +128,62 @@ async function ensureFunded() {
 }
 
 async function ensureApproved() {
-  const allowance = (await publicClient.readContract({
+  // EURS approval (B spends EURS when buying CarbonCredit, mirroring A's sells)
+  const eursAllowance = (await publicClient.readContract({
     address: EURS,
     abi: EURS_ABI,
     functionName: "allowance",
     args: [COMPANY_B, DEX],
   })) as bigint;
 
-  if (allowance >= TARGET_EURS_BALANCE) {
-    console.log("  → DEX already approved for unlimited EURS, skipping");
-    return;
+  if (eursAllowance < TARGET_EURS_BALANCE) {
+    console.log("  → approving DEX for unlimited EURS spend...");
+    const hash = await walletClient.writeContract({
+      address: EURS,
+      abi: EURS_ABI,
+      functionName: "approve",
+      args: [DEX, MAX_UINT256],
+    });
+    await publicClient.waitForTransactionReceipt({ hash });
+    console.log(`  ✓ EURS approve tx ${hash}`);
+  } else {
+    console.log("  → DEX already approved for EURS");
   }
 
-  console.log("  → approving DEX for unlimited EURS spend...");
-  const hash = await walletClient.writeContract({
-    address: EURS,
-    abi: EURS_ABI,
-    functionName: "approve",
-    args: [DEX, MAX_UINT256],
-  });
-  await publicClient.waitForTransactionReceipt({ hash });
-  console.log(`  ✓ approve tx ${hash}`);
+  // CarbonCredit approval (B spends CarbonCredit when selling, mirroring A's buys)
+  const ccAllowance = (await publicClient.readContract({
+    address: CARBON_CREDIT,
+    abi: ERC20_ABI,
+    functionName: "allowance",
+    args: [COMPANY_B, DEX],
+  })) as bigint;
+
+  if (ccAllowance < parseUnits("1000", 18)) {
+    console.log("  → approving DEX for unlimited CarbonCredit spend...");
+    const hash = await walletClient.writeContract({
+      address: CARBON_CREDIT,
+      abi: ERC20_ABI,
+      functionName: "approve",
+      args: [DEX, MAX_UINT256],
+    });
+    await publicClient.waitForTransactionReceipt({ hash });
+    console.log(`  ✓ CarbonCredit approve tx ${hash}`);
+  } else {
+    console.log("  → DEX already approved for CarbonCredit");
+  }
+
+  // Inventory check (CarbonCredit, for selling)
+  const ccBalance = (await publicClient.readContract({
+    address: CARBON_CREDIT,
+    abi: ERC20_ABI,
+    functionName: "balanceOf",
+    args: [COMPANY_B],
+  })) as bigint;
+  console.log(`  B CarbonCredit balance: ${fmt(ccBalance)} EUA`);
+  if (ccBalance === 0n) {
+    console.log("  ⚠  B has no CarbonCredit inventory — bot can buy but not sell.");
+    console.log("     Deploy.s.sol pre-seeds B with 500 EUA; re-deploy if missing.");
+  }
 }
 
 // ─── Main ──────────────────────────────────────────────────────────────────
@@ -161,7 +200,7 @@ await ensureFunded();
 await ensureApproved();
 console.log("");
 
-console.log("Subscribing to DEX Swap events...");
+console.log("Subscribing to DEX Swap events (mirrors both directions)...");
 publicClient.watchContractEvent({
   address: DEX,
   abi: DEX_ABI,
@@ -171,28 +210,51 @@ publicClient.watchContractEvent({
       const sender = log.args.sender as Address | undefined;
       const isEURSIn = log.args.isEURSIn as boolean | undefined;
       const amountIn = log.args.amountIn as bigint | undefined;
+      const amountOut = log.args.amountOut as bigint | undefined;
 
-      if (!sender || amountIn === undefined) continue;
+      if (!sender || amountIn === undefined || amountOut === undefined || isEURSIn === undefined) continue;
 
-      // Only react when A is the seller (i.e., A swapped Credit -> EURS)
+      // Only react to A's swaps; ignore our own (B's) and any other party's
       if (getAddress(sender) !== COMPANY_A) continue;
-      if (isEURSIn) continue; // skip EURS-in swaps; we want Credit-in swaps
 
-      console.log(`\n[${new Date().toISOString()}] A sold ${fmt(amountIn)} EUA (tx ${log.transactionHash})`);
-      console.log(`  → firing B's matching buy of ${fmt(amountIn)} EUA...`);
+      const ts = new Date().toISOString();
 
-      try {
-        const hash = await walletClient.writeContract({
-          address: DEX,
-          abi: DEX_ABI,
-          functionName: "swapEURSForCreditExactOut",
-          args: [amountIn, TARGET_EURS_BALANCE], // amountOut = match A's sale; maxIn = our 20k buffer
-        });
-        console.log(`  ✓ B buy submitted: ${hash}`);
-        const receipt = await publicClient.waitForTransactionReceipt({ hash });
-        console.log(`  ✓ confirmed in block ${receipt.blockNumber} (status: ${receipt.status})`);
-      } catch (err) {
-        console.error("  ✗ B's buy failed:", err);
+      if (isEURSIn) {
+        // A bought CarbonCredit (paid EURS, got Credit). B mirrors by SELLING the same Credit qty.
+        const creditQty = amountOut;
+        console.log(`\n[${ts}] A bought ${fmt(creditQty)} EUA for ${fmt(amountIn)} EURS (tx ${log.transactionHash})`);
+        console.log(`  → firing B's matching SELL of ${fmt(creditQty)} EUA...`);
+        try {
+          const hash = await walletClient.writeContract({
+            address: DEX,
+            abi: DEX_ABI,
+            functionName: "swapCreditForEURS",
+            args: [creditQty, 0n], // exact-input on credit; minOut = 0 (mirror context, accept any)
+          });
+          console.log(`  ✓ B sell submitted: ${hash}`);
+          const receipt = await publicClient.waitForTransactionReceipt({ hash });
+          console.log(`  ✓ confirmed in block ${receipt.blockNumber} (status: ${receipt.status})`);
+        } catch (err) {
+          console.error("  ✗ B's sell failed:", err);
+        }
+      } else {
+        // A sold CarbonCredit (paid Credit, got EURS). B mirrors by BUYING the same Credit qty.
+        const creditQty = amountIn;
+        console.log(`\n[${ts}] A sold ${fmt(creditQty)} EUA for ${fmt(amountOut)} EURS (tx ${log.transactionHash})`);
+        console.log(`  → firing B's matching BUY of ${fmt(creditQty)} EUA...`);
+        try {
+          const hash = await walletClient.writeContract({
+            address: DEX,
+            abi: DEX_ABI,
+            functionName: "swapEURSForCreditExactOut",
+            args: [creditQty, TARGET_EURS_BALANCE], // exact-output on credit; max EURS spend caps it
+          });
+          console.log(`  ✓ B buy submitted: ${hash}`);
+          const receipt = await publicClient.waitForTransactionReceipt({ hash });
+          console.log(`  ✓ confirmed in block ${receipt.blockNumber} (status: ${receipt.status})`);
+        } catch (err) {
+          console.error("  ✗ B's buy failed:", err);
+        }
       }
     }
   },
