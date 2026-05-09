@@ -123,19 +123,34 @@ Every action shows: tx hash, Sourcify-verified contract badge, plain-English des
 
 ---
 
-## 5. The demo flow (locked — 5 steps)
+## 5. The demo flow — happy path (primary, 3 beats)
 
-Spine of the project. Everything we build serves this.
+Spine of the live demo. Three laptops on stage = three screens (`/company`, `/regulator`, `/public`). The Company laptop role-switches from Company A to Company B between Beat 1 and Beat 2.
 
-1. **Regulator mints 1,000 carbon credits to Company A** (verified emitter). Sourcify-verified contract address shown on screen.
-2. **Company B swaps EURS for credits** on the DEX. Trade appears in the regulator dashboard in real time.
-3. **Regulator sees full provenance** — who, what, when, on-chain.
-4. **Regulator's review flags Company B** (suspected sanctions exposure or fraud pattern). Regulator calls `freeze(companyB)` on `ComplianceRegistry`. **Company B's next swap attempt reverts on-chain — frozen.** Live freeze visible on stage as the failed transaction.
-5. **Company B retires the credit.** Burned forever. Permanent on-chain offset proof displayed.
+1. **Issuance.** Regulator (`eu-ets-authority.eth`) mints 1,000 EUAs to Company A (`cement-mainz.eth`), tagged vintage 2026 / Industry / DE. Sourcify-verified contract addresses visible. `/company` balance, `/regulator` audit log, and `/public` total supply all update.
+2. **Trade.** Company B (`aluminium-bratislava.eth`) swaps EURS for 200 EUAs on the DEX (~€70 / EUA). Trade streams to the regulator dashboard with provenance arrow; public ticker and price chart tick.
+3. **Surrender.** Company B calls `retire(200, beneficiary, reasonURI)`. 200 EUAs burned forever. Permanent retirement certificate issued (copyable URL for sustainability disclosure). Total on-chain supply: 1,000 → 800.
 
-Three laptops on stage = three roles. Regulator wields the freeze button live.
+**Closing visual:** the cap-accounting widget on `/public` shows supply has actually contracted — `1,000 issued · 200 retired · 800 in circulation`. Make this the final shot — it's the *"this actually does what cap-and-trade is supposed to do"* moment.
 
-> **Why the freeze is prospective, not mid-flight:** EVM trades are atomic — a swap completes in a single transaction with no in-flight window in which to intercept. The regulator's freeze therefore stops *future* trades by Company B (and similarly, the DEX-wide `pause()` stops future trades by anyone). It does not unwind a confirmed trade. This matches how compliance-market enforcement actually works: investigations and freezes are post-hoc, applied to subsequent activity. Whether real EU ETS administrators have additional mid-flight powers in the centralized Union Registry is a separate research question (see HANDOFF §8) — our contracts are mechanically post-hoc by EVM design.
+Detailed three-screen choreography with narration timing lives in `design/happy-flow.md`.
+
+---
+
+## 5b. Demo alternate — freeze flow (drama version)
+
+For runs where we want regulator enforcement as the climax. Insert two beats between Beat 2 (trade) and Beat 3 (surrender):
+
+- **2.5 Flag.** Regulator's review surfaces a sanctions-exposure / fraud pattern on Company B. Regulator calls `ComplianceRegistry.freeze(companyB)`. Audit log: `FREEZE` entry.
+- **2.75 Block.** Company B attempts a follow-up swap — transaction reverts on-chain (`NotVerified`). Visible on all three screens as a failed transaction.
+
+Resume Beat 3 against an unfrozen state (regulator unfreezes after investigation) or end the demo at Block — narrator's choice.
+
+> **Why the freeze is prospective, not mid-flight:** EVM trades are atomic — there is no in-flight window. The freeze stops *future* trades. This is *more faithful* to real EU ETS, not less: per `research/eu-ets-reality-check.md` §1, the Union Registry has **no transfer-reversal primitive** even after the 2010-11 phishing thefts (the Commission suspended *future* spot trading EU-wide for ~10 days rather than rollback). Reg. 2019/1122 Art. 30 lets national administrators suspend account access for up to 4 weeks — that's our `freeze`. Forward-only is the regulator's actual toolkit.
+
+> **Sanctions narration caveat:** research found no public evidence of a discrete EU action specifically freezing named Russian operator accounts in 2022. The actual mechanic is automatic application of sanctions regulations (Council Reg. 2022/328 onwards) to any Union Registry holdings of listed entities, executed by national administrators. Don't assert *"the regulator froze Russian operators"* without that qualifier — prefer *"EU sanctions regulations automatically freeze sanctioned holdings."*
+
+**Trade-off:** adds ~60s and one transition. Use when the regulator-as-first-class-participant differentiator is the harder sell.
 
 ---
 
