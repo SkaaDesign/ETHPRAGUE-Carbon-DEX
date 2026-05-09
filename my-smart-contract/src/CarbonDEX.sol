@@ -4,9 +4,8 @@ pragma solidity ^0.8.23;
 import "./CarbonCredit.sol";
 import "./EURS.sol";
 import "./ComplianceRegistry.sol";
-import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 
-contract CarbonDEX is ERC1155Holder {
+contract CarbonDEX {
     struct Pool {
         uint256 reserveEURS;
         uint256 reserveCarbon;
@@ -76,9 +75,9 @@ contract CarbonDEX is ERC1155Holder {
     {
         require(eursAmount > 0 && carbonAmount > 0, "amounts must be > 0");
         
-        // Transfer tokens to DEX
+        // Transfer tokens to DEX (using ERC-20 transfers)
         eurs.transferFrom(msg.sender, address(this), eursAmount);
-        carbonCredit.safeTransferFrom(msg.sender, address(this), 1, carbonAmount, "");
+        carbonCredit.transferFrom(msg.sender, address(this), carbonAmount);
         
         if (pool.totalLiquidityTokens == 0) {
             // Initial liquidity: geometric mean
@@ -121,7 +120,7 @@ contract CarbonDEX is ERC1155Holder {
         
         // Transfer back
         eurs.transfer(msg.sender, eursAmount);
-        carbonCredit.safeTransferFrom(address(this), msg.sender, 1, carbonAmount, "");
+        carbonCredit.transfer(msg.sender, carbonAmount);
         
         emit LiquidityRemoved(msg.sender, eursAmount, carbonAmount, liquidityTokens);
     }
@@ -137,14 +136,12 @@ contract CarbonDEX is ERC1155Holder {
         carbonOutput = getOutputAmount(eursInput, pool.reserveEURS, pool.reserveCarbon);
         require(carbonOutput >= minCarbonOutput, "slippage too high");
         
-        // Corrected: Update reserve with the FULL incoming amount. 
-        // The fee stays inside the pool to increase liquidity value.
         pool.reserveEURS += eursInput;
         pool.reserveCarbon -= carbonOutput;
         
         // Transfer
         eurs.transferFrom(msg.sender, address(this), eursInput);
-        carbonCredit.safeTransferFrom(address(this), msg.sender, 1, carbonOutput, "");
+        carbonCredit.transfer(msg.sender, carbonOutput);
         
         emit Swap(msg.sender, address(this), eursInput, carbonOutput, true);
     }
@@ -160,12 +157,11 @@ contract CarbonDEX is ERC1155Holder {
         eursOutput = getOutputAmount(carbonInput, pool.reserveCarbon, pool.reserveEURS);
         require(eursOutput >= minEURSOutput, "slippage too high");
         
-        // Corrected: Update reserve with the FULL incoming amount.
         pool.reserveCarbon += carbonInput;
         pool.reserveEURS -= eursOutput;
         
         // Transfer
-        carbonCredit.safeTransferFrom(msg.sender, address(this), 1, carbonInput, "");
+        carbonCredit.transferFrom(msg.sender, address(this), carbonInput);
         eurs.transfer(msg.sender, eursOutput);
         
         emit Swap(msg.sender, address(this), carbonInput, eursOutput, false);
@@ -207,10 +203,5 @@ contract CarbonDEX is ERC1155Holder {
         } else if (y != 0) {
             z = 1;
         }
-    }
-
-    // Explicitly override to resolve interface inheritance trees if using OpenZeppelin v5+
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC1155Holder) returns (bool) {
-        return super.supportsInterface(interfaceId);
     }
 }
