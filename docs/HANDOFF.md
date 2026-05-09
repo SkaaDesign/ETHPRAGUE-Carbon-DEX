@@ -67,21 +67,24 @@ When suggesting role splits: treat Parth as a separate dev resource (he types co
 - **Tooling locked:** Foundry (v1.7.1 installed on Fredrik's machine, path in `~/.bashrc`), Next.js + viem, Sourcify + ENS. **Demo chain: Sepolia L1** (decided 2026-05-08, native ENS, fewer moving pieces).
 - **Stretch (not in core):** Account Abstraction, Apify live ETS price feed.
 - **Deferred:** wallet UX (RainbowKit vs Privy — decide when frontend dev starts), pitch script polish (Day 3), judge Q&A rehearsal, role-split detail, cut-list.
-- **Code:** Parth has pushed contracts to `origin/main` (`c40abad` "smart contracts" + `995fad9` "implement complete Carbon DEX system with 6 core contracts"). Plus `origin/smart-contract` branch (`cbf21f6`) — Parth's WIP. **Reconciliation pending:** if Parth's contracts implement ERC-1155, they need ERC-20 adjustment per the 2026-05-09 pivot.
-- **Doc work:** `docs/scope-update` branch carries 9 commits with research, ERC-20 pivot, happy flow, bridge framing, regulator-UI government framing, gitignore patch, and CHANGELOG. **Not yet pushed.** Local `main` is 1 ahead of `origin/main` (an older CHANGELOG commit) and 2 behind (Parth's contracts) — diverged.
+- **Code:** Our 6 contracts live in `contracts/` on `docs/scope-update`. **66 tests pass in ~19ms.** Deploy + DemoLocal scripts work end-to-end on anvil. Parth's contracts at `origin/main` `my-smart-contract/` were reviewed; consolidation decision is **use ours wholesale, lift small items (audit fn, DEX view helpers) — see CHANGELOG 2026-05-09 (later evening) for full reasoning.** Merge PR (with `parth-archive` tag on Parth's last commit) and ping-Parth-first are open work.
+- **Doc work:** `docs/scope-update` carries the full scope evolution + all contract code + Deploy + DemoLocal. **Not yet pushed.** Local `main` is 1 ahead of `origin/main` (an old CHANGELOG-only commit, will be superseded by the PR) and 2 behind (Parth's contracts, will be superseded by the PR after merge).
 
 ### Branch state (visual)
 
 ```
-                                      ┌─ docs/scope-update (HEAD, 9 commits, local-only)
-                                      │   (research, ERC-20, happy flow, bridge, gitignore, CHANGELOG)
+                                      ┌─ docs/scope-update (HEAD, ~14 commits, local-only)
+                                      │   research · ERC-20 · happy flow · bridge framing
+                                      │   docs reshuffle · OZ install · CPMM decision
+                                      │   6 contracts (66 tests) · audit + DEX view lifts
+                                      │   Deploy + DemoLocal scripts (e2e on anvil)
                                       │
 ... d33d5a9 ── 5382a7d ── ef5aacc ────┤
                   │                   │
-                  │  (local main: 1 ahead of origin)
+                  │  (local main: 1 ahead of origin/main, supersedes on merge)
                   │
-                  └────── c40abad ── 995fad9 (origin/main — Parth's contracts)
-                  └────── ...cbf21f6 (origin/smart-contract — Parth's WIP)
+                  └────── c40abad ── 995fad9 (origin/main — Parth's contracts; tag as parth-archive before merge)
+                  └────── ...cbf21f6 (origin/smart-contract — Parth's WIP; leave as-is)
 ```
 
 ---
@@ -90,20 +93,20 @@ When suggesting role splits: treat Parth as a separate dev resource (he types co
 
 Building begins now. Setup is done; scope is settled. Next moves:
 
-1. **Reconcile contracts with Parth.** Read `origin/main` (`995fad9`) to see what Parth implemented. If `CarbonCredit` is ERC-1155, flag the ERC-20 pivot to Parth and coordinate the adjustment. If already ERC-20, great. **Do not unilaterally rewrite Parth's code** — coordinate.
-2. **Push `docs/scope-update`** when ready (so Lin can access `design/happy-flow.md` via the repo, and Parth sees the updated BRIEF). Probably open a draft PR `docs/scope-update` → `main`. *Open question — confirm with Fredrik before pushing.*
-3. **Frontend scaffold:** `web/` Next.js (App Router) + viem + RainbowKit-or-Privy. Three routes: `/company`, `/regulator`, `/public`. Per `design/happy-flow.md` for layout guidance. **Wallet-UX choice (RainbowKit vs Privy) still deferred** — decide when starting frontend.
-4. **Wire frontend to contracts.** ABIs from Parth's contracts; `web/lib/contracts.ts` for bindings. ENS resolution via viem's L1 client (chain = Sepolia, ENS native).
-5. **ENS name registrations** on Sepolia for demo accounts: `eu-ets-authority.eth`, `cement-mainz.eth`, `aluminium-bratislava.eth` (or whatever cast Lin signs off on per `design/happy-flow.md §3`).
-6. **Sourcify verification** for all deployed contracts. Surface badges in UI (`/company`, `/regulator`, `/public` per BRIEF §4).
-7. **Demo rehearsal** end-to-end on Sepolia. Per `BRIEF.md §5` happy flow primary; `§5b` alternate as backup.
+1. **Run `devils-advocate` (or general-purpose Agent) on `contracts/`** — read-only edge-case + production-readiness check before any Sepolia deploy. The custom CPMM is the highest-value target (whitelist hooks, pause flow, MIN_LIQUIDITY edge cases, fee math).
+2. **Ping Parth** with the consolidation summary (CHANGELOG 2026-05-09 later evening) before pushing. Frame: spec evolved on the doc side after he started; we're using ours; offer him Sepolia deploy + ops as the next chunk of work he can own.
+3. **Push `docs/scope-update`** + open PR → `main`. Tag Parth's `995fad9` as `parth-archive` before merge so his work is preserved at a recoverable git ref.
+4. **Sepolia onboarding** — Alchemy account + Sepolia RPC URL + faucet ETH for the deployer wallet. Then `forge script script/Deploy.s.sol:Deploy --rpc-url $SEPOLIA_RPC_URL --broadcast --verify --verifier sourcify`. Sourcify verification is part of the broadcast flow.
+5. **ENS name registrations** on Sepolia for demo accounts: `eu-ets-authority.eth`, `cement-mainz.eth`, `aluminium-bratislava.eth` (per `docs/design/happy-flow.md §3`).
+6. **Frontend scaffold + wiring** — owned by the forked session per `docs/frontend-parallel-plan.md`. `web/` Next.js (App Router) + viem + RainbowKit. Three routes: `/company`, `/regulator`, `/public`. ABIs come from `contracts/out/` after `forge build`; addresses + chain config land in `web/lib/contracts.ts`. ENS resolution via viem's L1 client (Sepolia, native).
+7. **Demo rehearsal** end-to-end on Sepolia. Per `BRIEF.md §5` happy flow primary; `§5b` alternate as backup. Watch the slippage from `DemoLocal` — pool may need to be seeded larger for the Beat 2 narration to match.
 8. **Pitch finalisation** per `BRIEF.md §14`. Numbers memorised, derivatives + bridge + regulator-MEV Q&A canned answers.
 
 ### Parallel tracks
 
-- **Lin:** read `design/happy-flow.md`. Produce screen mockups for `/company`, `/regulator`, `/public` at Beat 2 (busiest state) and Beat 3 (closing visual, cap-accounting widget showing supply contracted). Note the `/regulator` screen needs **two distinct panels**: scheduled allocation events (calendar-driven) and authority controls (discretionary freeze/pause). Issuance is *not* in authority controls.
-- **Nahin:** read `research/eu-ets-reality-check.md` for Q&A defensibility. Update pitch script to use happy-flow narration (issuance event execution, not "regulator gifts credits"). Verify the €800B market-size number flagged in BRIEF §14 before pitch.
-- **Parth:** if his contracts are ERC-1155, adjust to ERC-20 per BRIEF §4 (CarbonCredit + Retirement function signatures changed). Otherwise, push tests and prepare deploy script.
+- **Lin:** read `docs/design/happy-flow.md`. Produce screen mockups for `/company`, `/regulator`, `/public` at Beat 2 (busiest state) and Beat 3 (closing visual, cap-accounting widget showing supply contracted). Note the `/regulator` screen needs **two distinct panels**: scheduled allocation events (calendar-driven) and authority controls (discretionary freeze/pause/audit). Issuance is *not* in authority controls.
+- **Nahin:** read `docs/research/eu-ets-reality-check.md` for Q&A defensibility. Update pitch script to use happy-flow narration (issuance event execution, not "regulator gifts credits"). Verify the €800B market-size number flagged in BRIEF §14 before pitch.
+- **Parth:** see CHANGELOG 2026-05-09 (later evening) for consolidation context. Suggested next chunk: own Sepolia deploy + Sourcify verification + maintaining the `script/` directory as we add operational tooling.
 
 ---
 

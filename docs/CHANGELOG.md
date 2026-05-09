@@ -9,10 +9,56 @@ Plain-English log of scope and infrastructure changes since the locked baseline.
 
 ## In flight
 
-- **Deploy.s.sol** — single Foundry script that deploys all 6 contracts in order, wires the role grants (DEX → registry, MINTER/BURNER on CarbonCredit, REGULATOR on registry, PAUSER on DEX, OPERATOR on Regulator), pre-seeds Company A + Company B + DEX in the registry, and seeds initial liquidity. Mirrors the deploy-time wiring assumed by every test's setUp().
-- **End-to-end happy-flow script** — `Demo.s.sol` runs BRIEF §5 against a local anvil (issue → swap → retire) so Lin's UI work has a live chain to point at.
-- **Branch reconciliation:** `docs/scope-update` carries 11 commits of scope work + 6 contracts. `origin/main` carries Parth's contracts (`c40abad`, `995fad9`). PR `docs/scope-update` → `main` reconciles when ready.
-- **Frontend scaffold:** Next.js + viem init in `web/` not yet started.
+- **Devils-advocate review pass** on `contracts/` — read-only edge-case + production-readiness check before pushing to Sepolia.
+- **Sepolia onboarding** — Alchemy account + RPC URL + faucet ETH for the deployer wallet. Then `forge script script/Deploy.s.sol:Deploy --rpc-url $SEPOLIA_RPC_URL --broadcast --verify --verifier sourcify`.
+- **ENS registrations on Sepolia** — `eu-ets-authority.eth`, `cement-mainz.eth`, `aluminium-bratislava.eth` per `docs/design/happy-flow.md §3`.
+- **Frontend scaffold** — `web/` Next.js + viem owned by the forked session per `docs/frontend-parallel-plan.md`. ABIs from our `forge build` flow into `web/lib/contracts.ts` once Sepolia addresses are live.
+- **Parth ping + merge** — `docs/scope-update` → `main` PR. Will tag Parth's last commit as `parth-archive` before the merge supersedes `my-smart-contract/`.
+
+---
+
+## 2026-05-09 (later evening) — Consolidation: ours wins, lift small additions, deploy + demo working
+
+**Branch:** `docs/scope-update`. Two commits: `665df41` (lifts) + `1cad9fd` (Deploy + DemoLocal).
+
+### Decision: keep ours wholesale, lift specific items from Parth
+
+After read-only review of `origin/main` `my-smart-contract/`:
+
+- **3 of Parth's 6 contracts diverge from BRIEF in ways that block the demo:**
+  - `Regulator` is ~70% under-spec (no freeze/unfreeze/pause/unpause/audit, no RegulatoryAction event stream, constructor has 4 args but only uses 2)
+  - `CarbonCredit.mint(to, amount)` lacks vintage/sector/origin/issuanceRef — Beat 1 narration "vintage 2026, sector Industry, origin DE" cannot be sourced from on-chain events
+  - `Retirement.retire(amount, comment)` lacks `beneficiary` parameter — design Beat 3 retirement-certificate spec breaks
+- **The remaining 3 are roughly equivalent or weaker** (EURS uses lifetime faucet cap; CR uses string country vs our enum; CarbonDEX missing MIN_LIQUIDITY first-LP attack mitigation, non-standard LP-mint formula `(a+b)/2` vs canonical `min(a,b)`, no ReentrancyGuard).
+
+Action: **use our `contracts/` (66 tests passing) as v1**; lift selectively.
+
+### What we lifted (written fresh, not copied)
+
+ComplianceRegistry:
+- `audit(address, note)` regulator-only function + `CompanyAudited` event
+- `registeredAt` and `lastAuditAt` timestamps on `CompanyRecord`
+
+Regulator:
+- `auditCompany(address, note)` wrapper + `ActionType.Audit` enum variant
+
+CarbonDEX:
+- `getReserves()` view returning both reserves in one call
+- `getSpotPrice()` returning EURS-per-Credit scaled by 1e18 (display-friendly)
+- `getLpBalance(address)` view (named `balanceOf` proxy for frontend clarity)
+
+Tests: +8 covering all of the above. Total: 66/66 pass in ~19ms.
+
+### Deploy + Demo scripts written
+
+- `script/Deploy.s.sol` — single-tx deploy + role wiring + DEX self-registration in CR. Reads `PRIVATE_KEY` env; logs all addresses on completion. Tested against ephemeral anvil — clean run, ~8.7M gas.
+- `script/DemoLocal.s.sol` — one-shot deploy + seed + 3-beat happy flow on local anvil using anvil's default funded keys. Beat 1: regulator issues 1,000 EUA to Company A. Beat 2: Company B swaps 14k EURS for 166 EUA (slippage shows €70 → €100 spot move because pool is small; before pitch, seed pool larger or narrate "demo pool"). Beat 3: Company B retires the 166 EUA — supply visibly contracts. Closing visual works.
+- `script/Demo.s.sol` — parameterised version (takes 6 deployed addresses) for re-running against an already-deployed Sepolia stack.
+
+### Open social work
+
+- **Ping Parth** with the consolidation reasoning before opening the merge PR. Frame: "spec evolved on the doc side after you started; here's what changed and why we're using ours; want to take Sepolia deploy + ops off our plate?"
+- Tag Parth's last commit (`995fad9`) as `parth-archive` before the merge so his work is preserved at a recoverable git ref.
 
 ---
 
