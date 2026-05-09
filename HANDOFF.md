@@ -2,9 +2,9 @@
 
 > **Audience:** Claude Code session that lands fresh in this repo. The user (Fredrik) won't read this — write to him directly in his preferred terse style.
 >
-> **Date written:** 2026-05-08
+> **Date written:** 2026-05-08 · **Last updated:** 2026-05-09 (post-fork)
 >
-> **Bottom line:** scope is locked in `BRIEF.md`. Read it once, then start scaffolding. Don't re-open settled decisions.
+> **Bottom line:** scope is locked in `BRIEF.md` (v2 — ERC-20 pivot, happy-flow demo, bridge framing all integrated 2026-05-09). Read `BRIEF.md` first; then `CHANGELOG.md` to see what changed in the most recent session. Don't re-open settled decisions. Building starts from here.
 
 ---
 
@@ -20,11 +20,14 @@ This repo was just spun up from a prior learning sandbox (`ethereum-test-realm` 
 
 | File | Purpose | When to read |
 |---|---|---|
-| **`BRIEF.md`** | The full scope. Architecture, contract spec, locked decisions, demo flow, presentation guidance. | First thing — always. |
+| **`BRIEF.md`** | Full scope (v2 as of 2026-05-09). Architecture, contract spec, locked decisions, happy-flow demo (§5), freeze flow alternate (§5b), bridge framing (§3.5), presentation guidance and Q&A entries (§14). | First thing — always. |
+| **`CHANGELOG.md`** | Plain-English log of what shifted between sessions, audience-tagged (Nahin / Lin / Parth). | Right after BRIEF — fast catch-up on what's new. |
+| `design/happy-flow.md` | Self-contained demo-flow design spec for Lin / design pass. Three beats × three screens. | When working on UI, designing screens, or rehearsing demo. |
+| `research/eu-ets-reality-check.md` | Primary-source research on real EU ETS regulator behaviour (six questions). | When defending Q&A or contemplating BRIEF changes about regulator powers. |
 | `ethprague_presentation_takeaways.md` | Lin & Nahin's research synthesis from past ETHPrague winner one-pagers. | When drafting pitch / demo polish on Day 3. Not before. |
 | `HANDOFF.md` | This file. | First thing, then move on. |
 
-`BRIEF.md` is the source of truth for everything: contracts, frontend, demo, tooling, prizes, decisions. If something seems open, check there before asking — it's probably already settled.
+`BRIEF.md` is the source of truth for everything: contracts, frontend, demo, tooling, prizes, decisions. `CHANGELOG.md` summarises the session-by-session deltas in plain English. If something seems open, check both — it's probably already settled.
 
 ---
 
@@ -58,35 +61,49 @@ When suggesting role splits: treat Parth as a separate dev resource (he types co
 
 ---
 
-## 4. Project state at handoff
+## 4. Project state at handoff (as of 2026-05-09 post-fork)
 
-- **Scope:** locked in `BRIEF.md`. Architectural decisions in §3 of brief are settled (AMM Uniswap V2 fork, B2B compliance, mock EUR token "EURS", "EU ETS Authority" as regulator, hard whitelist).
-- **Tooling decided:** Foundry for contracts, Next.js + viem for frontend, Sourcify + ENS in scope.
+- **Scope (v2):** locked in `BRIEF.md`. §3 architectural decisions still settled (AMM Uniswap V2 fork, B2B compliance, EURS, EU ETS Authority, hard whitelist) plus row 6 added: `CarbonCredit` is **ERC-20** (changed from ERC-1155 — composes natively with V2 fork; matches real EU ETS within-Phase fungibility; vintage / sector / origin metadata on issuance and retirement event payloads). §3.5 (new) pins us as the on-chain settlement layer for the secondary market — **not** a registry replacement; v1 wrapped / v2 native / v3 auction roadmap. §5 is the happy-flow demo (3 beats: issuance → trade → surrender). §5b preserves the freeze flow as drama-version alternate. §14 Q&A entries (Regulator-MEV, Bridge, Derivatives) are now grounded in research findings.
+- **Tooling locked:** Foundry (v1.7.1 installed on Fredrik's machine, path in `~/.bashrc`), Next.js + viem, Sourcify + ENS. **Demo chain: Sepolia L1** (decided 2026-05-08, native ENS, fewer moving pieces).
 - **Stretch (not in core):** Account Abstraction, Apify live ETS price feed.
-- **Deferred:** chain choice (recommendation Base Sepolia), wallet UX (RainbowKit vs Privy), pitch script, judge Q&A, hour-by-hour timeline, role detail, cut-list.
-- **Code:** none yet. Repo has only docs.
+- **Deferred:** wallet UX (RainbowKit vs Privy — decide when frontend dev starts), pitch script polish (Day 3), judge Q&A rehearsal, role-split detail, cut-list.
+- **Code:** Parth has pushed contracts to `origin/main` (`c40abad` "smart contracts" + `995fad9` "implement complete Carbon DEX system with 6 core contracts"). Plus `origin/smart-contract` branch (`cbf21f6`) — Parth's WIP. **Reconciliation pending:** if Parth's contracts implement ERC-1155, they need ERC-20 adjustment per the 2026-05-09 pivot.
+- **Doc work:** `docs/scope-update` branch carries 9 commits with research, ERC-20 pivot, happy flow, bridge framing, regulator-UI government framing, gitignore patch, and CHANGELOG. **Not yet pushed.** Local `main` is 1 ahead of `origin/main` (an older CHANGELOG commit) and 2 behind (Parth's contracts) — diverged.
+
+### Branch state (visual)
+
+```
+                                      ┌─ docs/scope-update (HEAD, 9 commits, local-only)
+                                      │   (research, ERC-20, happy flow, bridge, gitignore, CHANGELOG)
+                                      │
+... d33d5a9 ── 5382a7d ── ef5aacc ────┤
+                  │                   │
+                  │  (local main: 1 ahead of origin)
+                  │
+                  └────── c40abad ── 995fad9 (origin/main — Parth's contracts)
+                  └────── ...cbf21f6 (origin/smart-contract — Parth's WIP)
+```
 
 ---
 
 ## 5. What to do next
 
-Per `BRIEF.md` §13:
+Building begins now. Setup is done; scope is settled. Next moves:
 
-1. Confirm with Fredrik: ready to scaffold?
-2. **Add a proper `.gitignore`** before any code lands — Foundry (`out/`, `cache/`, `broadcast/`), Node (`node_modules/`, `.next/`), env (`.env*`). Current `.gitignore` is minimal (only `.twincurrent-build/`).
-3. **Install Foundry** — already installed on Fredrik's primary machine (2026-05-08, v1.7.1). For a fresh machine, use **Git Bash** (the official installer is a bash script; PowerShell `iex` will not parse it):
-   ```bash
-   curl -L https://foundry.paradigm.xyz | bash
-   export PATH="$HOME/.foundry/bin:$PATH"   # foundryup auto-detects shell to persist this; if it fails, append to ~/.bashrc manually
-   foundryup
-   forge --version    # verify
-   ```
-   On Fredrik's machine the path is already in `~/.bashrc`. PowerShell users who want `forge` outside Git Bash also need `%USERPROFILE%\.foundry\bin` on their Windows User PATH.
-4. **Scaffold contracts:** `forge init contracts` in repo root. File-level stubs for the six contracts in `BRIEF.md` §4: `CarbonCredit.sol`, `ComplianceRegistry.sol`, `CarbonDEX.sol`, `Regulator.sol`, `Retirement.sol`, `EURS.sol`. Empty function bodies + event signatures.
-5. **Scaffold frontend:** Next.js App Router init in `web/`. Three routes: `/company`, `/regulator`, `/public`.
-6. **Lin's parallel track:** wireframes + the canonical 3-role architecture diagram (`BRIEF.md` §4 frontend section).
-7. **Nahin's parallel track:** MiCA/MiFID one-pager + read competitive landscape (§10) for Q&A prep.
-8. End of Day 1: file-level scaffolds for all six contracts, all three frontend views, wireframes locked.
+1. **Reconcile contracts with Parth.** Read `origin/main` (`995fad9`) to see what Parth implemented. If `CarbonCredit` is ERC-1155, flag the ERC-20 pivot to Parth and coordinate the adjustment. If already ERC-20, great. **Do not unilaterally rewrite Parth's code** — coordinate.
+2. **Push `docs/scope-update`** when ready (so Lin can access `design/happy-flow.md` via the repo, and Parth sees the updated BRIEF). Probably open a draft PR `docs/scope-update` → `main`. *Open question — confirm with Fredrik before pushing.*
+3. **Frontend scaffold:** `web/` Next.js (App Router) + viem + RainbowKit-or-Privy. Three routes: `/company`, `/regulator`, `/public`. Per `design/happy-flow.md` for layout guidance. **Wallet-UX choice (RainbowKit vs Privy) still deferred** — decide when starting frontend.
+4. **Wire frontend to contracts.** ABIs from Parth's contracts; `web/lib/contracts.ts` for bindings. ENS resolution via viem's L1 client (chain = Sepolia, ENS native).
+5. **ENS name registrations** on Sepolia for demo accounts: `eu-ets-authority.eth`, `cement-mainz.eth`, `aluminium-bratislava.eth` (or whatever cast Lin signs off on per `design/happy-flow.md §3`).
+6. **Sourcify verification** for all deployed contracts. Surface badges in UI (`/company`, `/regulator`, `/public` per BRIEF §4).
+7. **Demo rehearsal** end-to-end on Sepolia. Per `BRIEF.md §5` happy flow primary; `§5b` alternate as backup.
+8. **Pitch finalisation** per `BRIEF.md §14`. Numbers memorised, derivatives + bridge + regulator-MEV Q&A canned answers.
+
+### Parallel tracks
+
+- **Lin:** read `design/happy-flow.md`. Produce screen mockups for `/company`, `/regulator`, `/public` at Beat 2 (busiest state) and Beat 3 (closing visual, cap-accounting widget showing supply contracted). Note the `/regulator` screen needs **two distinct panels**: scheduled allocation events (calendar-driven) and authority controls (discretionary freeze/pause). Issuance is *not* in authority controls.
+- **Nahin:** read `research/eu-ets-reality-check.md` for Q&A defensibility. Update pitch script to use happy-flow narration (issuance event execution, not "regulator gifts credits"). Verify the €800B market-size number flagged in BRIEF §14 before pitch.
+- **Parth:** if his contracts are ERC-1155, adjust to ERC-20 per BRIEF §4 (CarbonCredit + Retirement function signatures changed). Otherwise, push tests and prepare deploy script.
 
 ---
 
@@ -119,30 +136,18 @@ Memories worth saving on first opportunity (these don't auto-transfer from the s
 
 ---
 
-## 8. Open research task — low priority, not blocking
+## 8. Closed: EU ETS research task
 
-A pending research task came out of the scope conversation. **Not required for ship.** Hand to a research agent (e.g. `research-specialist` or `research-deep`) as a parallel low-priority task — ideally early in the new session so Nahin can use the output for pitch-Q&A defensibility. Do not block scaffolding on it.
+**Status: COMPLETE 2026-05-09.** Output: `research/eu-ets-reality-check.md` (six questions covered; primary-source citations to EUR-Lex 2003/87/EC, 2019/1122, 2010/23/EU, EU Commission, Europol, ESMA RTS 22, JPMorgan Kinexys, ICAP).
 
-### Goal
-A 1-page reference doc on how the real EU ETS works at the regulator level, so Nahin sounds informed in judge Q&A and so the brief's framing of our regulator role can be pinned down (faithful to real ETS or deliberate divergence, with reason).
+Findings already integrated into:
+- `BRIEF.md §14 Regulator-MEV Q&A` — deferred stub replaced with grounded answer (forward-only freeze is *more* faithful to real EU ETS, not less; cites Reg. 2019/1122 Art. 30 + 2010-11 phishing precedent).
+- `BRIEF.md §14 Bridge Q&A` (new) — pre-empts *"how do real EUAs get on-chain?"*.
+- `BRIEF.md §14 Numbers to memorise` — adds Phase 4 figures (cap, LRF, EUA price, surrender deadline, €100/t penalty).
+- `BRIEF.md §5b` blockquote on prospective freeze — cites the research directly.
+- `BRIEF.md §3.5` (new) — bridge framing v1/v2/v3 roadmap.
 
-### Six questions
-1. **What powers do EU national ETS administrators actually have?** Mid-trade halt? Reverse transfers? Freeze accounts? In what circumstances?
-2. **2010 EU ETS VAT carousel fraud (~€5B):** how was it detected, who acted, what changed afterwards (e.g. reverse-charge VAT)?
-3. **2022 Russian-linked allowance freeze:** the technical mechanic — were accounts frozen, transfers reversed, or registry flags flipped? Who authorised it?
-4. **Existing institutional sketches of tokenised compliance carbon:** JPMorgan Project Carbon, MSCI Real Assets, EEX, AirCarbon Exchange — what specifically have they designed or proposed? What does our DEX-with-regulator-as-participant model do differently?
-5. **MiFID II operational requirements for a carbon-trading venue:** what does a compliant venue actually need (custody, reporting, KYC, capital, market surveillance)?
-6. **Union Registry architecture:** account types (operator, person, aviation, government), KYC flow, transfer flow, allowance vintage tracking. How does our `ComplianceRegistry` + `Regulator` split compare?
-
-### Output destination
-`research/eu-ets-reality-check.md` in this repo. Markdown, ~1 page, one short section per question with specific facts and citations to primary sources where possible (EU ETS Directive articles, Union Registry technical docs, official EU Commission statements, news reports).
-
-### After research lands
-1. Update `BRIEF.md §14` to add the **Regulator-MEV Q&A** entry with informed framing (currently deferred).
-2. Optionally tweak `BRIEF.md §5` step 4 narration if the research surfaces a more accurate suspicious-trade scenario than "suspected sanctions exposure."
-3. Optionally refine `BRIEF.md §10` competitive landscape with what the research surfaces about JPM/MSCI/EEX.
-
-The brief already has a stub at §14 ("Regulator-MEV Q&A — deferred until research is done") pointing here. Close the loop when research lands.
+**Confidence flag carried forward:** Q3 (2022 Russian freeze) is low-medium confidence — public reporting was thin. Pitch language for sanctions narration uses the safer framing: *"EU sanctions regulations automatically freeze sanctioned holdings"* (not *"the regulator froze Russian operators"*).
 
 ---
 
