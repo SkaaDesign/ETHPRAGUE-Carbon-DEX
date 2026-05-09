@@ -13,7 +13,9 @@ Snapshot of where the build stands on `docs/scope-update`. Flip ❌ → ✅ as i
 | AMM architecture decided: custom CPMM (V2-style math, no V2 install) | ✅ |
 | Write 6 contracts | ✅ 6/6 — all six done |
 | Write tests | ✅ 6/6 — EURS (5), CR (12), CC (12), Retirement (7), DEX (12), Regulator (10) — 58 pass in ~11ms |
-| Local end-to-end on anvil (happy flow) | ❌ |
+| Deploy.s.sol — single-tx deploy + role wiring | ✅ |
+| DemoLocal.s.sol — happy flow (deploy + seed + 3 beats) | ✅ |
+| Local end-to-end on anvil (happy flow) | ✅ runs clean — issue → trade → retire |
 | Test wallet + Sepolia RPC + faucet ETH | ❌ |
 | Deploy to Sepolia | ❌ |
 | Sourcify verify | ❌ |
