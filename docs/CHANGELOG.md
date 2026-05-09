@@ -9,9 +9,25 @@ Plain-English log of scope and infrastructure changes since the locked baseline.
 
 ## In flight
 
-- **Install OpenZeppelin + Uniswap V2 deps** as git submodules in `contracts/lib/`. Next step before writing the first contract (`EURS.sol`).
-- **Branch reconciliation:** `docs/scope-update` carries today's research, ERC-20 pivot, happy flow, bridge framing, Foundry scaffold, and docs reshuffle. `origin/main` carries Parth's contracts (`c40abad`, `995fad9`). PR `docs/scope-update` → `main` reconciles when ready.
+- **Write the 6 contracts** starting with `EURS.sol` (simplest — inherits OZ ERC-20 with a faucet mint), then `ComplianceRegistry`, `CarbonCredit`, `Regulator`, `Retirement`, `CarbonDEX` (custom CPMM).
+- **Branch reconciliation:** `docs/scope-update` carries today's research, ERC-20 pivot, happy flow, bridge framing, Foundry scaffold, docs reshuffle, OZ install, and AMM decision. `origin/main` carries Parth's contracts (`c40abad`, `995fad9`). PR `docs/scope-update` → `main` reconciles when ready.
 - **Frontend scaffold:** Next.js + viem init in `web/` not yet started.
+
+---
+
+## 2026-05-09 (later) — OpenZeppelin install + AMM architecture decision
+
+**Branch:** `docs/scope-update`. Two commits: `0bde70b` (OZ install) + this one (BRIEF update + CHANGELOG).
+
+### For Parth (dev)
+
+- **OpenZeppelin v5.6.1** installed as git submodule at `contracts/lib/openzeppelin-contracts/`. Pinned to a clean release tag (Solidity ^0.8.20). Imports in our contracts will look like `import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";`. Configured `ignore = dirty` in `.gitmodules` for OZ — its repo has nested submodules (their own dev-time test deps) we deliberately don't init since we only import from `contracts/`.
+- **AMM architecture: custom CPMM, NOT Uniswap V2 fork.** BRIEF §3 row 1 + §4 `CarbonDEX.sol` updated. Same constant-product math (`x*y=k`); written fresh in Solidity 0.8.x rather than installing V2's 0.5.16 codebase + juggling multi-version compilation. Whitelist + pause hooks integrate cleanly as Solidity modifiers. **No Uniswap dependency installed** — `CarbonDEX.sol` will be ~150 LOC of our own code, tested against reference V2 outputs to verify the math.
+- **Pitch line for "is this Uniswap V2?"** — *"same `x*y=k` math, written in modern Solidity. V2 itself is on 0.5.16 which doesn't compose with our 0.8.x stack — porting was higher-risk than writing the formula directly."*
+
+### Repo plumbing
+
+- **No new dependencies beyond OZ** for the AMM. Custom CPMM lives in our own code.
 
 ---
 

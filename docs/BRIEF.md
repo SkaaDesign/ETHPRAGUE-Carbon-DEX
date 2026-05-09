@@ -35,12 +35,12 @@ Regulatory framing for backup:
 
 | # | Decision | Choice |
 |---|---|---|
-| 1 | Exchange model | **AMM (Uniswap V2 fork)** |
+| 1 | Exchange model | **Custom CPMM (constant-product, Uniswap V2-style math)** — Updated 2026-05-09 (was "Uniswap V2 fork"). Same `x*y=k` math; written fresh in Solidity 0.8.x to avoid V2's 0.5.16 multi-version compile pain and to keep whitelist + pause hooks clean. |
 | 2 | Market segment | **B2B compliance** |
 | 3 | Settlement currency | **Mock EUR ERC-20 token, name `EURS`** |
 | 4 | Regulator simulated as | **Generic "EU ETS Authority"** |
 | 5 | Permission model | **Hard whitelist** — only addresses in `ComplianceRegistry` can hold or trade credits |
-| 6 | Carbon credit token standard | **ERC-20** — single fungible token. Updated 2026-05-09 (was ERC-1155). Composes natively with the V2 fork; matches real EU ETS within-Phase fungibility. Vintage / sector / origin metadata moves to issuance and retirement event payloads. |
+| 6 | Carbon credit token standard | **ERC-20** — single fungible token. Updated 2026-05-09 (was ERC-1155). Composes natively with the CPMM (any constant-product AMM works with ERC-20 pairs; ERC-1155 would force a per-id wrapper); matches real EU ETS within-Phase fungibility. Vintage / sector / origin metadata moves to issuance and retirement event payloads. |
 
 ---
 
@@ -96,7 +96,7 @@ ethereum-test-realm/
 
 #### `CarbonCredit.sol`
 - **Standard:** ERC-20 — single fungible token. Updated 2026-05-09 (was ERC-1155).
-- **Why ERC-20 not ERC-1155:** the V2 fork only handles ERC-20 pairs natively; ERC-1155 would force a per-id wrapper or a non-V2 AMM. Real EU ETS treats EUAs as fungible commodities within a phase (a 2024 EUA satisfies a 2026 surrender obligation — banking is unrestricted intra-Phase 4). Modelling them as separate token ids over-segregates what is fungible by law.
+- **Why ERC-20 not ERC-1155:** the constant-product AMM expects ERC-20 token pairs natively; ERC-1155 would force a per-id wrapper. Real EU ETS treats EUAs as fungible commodities within a phase (a 2024 EUA satisfies a 2026 surrender obligation — banking is unrestricted intra-Phase 4). Modelling them as separate token ids over-segregates what is fungible by law.
 - **Where the metadata lives:** vintage / sector / origin / methodology travel on **issuance and retirement event payloads**, not on the token. Provenance is recoverable from event logs without bloating the token contract.
 - **Key state:** standard ERC-20 (`balanceOf`, `totalSupply`, `allowance`); `MINTER_ROLE` gated to `Regulator`; transfers gated by `ComplianceRegistry.isVerified()` on both `from` and `to`.
 - **Key functions:** `mint(to, amount, vintage, sector, originCountry, issuanceRef)` (regulator-only; emits `CreditMinted` carrying full provenance), `transfer` / `transferFrom` (whitelist-gated), `burnFrom(from, amount)` (called by `Retirement.sol`).
@@ -109,7 +109,7 @@ ethereum-test-realm/
 - **Key events:** `CompanyRegistered`, `CompanyFrozen`, `CompanyUnfrozen`.
 
 #### `CarbonDEX.sol`
-- **Standard:** Uniswap V2 fork, single pool: `EURS ↔ CarbonCredit`.
+- **Standard:** Custom constant-product AMM (Uniswap V2-style `x*y=k` math, written fresh in Solidity 0.8.x). Single pool: `EURS ↔ CarbonCredit`. Updated 2026-05-09 — see §3 row 1 for rationale (avoids V2's 0.5.16 multi-version compile pain).
 - **Modification 1:** every `swap` and `addLiquidity` checks `ComplianceRegistry.isVerified(msg.sender)`. Non-whitelisted reverts with custom error.
 - **Modification 2:** `emergencyPause()` gated to `Regulator` address — when triggered, swaps revert until unpaused.
 - **Key events:** `Swap`, `LiquidityAdded`, `LiquidityRemoved`, `Paused`, `Unpaused`.

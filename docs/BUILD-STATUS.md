@@ -9,7 +9,8 @@ Snapshot of where the build stands on `docs/scope-update`. Flip ❌ → ✅ as i
 | Lin has UI mockups for the demo | ✅ |
 | `.gitignore` hardened + scoped to `contracts/` | ✅ |
 | `forge init contracts/` (with proper parent-repo submodule for forge-std) | ✅ |
-| Install OpenZeppelin + Uniswap V2 dependencies | ❌ |
+| OpenZeppelin v5.6.1 installed (submodule) | ✅ |
+| AMM architecture decided: custom CPMM (V2-style math, no V2 install) | ✅ |
 | Write 6 contracts | ❌ |
 | Write tests | ❌ |
 | Local end-to-end on anvil (happy flow) | ❌ |
