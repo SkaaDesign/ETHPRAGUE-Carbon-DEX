@@ -12,8 +12,57 @@ Plain-English log of scope and infrastructure changes since the locked baseline.
 - **Devils-advocate review pass** on `contracts/` — read-only edge-case + production-readiness check before pushing to Sepolia.
 - **Sepolia onboarding** — Alchemy account + RPC URL + faucet ETH for the deployer wallet. Then `forge script script/Deploy.s.sol:Deploy --rpc-url $SEPOLIA_RPC_URL --broadcast --verify --verifier sourcify`.
 - **ENS registrations on Sepolia** — `eu-ets-authority.eth`, `cement-mainz.eth`, `aluminium-bratislava.eth` per `docs/design/happy-flow.md §3`.
-- **Frontend scaffold** — `web/` Next.js + viem owned by the forked session per `docs/frontend-parallel-plan.md`. ABIs from our `forge build` flow into `web/lib/contracts.ts` once Sepolia addresses are live.
+- **Frontend wiring to live contracts** — skeleton is up (see 2026-05-09 evening entry below); next step is reading ABIs from `contracts/out/` into `web/lib/contracts.ts` and replacing placeholder content on each route with live viem reads. Lands once Sepolia addresses exist.
 - **Parth ping + merge** — `docs/scope-update` → `main` PR. Will tag Parth's last commit as `parth-archive` before the merge supersedes `my-smart-contract/`.
+
+---
+
+## 2026-05-09 (evening) — Frontend skeleton: routes, wallet, design tokens
+
+**Branch:** `docs/scope-update`. Forked session, parallel with backend per `docs/frontend-parallel-plan.md`.
+
+Layered on top of primary's bare scaffold (committed in `4f126c9`). Adds the wiring shell — three routes, wallet connect, design system — but no live contract reads yet (those come once Sepolia deploys).
+
+### What landed
+
+| File | Purpose |
+|---|---|
+| `web/app/page.tsx` | Landing page with three role-cards (Company / Regulator / Public). Replaces the create-next-app boilerplate. |
+| `web/app/company/page.tsx` | Company portal route. RainbowKit `ConnectButton`. Empty connected/disconnected states; holdings + swap + retire forms slot in next. |
+| `web/app/regulator/page.tsx` | EU ETS Authority route. Three-panel skeleton (scheduled allocation events, compliance roster, authority controls) + audit log row, per `docs/design/happy-flow.md §7`. **Issuance is deliberately not in authority controls** — it's in the scheduled-events panel (process, not button). |
+| `web/app/public/page.tsx` | Read-only observer route. Three counter widgets (issued / retired / in circulation) ready for wiring. **No `ConnectButton`** — flagged "Wallet not required" prominently. |
+| `web/app/providers.tsx` | Client-side provider tree: `WagmiProvider` → `QueryClientProvider` → `RainbowKitProvider`. RainbowKit lightTheme tuned to copper accent (`#b45309`). |
+| `web/app/layout.tsx` | Root layout. Fonts: IBM Plex Sans + IBM Plex Mono + Fraunces (display) via `next/font/google`. Wraps in `<Providers>`. |
+| `web/app/globals.css` | Tailwind v4 + design tokens per `design/happy-flow.md §4`: `--accent` (copper), `--success`, `--warning`, `--surface`, `--border` etc. No dark mode (institutional UIs read better in light). |
+| `web/lib/wagmi.ts` | wagmi config: `foundry` (localhost:8545) + `sepolia` chains. RainbowKit `getDefaultConfig`. |
+| `web/next.config.ts` | Pinned `turbopack.root` to silence the workspace-root warning. |
+| `web/.env.example` | `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID`, `NEXT_PUBLIC_SEPOLIA_RPC_URL`. |
+| `web/.gitignore` | One-line patch: `!.env.example` exception so the template stays tracked. |
+
+### Stack
+
+- **Bun** as package manager + script runner (3–10× faster than npm)
+- **Next.js 16.2.6** App Router + Turbopack
+- **Tailwind v4** (no config file; tokens in `globals.css` via `@theme inline`)
+- **wagmi 2.x + viem 2.x + RainbowKit 2.x + @tanstack/react-query 5.x** (peer-dep aligned; bun's first-pass resolution to wagmi 3.6.11 was wrong, manually pinned to `^2`)
+
+### Build verified
+
+`bun run build` passes. All four routes prerender as static (`/`, `/company`, `/regulator`, `/public`). TypeScript clean. Zero warnings.
+
+### What's intentionally absent
+
+- **No mock data anywhere.** Per Fredrik's call: all dynamic content is empty placeholders waiting for live contract reads. Counter widgets show `—` until wired.
+- **No hardcoded contract addresses.** Will live in `web/lib/contracts.ts` after Sepolia deploy.
+- **No live wallet flow tested against contracts yet.** RainbowKit connect works (verified by build); reading `balanceOf` etc. comes when ABIs land.
+
+### For Lin
+
+The shell is up and clickable. When you import the Claude-design HTML/JSX, drop it under `web/design/source/` (or wherever you prefer); the forked session recreates pixel-perfect in the established tokens.
+
+### For Parth
+
+When deploying to Sepolia, surface deployed addresses + ABI references somewhere I can read — `docs/deployment-addresses.md` proposed. Forge already produces ABIs in `contracts/out/<contract>.sol/<contract>.json`; I'll lift the relevant ones into `web/lib/contracts.ts`.
 
 ---
 

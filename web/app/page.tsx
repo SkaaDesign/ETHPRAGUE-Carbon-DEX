@@ -1,65 +1,65 @@
-import Image from "next/image";
+import Link from "next/link";
+
+const roles = [
+  {
+    href: "/company",
+    label: "Company",
+    description:
+      "Verified emitters hold allowances, trade on the DEX, and surrender against emissions.",
+  },
+  {
+    href: "/regulator",
+    label: "Regulator",
+    description:
+      "EU ETS Authority. Scheduled allocation events, compliance roster, audit log, freeze powers.",
+  },
+  {
+    href: "/public",
+    label: "Public",
+    description:
+      "Read-only observer. Live trades, cap accounting, permanent retirement record.",
+  },
+];
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <main className="mx-auto flex min-h-screen w-full max-w-4xl flex-col px-8 py-24">
+      <header className="mb-20">
+        <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground">
+          Carbon DEX
+        </p>
+        <h1 className="mt-4 max-w-2xl text-5xl font-medium leading-[1.05] tracking-tight">
+          Regulator-supervised on-chain settlement for EU-compliance carbon
+          allowances.
+        </h1>
+        <p className="mt-6 max-w-xl text-base leading-relaxed text-muted-foreground">
+          The secondary-market layer of the EU ETS, brought on-chain. Issuance is
+          calendar-driven, trades are public, and surrender is permanent.
+        </p>
+      </header>
+
+      <section className="grid gap-px overflow-hidden rounded-md border border-border bg-border md:grid-cols-3">
+        {roles.map((role) => (
+          <Link
+            key={role.href}
+            href={role.href}
+            className="flex flex-col gap-3 bg-surface p-8 transition hover:bg-accent-soft/30"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+            <span className="font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground">
+              {role.label}
+            </span>
+            <p className="text-sm leading-relaxed text-foreground">
+              {role.description}
+            </p>
+          </Link>
+        ))}
+      </section>
+
+      <footer className="mt-auto pt-24">
+        <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground">
+          ETHPrague 2026 · Sourcify-verified contracts on Sepolia
+        </p>
+      </footer>
+    </main>
   );
 }
