@@ -9,8 +9,10 @@ Plain-English log of scope and infrastructure changes since the locked baseline.
 
 ## In flight
 
-- **Frontend ENS strings** — `web/lib/demo-state.ts` + `web/app/company/page.tsx` + `web/app/regulator/page.tsx` still use flat names (`cement-mainz.eth` etc.). Next frontend pass should switch to subdomain scheme to match BRIEF. Not blocking the merge.
-- **Sepolia onboarding** — Alchemy account + RPC URL + faucet ETH for the deployer wallet. Then `forge script script/Deploy.s.sol:Deploy --rpc-url $SEPOLIA_RPC_URL --broadcast --verify --verifier sourcify`.
+- **Sepolia onboarding (USER ACTION)** — see `contracts/.env.example` for the full env-var checklist. Need: Alchemy Sepolia RPC URL, three test wallets (`cast wallet new` ×3), Sepolia ETH for each (~0.5 / 0.05 / 0.05). After: prime can deploy in one command. **This is the gate; everything downstream waits on it.**
+- **Sepolia deploy + Sourcify verify** — single command once env is populated: `forge script script/Deploy.s.sol:Deploy --rpc-url sepolia --broadcast --verify --verifier sourcify`.
+- **Frontend ENS strings + receipt-copy reframe** — fork is on this; new branch `frontend/post-merge-cleanup` per their plan.
+- **PR #1 merged** as `212aed9`. `parth-archive` tag set at `2e36c93`. `docs/scope-update` branch preserved as historical ref.
 - **ENS registrations on Sepolia** — subdomain scheme: `eu-ets-authority.eth` (regulator), `verified-entity.eth` (institutional namespace), `cement-mainz.verified-entity.eth` + `aluminium-bratislava.verified-entity.eth` (verified companies). See `contracts/script/addresses.example.json`.
 - **Frontend wiring to live contracts** — Happy Path UI is built against `stateAt(beat)` simulation; next step is replacing `stateAt` calls with viem event reads once Sepolia addresses land. Three routes already shape-correct — only the data source changes.
 - **`docs/design/happy-flow.md` cleanup** — non-blocking. The doc still references the old two-actor flow; UI was already built against the new single-actor narrative (BRIEF §5 is the source of truth). Sync when convenient.

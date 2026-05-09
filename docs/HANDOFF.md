@@ -91,16 +91,16 @@ When suggesting role splits: treat Parth as a separate dev resource (he types co
 
 ## 5. What to do next
 
-Building begins now. Setup is done; scope is settled. Next moves:
+PR #1 merged into main as of `212aed9` (2026-05-10). Backend foundation + scope + frontend skeleton + design source all on main. Next moves are operational: get to Sepolia, get to a rehearsable end-to-end demo.
 
-1. **Run `devils-advocate` (or general-purpose Agent) on `contracts/`** — read-only edge-case + production-readiness check before any Sepolia deploy. The custom CPMM is the highest-value target (whitelist hooks, pause flow, MIN_LIQUIDITY edge cases, fee math).
-2. **Ping Parth** with the consolidation summary (CHANGELOG 2026-05-09 later evening) before pushing. Frame: spec evolved on the doc side after he started; we're using ours; offer him Sepolia deploy + ops as the next chunk of work he can own.
-3. **Push `docs/scope-update`** + open PR → `main`. Tag Parth's `995fad9` as `parth-archive` before merge so his work is preserved at a recoverable git ref.
-4. **Sepolia onboarding** — Alchemy account + Sepolia RPC URL + faucet ETH for the deployer wallet. Then `forge script script/Deploy.s.sol:Deploy --rpc-url $SEPOLIA_RPC_URL --broadcast --verify --verifier sourcify`. Sourcify verification is part of the broadcast flow.
-5. **ENS name registrations** on Sepolia per the subdomain scheme: bare `eu-ets-authority.eth` for the regulator; `verified-entity.eth` as the institutional namespace owned by the regulator; subdomains `cement-mainz.verified-entity.eth` and `aluminium-bratislava.verified-entity.eth` for the demo companies. Adapted from Parth's addresses.json template (see CHANGELOG 2026-05-10 entry).
-6. **Frontend scaffold + wiring** — owned by the forked session per `docs/frontend-parallel-plan.md`. `web/` Next.js (App Router) + viem + RainbowKit. Three routes: `/company`, `/regulator`, `/public`. ABIs come from `contracts/out/` after `forge build`; addresses + chain config land in `web/lib/contracts.ts`. ENS resolution via viem's L1 client (Sepolia, native).
-7. **Demo rehearsal** end-to-end on Sepolia. Per `BRIEF.md §5` happy flow primary; `§5b` alternate as backup. Watch the slippage from `DemoLocal` — pool may need to be seeded larger for the Beat 2 narration to match.
-8. **Pitch finalisation** per `BRIEF.md §14`. Numbers memorised, derivatives + bridge + regulator-MEV Q&A canned answers.
+1. ✅ ~~Devils-advocate review~~ — done; PROCEED verdict, fixes applied.
+2. ✅ ~~Parth ping + push + PR~~ — done; merged as `212aed9`. `parth-archive` tag at `2e36c93`.
+3. **Sepolia onboarding (USER ACTION — gates everything below).** See `contracts/.env.example` for the full env-var checklist. Need: Alchemy Sepolia HTTPS RPC URL (free signup); three test wallets (`cast wallet new` × 3); Sepolia faucet ETH (~0.5 to deployer / ~0.05 to each company). Once `.env` is populated locally, prime can deploy.
+4. **Sepolia deploy + Sourcify verify** — single command: `forge script script/Deploy.s.sol:Deploy --rpc-url sepolia --broadcast --verify --verifier sourcify`. Reads `PRIVATE_KEY` + `SEPOLIA_RPC_URL` from `.env`. Logs all 6 deployed addresses; populate `addresses.json` from the output.
+5. **ENS subdomain registrations** on Sepolia: bare `eu-ets-authority.eth` for the regulator; `verified-entity.eth` owned by regulator as institutional namespace; subdomains `cement-mainz.verified-entity.eth` + `aluminium-bratislava.verified-entity.eth` for demo companies. Use https://app.ens.domains (switch to Sepolia network).
+6. **Frontend live wiring** — fork session swaps `stateAt(beat)` simulation → viem reads against Sepolia addresses. Their `frontend/post-merge-cleanup` PR is in flight (receipt copy + ENS subdomain rename); after merge they pick up wiring once Sepolia addresses exist.
+7. **Demo rehearsal** end-to-end on Sepolia. Per `BRIEF.md §5` happy flow primary; `§5b` alternate as backup. `Demo.s.sol` (parameterised, multi-key) drives the chain side; frontend pulls live state via viem.
+8. **Pitch finalisation** per `BRIEF.md §14`. Numbers memorised; derivatives + bridge + regulator-MEV Q&A canned answers; verify the €800B market-size figure.
 
 ### Parallel tracks
 
