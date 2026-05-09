@@ -265,13 +265,25 @@ function SwapReceipt({ s }: { s: ReturnType<typeof stateAt> }) {
       </div>
 
       <div className="grid grid-cols-[120px_1fr] gap-x-[14px] gap-y-[6px] text-xs items-baseline">
-        <span className="text-muted">price</span>
+        <span className="text-muted">spot · before</span>
+        <span className="font-mono">
+          {s.spotPriceInitial.toFixed(2)} EURS / EUA
+        </span>
+        <span className="text-muted">effective · A</span>
         <span className="font-mono">
           {s.effectivePrice.toFixed(2)} EURS / EUA
         </span>
-        <span className="text-muted">slippage</span>
+        <span className="text-muted">fill</span>
         <span className="font-mono">
-          {s.slippagePct.toFixed(2)}% · within 5% tol.
+          {fmt(s.tradeProceedsEurs)} EURS for 200 EUA sold
+        </span>
+        <span className="text-muted">spread</span>
+        <span className="font-mono">
+          ~{fmt(s.lpFeeEurs)} EURS → pool LP fee
+          <span className="block text-muted text-[11px] font-sans normal-case">
+            B paid ~{fmt(s.buyerCostEurs)} EURS · banks earn the spread for
+            making the market
+          </span>
         </span>
         <span className="text-muted">counterparty</span>
         <span className="font-mono">Carbon DEX Pool</span>

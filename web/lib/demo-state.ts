@@ -48,7 +48,9 @@ const SPOT_PRICE_INITIAL = POOL_EURS_INITIAL / POOL_EUA_INITIAL; // 70.00
 export const QTY_ISSUE = 1_000;
 export const QTY_TRADE = 200; // EUA sold by cement-mainz in Beat 2
 export const QTY_RETIRE = 800; // EUA retired by cement-mainz in Beat 3 (all remaining)
-export const TRADE_PROCEEDS_EURS = 13_422; // V2 math: sell 200 EUA into 350k/5k pool, 0.3% fee
+export const TRADE_PROCEEDS_EURS = 13_422; // V2 math: A sells 200 EUA into 350k/5k pool, 0.3% fee
+export const BUYER_COST_EURS = 13_503; // V2 math: B buys 200 EUA from the post-A pool (5,200/336,578), 0.3% fee
+export const LP_FEE_EURS = BUYER_COST_EURS - TRADE_PROCEEDS_EURS; // ~81 EURS — the spread accrues to the pool, paid to LPs (banks / market makers)
 
 // Derived numbers
 const POOL_EUA_AFTER_TRADE = POOL_EUA_INITIAL + QTY_TRADE; // 5,200
@@ -122,10 +124,13 @@ export type DemoState = {
   poolEua: number;
   poolEurs: number;
   // Pricing
-  spotPrice: number; // poolEurs / poolEua at this beat
-  effectivePrice: number; // 67.11 (constant — Beat 2's settled price)
-  slippagePct: number; // 4.13
-  tradeProceedsEurs: number; // 13,422 (constant)
+  spotPriceInitial: number; // 70.00 — pool spot before any swap (constant)
+  spotPrice: number; // poolEurs / poolEua at this beat (changes after Beat 2)
+  effectivePrice: number; // 67.11 (constant — Beat 2's settled price for A's sell)
+  slippagePct: number; // 4.13 — A's price impact vs initial spot
+  tradeProceedsEurs: number; // 13,422 — what A receives (constant)
+  buyerCostEurs: number; // 13,503 — what B pays for the matching 200-EUA purchase (constant)
+  lpFeeEurs: number; // 81 — the spread A→B that accrues to the pool LP (constant)
   // Audit log — newest first
   audit: AuditEntry[];
 };
@@ -194,10 +199,13 @@ export function stateAt(beat: Beat): DemoState {
     coEurs,
     poolEua,
     poolEurs,
+    spotPriceInitial: SPOT_PRICE_INITIAL,
     spotPrice,
     effectivePrice: EFFECTIVE_PRICE,
     slippagePct: SLIPPAGE_PCT,
     tradeProceedsEurs: TRADE_PROCEEDS_EURS,
+    buyerCostEurs: BUYER_COST_EURS,
+    lpFeeEurs: LP_FEE_EURS,
     audit,
   };
 }
