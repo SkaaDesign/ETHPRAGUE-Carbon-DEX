@@ -1,0 +1,66 @@
+{
+  "_doc": "Live deployment addresses for Carbon DEX. anvil-local section is the deterministic CREATE chain that DemoLocal.s.sol produces against anvil's default funded keys (account 0); sepolia section is the actual Sepolia deployment from 2026-05-10 (Deploy.s.sol --broadcast --verify --verifier sourcify, all 6 contracts Sourcify exact_match).",
+
+  "networks": {
+    "anvil-local": {
+      "chainId": 31337,
+      "rpcUrl": "http://localhost:8545",
+      "deployedAt": "2026-05-09",
+      "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+      "contracts": {
+        "EURS": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+        "ComplianceRegistry": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
+        "CarbonCredit": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
+        "Retirement": "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
+        "CarbonDEX": "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9",
+        "Regulator": "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707"
+      }
+    },
+    "sepolia": {
+      "chainId": 11155111,
+      "rpcUrl": "https://eth-sepolia.g.alchemy.com/v2/YOUR_KEY",
+      "deployedAt": "2026-05-10",
+      "deployer": "0xE6fff6076BD6d82d3071b451BAba308C0fA97E1c",
+      "explorer": "https://sepolia.etherscan.io",
+      "sourcifyVerified": true,
+      "contracts": {
+        "EURS": "0xe986d8d98a2dbf8684590d63a3b32ecd36bd38d0",
+        "ComplianceRegistry": "0x1969cabd76674c55de85df2ab1959655890731e0",
+        "CarbonCredit": "0xf78c0a349e20d6cd09f3be572ab7837fc66626fc",
+        "Retirement": "0xfff2c6a18aaf0eaaedd12e8e31e5b903f5040add",
+        "CarbonDEX": "0x832d74c42dc13487de0c61dd6ed8e52f406ce281",
+        "Regulator": "0x77778bf033d88c459a912c435e7a8a2460a2c08e"
+      }
+    }
+  },
+
+  "ens": {
+    "_naming": "Subdomain scheme: 'verified-entity.eth' is owned by the regulator (institutional namespace). Each verified company gets a subdomain on registration. Regulator itself uses bare 'eu-ets-authority.eth'. To be registered on Sepolia ENS post-deploy.",
+    "regulator": {
+      "name": "eu-ets-authority.eth",
+      "address": "0xE6fff6076BD6d82d3071b451BAba308C0fA97E1c",
+      "registered": false
+    },
+    "namespace": {
+      "name": "verified-entity.eth",
+      "controller": "regulator",
+      "registered": false
+    },
+    "companyA": {
+      "name": "cement-mainz.verified-entity.eth",
+      "address": "0xEd271DB443dc53533D2edB3A5d4b3BF0F3DE70ED",
+      "role": "Operator",
+      "country": "DE",
+      "registered": false
+    },
+    "companyB": {
+      "name": "aluminium-bratislava.verified-entity.eth",
+      "address": "0x6B6Fdc8Ed3d79812d0C28ed4C219e760817B9a5d",
+      "role": "Operator",
+      "country": "SK",
+      "registered": false
+    }
+  },
+
+  "defaultNetwork": "sepolia"
+}

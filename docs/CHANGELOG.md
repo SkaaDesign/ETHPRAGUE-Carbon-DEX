@@ -9,14 +9,62 @@ Plain-English log of scope and infrastructure changes since the locked baseline.
 
 ## In flight
 
-- **Sepolia onboarding (USER ACTION)** — see `contracts/.env.example` for the full env-var checklist. Need: Alchemy Sepolia RPC URL, three test wallets (`cast wallet new` ×3), Sepolia ETH for each (~0.5 / 0.05 / 0.05). After: prime can deploy in one command. **This is the gate; everything downstream waits on it.**
-- **Sepolia deploy + Sourcify verify** — single command once env is populated: `forge script script/Deploy.s.sol:Deploy --rpc-url sepolia --broadcast --verify --verifier sourcify`.
-- **Frontend ENS strings + receipt-copy reframe** — fork is on this; new branch `frontend/post-merge-cleanup` per their plan.
-- **PR #1 merged** as `212aed9`. `parth-archive` tag set at `2e36c93`. `docs/scope-update` branch preserved as historical ref.
+- **Frontend live wiring (FORK)** — addresses are in `contracts/script/addresses.json` (Sepolia section). ABIs in `contracts/out/<Contract>.sol/<Contract>.json` after `forge build`. Replace `stateAt(beat)` simulation with viem reads against the deployed addresses.
+- **ENS subdomain registrations** — register on Sepolia ENS app. `eu-ets-authority.eth` (regulator), `verified-entity.eth` (institutional namespace owned by regulator), `cement-mainz.verified-entity.eth`, `aluminium-bratislava.verified-entity.eth`. Then update `addresses.json` `registered: true`.
+- **Demo rehearsal** — `Demo.s.sol` works end-to-end on Sepolia (verified 2026-05-10). Run again before pitch to confirm. Beat numbers verbatim from BRIEF §5.
 - **ENS registrations on Sepolia** — subdomain scheme: `eu-ets-authority.eth` (regulator), `verified-entity.eth` (institutional namespace), `cement-mainz.verified-entity.eth` + `aluminium-bratislava.verified-entity.eth` (verified companies). See `contracts/script/addresses.example.json`.
 - **Frontend wiring to live contracts** — Happy Path UI is built against `stateAt(beat)` simulation; next step is replacing `stateAt` calls with viem event reads once Sepolia addresses land. Three routes already shape-correct — only the data source changes.
 - **`docs/design/happy-flow.md` cleanup** — non-blocking. The doc still references the old two-actor flow; UI was already built against the new single-actor narrative (BRIEF §5 is the source of truth). Sync when convenient.
 - **Parth ping + merge** — `docs/scope-update` → `main` PR. Will tag Parth's last commit as `parth-archive` before merge.
+
+---
+
+## 2026-05-10 — Sepolia live: deploy + Sourcify verified + Demo.s.sol happy flow on real chain
+
+**Branch:** `main` (direct commits — small operational, post-merge).
+
+### What landed
+
+**6 contracts deployed to Sepolia, all Sourcify-verified (`exact_match`):**
+
+| Contract | Address |
+|---|---|
+| EURS | `0xe986d8d98a2dbf8684590d63a3b32ecd36bd38d0` |
+| ComplianceRegistry | `0x1969cabd76674c55de85df2ab1959655890731e0` |
+| CarbonCredit | `0xf78c0a349e20d6cd09f3be572ab7837fc66626fc` |
+| Retirement | `0xfff2c6a18aaf0eaaedd12e8e31e5b903f5040add` |
+| CarbonDEX | `0x832d74c42dc13487de0c61dd6ed8e52f406ce281` |
+| Regulator | `0x77778bf033d88c459a912c435e7a8a2460a2c08e` |
+
+Deployer/operator: `0xE6fff6076BD6d82d3071b451BAba308C0fA97E1c` (will become `eu-ets-authority.eth` once ENS registered).
+
+`contracts/script/addresses.json` populated with both anvil-local + sepolia sections. Frontend reads from here.
+
+**Demo.s.sol happy flow ran on real Sepolia.** Numbers verbatim from BRIEF §5:
+
+```
+Beat 1: regulator issues 1,000 EUA to Company A
+Beat 2a: Company A sells 200 EUA, receives 13,422 EURS (spot drops €70 → €64)
+Beat 2b: Company B buys 200 EUA, pays 13,503 EURS (spot back to €70)
+        LP fee: 81 EURS accrued to pool
+Beat 3: Company A retires remaining 800 EUA (burned forever)
+Closing: 1,000 issued · 800 retired · 200 still circulating in B's wallet
+```
+
+**Costs:** deploy ~0.0000056 ETH; demo ~0.000002 ETH. Sepolia gas at 0.001 gwei = practically free. Three wallets still funded for many more rehearsals.
+
+### Operational lessons (for next time / the team)
+
+1. **Sepolia gas is dirt-cheap right now (0.001 gwei).** Earlier "0.030 ETH matches need exactly" warning was wrong by a factor of ~5000. Actual deploy + demo cost is ~$0.000002. Funding 0.05 ETH covers thousands of rehearsals.
+2. **Most Sepolia faucets require mainnet ETH balance** (anti-bot): Alchemy, Infura, QuickNode all blocked our zero-mainnet wallets. **Google Cloud Sepolia faucet** worked (no mainnet check). pk910 PoW was IP-rate-limited from prior use.
+3. **Funding workaround:** if only one faucet works, use it for the deployer; then `cast send --value 0.01ether` from deployer to other wallets. Sepolia gas is so cheap that splitting a single 0.05 ETH faucet drop across 3 wallets is comfortable.
+4. **Sourcify verification was 6/6 on first try** — `--verify --verifier sourcify` is reliable. Each contract's verification took ~15-30s; total deploy + verify ~3 min.
+
+### What's next (CHANGELOG In flight refreshed)
+
+- Frontend wires viem to addresses.json sepolia section, replaces `stateAt(beat)` simulation
+- ENS subdomain registrations on app.ens.domains (Sepolia network)
+- Demo rehearsal end-to-end with frontend pulling live state
 
 ---
 
