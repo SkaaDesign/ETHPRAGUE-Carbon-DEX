@@ -83,40 +83,61 @@ contract DemoLocal is Script {
         console.log("Company A balance:      ", credit.balanceOf(companyA) / 1e18, "EUA");
         console.log("Total supply (incl pool):", credit.totalSupply() / 1e18, "EUA");
 
-        // ─── BEAT 2: Secondary-market trade (exact-output) ─────────────
-        // "Company B emitted 200 tCO2 last quarter; they need exactly 200 EUAs."
+        // ─── BEAT 2: Secondary-market trade ────────────────────────────
+        // Single-actor narrative: Company A (efficient operator) sells 200 surplus
+        // EUAs on the DEX. Company B (over-emitter, off-stage) buys those 200 from
+        // the pool — visible only as a /public ticker tick, never on /company.
         console.log("");
-        console.log("=== BEAT 2 - Trade (buy exactly 200 EUA) ===");
-        uint256 desiredOut = 200 * 10 ** 18;
-        uint256 maxIn = 20_000 * 10 ** 18; // generous cap; actual cost ~14,627 EURS
+        console.log("=== BEAT 2 - Trade (Company A sells 200 surplus EUA) ===");
+        uint256 sellAmount = 200 * 10 ** 18;
 
-        vm.startBroadcast(COMPANY_B_PK);
-        eurs.faucet(maxIn);
-        eurs.approve(address(dex), maxIn);
-        uint256 spent = dex.swapEURSForCreditExactOut(desiredOut, maxIn);
+        // 2a: Company A approves DEX + sells 200 EUA (exact-input)
+        vm.startBroadcast(COMPANY_A_PK);
+        credit.approve(address(dex), sellAmount);
+        uint256 quotedReceive = dex.getAmountOut(sellAmount, dex.reserveCredit(), dex.reserveEURS());
+        uint256 received = dex.swapCreditForEURS(sellAmount, (quotedReceive * 99) / 100);
         vm.stopBroadcast();
 
-        console.log("Company B paid:         ", spent / 1e18, "EURS");
-        console.log("Company B received:      200 EUA (exact)");
-        console.log("Spot post-trade:         ", dex.getSpotPrice() / 1e18, "EURS/EUA");
+        console.log("Company A sold:          200 EUA");
+        console.log("Company A received:     ", received / 1e18, "EURS");
+        console.log("Spot after A's sale:     ", dex.getSpotPrice() / 1e18, "EURS/EUA");
+
+        // 2b: Company B (off-stage) buys those 200 EUA from the pool, exact-output
+        uint256 maxBSpend = 20_000 * 10 ** 18;
+        vm.startBroadcast(COMPANY_B_PK);
+        eurs.faucet(maxBSpend);
+        eurs.approve(address(dex), maxBSpend);
+        uint256 bSpent = dex.swapEURSForCreditExactOut(sellAmount, maxBSpend);
+        vm.stopBroadcast();
+
+        console.log("Company B (off-stage) bought 200 EUA, paid ", bSpent / 1e18, "EURS");
+        console.log("Spot after B's buy:      ", dex.getSpotPrice() / 1e18, "EURS/EUA");
+        console.log("LP fee accrued:         ", (bSpent - received) / 1e18, "EURS to pool");
 
         // ─── BEAT 3: Surrender ─────────────────────────────────────────
+        // Company A retires ALL 800 remaining EUAs against verified emissions.
         console.log("");
-        console.log("=== BEAT 3 - Surrender ===");
-        vm.startBroadcast(COMPANY_B_PK);
-        credit.approve(address(retirement), desiredOut);
-        retirement.retire(desiredOut, companyB, "ipfs://sustainability-report-2026-Q4.pdf");
+        console.log("=== BEAT 3 - Surrender (Company A retires 800 EUA) ===");
+        uint256 retireAmount = credit.balanceOf(companyA);
+
+        vm.startBroadcast(COMPANY_A_PK);
+        credit.approve(address(retirement), retireAmount);
+        retirement.retire(retireAmount, companyA, "ipfs://sustainability-report-2026-Q4.pdf");
         vm.stopBroadcast();
 
-        console.log("Company B retired:       200 EUA (burned forever)");
-        console.log("Company B balance:      ", credit.balanceOf(companyB) / 1e18, "EUA");
+        console.log("Company A retired:      ", retireAmount / 1e18, "EUA (burned forever)");
+        console.log("Company A balance:      ", credit.balanceOf(companyA) / 1e18, "EUA");
 
         // ─── CLOSING VISUAL ────────────────────────────────────────────
         console.log("");
         console.log("=== CLOSING VISUAL (the cap-and-trade proof) ===");
         console.log("Issued to Company A:     1,000 EUA");
-        console.log("Retired by Company B:    200 EUA  (burned forever)");
-        console.log("Company A still holds:  ", credit.balanceOf(companyA) / 1e18, "EUA");
-        console.log("On-chain supply:        ", credit.totalSupply() / 1e18, "EUA total");
+        console.log("A sold to market:        200 EUA");
+        console.log("A retired against emissions: 800 EUA (destroyed)");
+        console.log("Still in circulation:    200 EUA (in B's wallet, off-stage)");
+        console.log("");
+        console.log("Net effect for Company A this period:");
+        console.log("  EUA balance: 0  (all 1,000 either sold or retired)");
+        console.log("  EURS earned:", received / 1e18);
     }
 }

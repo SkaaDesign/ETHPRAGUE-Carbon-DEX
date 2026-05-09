@@ -9,11 +9,52 @@ Plain-English log of scope and infrastructure changes since the locked baseline.
 
 ## In flight
 
-- **Devils-advocate review pass** on `contracts/` — read-only edge-case + production-readiness check before pushing to Sepolia.
 - **Sepolia onboarding** — Alchemy account + RPC URL + faucet ETH for the deployer wallet. Then `forge script script/Deploy.s.sol:Deploy --rpc-url $SEPOLIA_RPC_URL --broadcast --verify --verifier sourcify`.
-- **ENS registrations on Sepolia** — `eu-ets-authority.eth`, `cement-mainz.eth`, `aluminium-bratislava.eth` per `docs/design/happy-flow.md §3`.
-- **Frontend wiring to live contracts** — skeleton is up (see 2026-05-09 evening entry below); next step is reading ABIs from `contracts/out/` into `web/lib/contracts.ts` and replacing placeholder content on each route with live viem reads. Lands once Sepolia addresses exist.
-- **Parth ping + merge** — `docs/scope-update` → `main` PR. Will tag Parth's last commit as `parth-archive` before the merge supersedes `my-smart-contract/`.
+- **ENS registrations on Sepolia** — `eu-ets-authority.eth`, `cement-mainz.eth`, `aluminium-bratislava.eth`.
+- **Frontend wiring to live contracts** — skeleton is up; needs ABIs from `contracts/out/` → `web/lib/contracts.ts` + viem reads on each route. Lands once Sepolia addresses exist.
+- **`docs/design/happy-flow.md` cleanup** — non-blocking. The doc still references the old two-actor flow; UI was already built against the new single-actor narrative (BRIEF §5 is the source of truth). Sync when convenient.
+- **Parth ping + merge** — `docs/scope-update` → `main` PR. Will tag Parth's last commit as `parth-archive` before merge.
+
+---
+
+## 2026-05-09 (night) — Single-actor demo flow + via_ir compile
+
+**Branch:** `docs/scope-update`. One commit covering BRIEF §5 + §5b + demo facts in §14 + both demo scripts.
+
+### Decision: Company A is the single protagonist
+
+Old flow (collapsed): Company A receives 1,000 → Company B buys 200 → Company B retires 200. Two-actor, role-switching laptop, 200 EUA supply contraction (20%).
+
+New flow: Company A receives 1,000 → Company A sells 200 surplus on the DEX (Company B is the off-stage buyer) → Company A retires the remaining 800 against verified emissions. **Single protagonist on /company; B exists on-chain only.** 800 EUA supply contraction (80%).
+
+**Why:** matches what cap-and-trade actually rewards (efficient operators net-sell, less efficient ones net-buy). Cleaner stage choreography (one Company laptop, no role switch). Bigger supply-contraction visual for the closing shot. Matches the design fork's instinct (Claude Design's UI was already built single-actor).
+
+### What changed
+
+- **BRIEF.md §5 — happy flow rewritten** to single-actor narrative. Beat 2 split into 2a (A sells, ~13,422 EURS in) and 2b (B buys off-stage, ~13,503 EURS out, ~80 EURS LP fee accrues). Beat 3 retires all 800 (was 200). Closing visual: `1,000 issued · 800 retired · 200 still circulating in B's wallet`.
+- **BRIEF.md §5b freeze flow** updated — freeze target is now Company A (not B), since A is the on-screen protagonist. Visual stays the same: regulator clicks freeze; A's next transaction reverts.
+- **BRIEF.md §14 demo facts** updated to match.
+- **`script/DemoLocal.s.sol` rewritten** — Beat 2 now does both legs (A sells via `swapCreditForEURS`, B buys via `swapEURSForCreditExactOut`). Beat 3 retires `balanceOf(companyA)` (the full remaining 800). Verified end-to-end on anvil — 800 EUA destroyed, 200 left with B, A's wallet at zero.
+- **`script/Demo.s.sol` (parameterised) rewritten** — same flow, multi-key signature: requires `OPERATOR_PK`, `COMPANY_A_PK`, `COMPANY_B_PK` env vars. Idempotent (safe to re-run against an existing deployment). Realistic for Sepolia where each role has its own ENS-named wallet.
+- **`foundry.toml`** — added `via_ir = true` + optimizer settings. The longer DemoLocal function (4 broadcasts, more locals) tripped "stack too deep" without IR-based codegen. Compile is ~2× slower (~6s vs ~1s) but build still trivial.
+- **No contract changes.** CarbonDEX bidirectional from day one — `swapCreditForEURS` already existed.
+
+### Test status
+
+72 tests pass, 0 regressions (no contract changes; tests untouched).
+
+### LP / fee clarification (for the team)
+
+The 0.3% fee on every DEX swap is the **LP fee** — it stays in the pool and increases LP-token redemption value. Compensation to liquidity providers (who supplied the EURS + EUA inventory and bear price risk). NOT a regulator/EU fee. In production: banks (BNP, Macquarie, Soc Gen, JPM) and prop trading firms (Vitol, Trafigura) would seed liquidity — same as they do today on EEX/ICE. In the demo: deployer is the only LP for operational simplicity. Pitch line: *"the regulator regulates; the banks make markets — same separation as MiFID II requires."*
+
+### Devils-advocate review (2026-05-09 earlier today)
+
+`devils-advocate` agent reviewed the contract stack: PROCEED verdict. 3 spec divergences found and fixed in the previous commit (`4f126c9`):
+- Stale `Demo.s.sol` numbers from before the slippage tuning
+- `CarbonCredit.burnFrom` missing `_spendAllowance` (matched OZ ERC20Burnable now)
+- `DemoLocal.s.sol` fresh-anvil assumption now documented
+
+CPMM math, K-invariant preservation, whitelist gating, role wiring, reserve update ordering — all validated. No demo blockers.
 
 ---
 

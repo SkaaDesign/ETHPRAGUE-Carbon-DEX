@@ -146,15 +146,17 @@ Every action shows: tx hash, Sourcify-verified contract badge, plain-English des
 
 ## 5. The demo flow — happy path (primary, 3 beats)
 
-Spine of the live demo. Three laptops on stage = three screens (`/company`, `/regulator`, `/public`). The Company laptop role-switches from Company A to Company B between Beat 1 and Beat 2.
+Spine of the live demo. Three screens on stage (`/company`, `/regulator`, `/public`). **Updated 2026-05-09 — single-actor narrative.** Company A (`cement-mainz.eth`) is the protagonist on `/company` for the entire flow. Company B exists on-chain as the unseen counterparty in Beat 2 — never appears in any UI. This collapses to one Company laptop, no role-switching, full-lifecycle storytelling.
 
-1. **Issuance event executes.** The 2026 free-allocation event fires (pre-computed from sector benchmark × historical activity). Company A (`cement-mainz.eth`, verified cement producer) receives 1,000 EUAs from the EU ETS Authority — vintage 2026, sector Industry, origin DE; metadata travels on the `CreditMinted` event. Sourcify-verified contract addresses visible. `/company` balance, `/regulator` scheduled-events panel + audit log, and `/public` total supply all update.
-2. **Trade.** Company B (`aluminium-bratislava.eth`) swaps EURS for 200 EUAs on the DEX (~€70 / EUA). Trade streams to the regulator dashboard with provenance arrow; public ticker and price chart tick.
-3. **Surrender.** Company B calls `retire(200, beneficiary, reasonURI)`. 200 EUAs burned forever. Permanent retirement certificate issued (copyable URL for sustainability disclosure). Total on-chain supply: 1,000 → 800.
+The narrative is *"an efficient cement producer received their free allocation, sold their surplus on the secondary market, and retired the rest against verified emissions."* That's exactly what cap-and-trade is designed to incentivise.
 
-**Closing visual:** the cap-accounting widget on `/public` shows supply has actually contracted — `1,000 issued · 200 retired · 800 in circulation`. Make this the final shot — it's the *"this actually does what cap-and-trade is supposed to do"* moment.
+1. **Issuance event executes.** The 2026 free-allocation event fires (pre-computed from sector benchmark × historical activity). Company A receives 1,000 EUAs from the EU ETS Authority — vintage 2026, sector Industry, origin DE; metadata travels on the `CreditMinted` event. Sourcify-verified contract addresses visible. `/company` balance, `/regulator` scheduled-events panel + audit log, and `/public` total supply all update.
+2. **Trade.** Company A — an efficient operator with surplus allowances — sells 200 EUAs on the DEX, receiving ~13,422 EURS at €70 spot price. Company B (`aluminium-bratislava.eth`, off-stage) buys those 200 from the pool, paying ~13,503 EURS (~€80 spread = LP fee, accruing to liquidity providers — banks/prop firms in production; deployer in this demo). Trade streams to the regulator dashboard with provenance arrows; public ticker and price chart tick. The Company A view shows their sale receipt; B's purchase appears only as a /public ticker tick.
+3. **Surrender.** Company A calls `retire(800, companyA, reasonURI)` — surrenders all 800 remaining EUAs against verified emissions. Burned forever. Permanent retirement certificate issued (copyable URL for sustainability disclosure). Of the 1,000 EUAs Company A received, 200 went to the secondary market and 800 were destroyed — Company A's wallet ends at zero.
 
-Detailed three-screen choreography with narration timing lives in `design/happy-flow.md`.
+**Closing visual:** the cap-accounting widget on `/public` shows supply has actually contracted — `1,000 issued · 800 retired · 200 still in circulation` (those 200 sit in B's wallet, off-stage). Make this the final shot — it's the *"this actually does what cap-and-trade is supposed to do"* moment. **80% supply contraction** in a single compliance cycle is a much sharper visual than the previous 20%-buyer-only flow it replaces.
+
+Detailed three-screen choreography with narration timing lives in `design/happy-flow.md`. (Note: that file still references the older two-actor flow and will be cleaned up later — UI was already built against the single-actor narrative; this section is the source of truth for the demo.)
 
 ---
 
@@ -162,10 +164,10 @@ Detailed three-screen choreography with narration timing lives in `design/happy-
 
 For runs where we want regulator enforcement as the climax. Insert two beats between Beat 2 (trade) and Beat 3 (surrender):
 
-- **2.5 Flag.** Regulator's review surfaces a sanctions-exposure / fraud pattern on Company B. Regulator calls `ComplianceRegistry.freeze(companyB)`. Audit log: `FREEZE` entry.
-- **2.75 Block.** Company B attempts a follow-up swap — transaction reverts on-chain (`NotVerified`). Visible on all three screens as a failed transaction.
+- **2.5 Flag.** Regulator's review surfaces a sanctions-exposure / fraud pattern on Company A. Regulator calls `ComplianceRegistry.freeze(companyA)`. Audit log: `FREEZE` entry.
+- **2.75 Block.** Company A attempts the surrender transaction — reverts on-chain (`CC_SenderNotVerified`). Visible on `/company` as a failed-transaction toast and on `/regulator` + `/public` audit log.
 
-Resume Beat 3 against an unfrozen state (regulator unfreezes after investigation) or end the demo at Block — narrator's choice.
+Resume Beat 3 against an unfrozen state (regulator unfreezes after investigation) or end the demo at Block — narrator's choice. Updated 2026-05-09 — target is now Company A (since they're our on-screen protagonist), preserving the visual "the regulator stops the protagonist's next move."
 
 > **Why the freeze is prospective, not mid-flight:** EVM trades are atomic — there is no in-flight window. The freeze stops *future* trades. This is *more faithful* to real EU ETS, not less: per `research/eu-ets-reality-check.md` §1, the Union Registry has **no transfer-reversal primitive** even after the 2010-11 phishing thefts (the Commission suspended *future* spot trading EU-wide for ~10 days rather than rollback). Reg. 2019/1122 Art. 30 lets national administrators suspend account access for up to 4 weeks — that's our `freeze`. Forward-only is the regulator's actual toolkit.
 
@@ -323,7 +325,7 @@ Add a single deck slide: *"You're thinking of the wrong market."* Show voluntary
 - EU-regulated companies subject to ETS: **10,000+**
 - Phase 4 cap (2024): **~1.39 Gt CO₂** | Linear Reduction Factor: **4.4%/yr** | EUA price: **~€65–70** | Surrender deadline: **30 September** | Excess-emission penalty: **€100/t shortfall** (effective price ceiling)
 - EEX auction cadence: **~1–1.5M EUAs/day**, Mon/Tue/Thu/Fri-DE
-- Demo facts (happy flow): **1,000 EUAs issued · 200 traded · 200 retired · 800 in circulation** (§5b adds 1 live freeze)
+- Demo facts (happy flow): **1,000 EUAs issued to Company A · 200 sold on DEX (~13,422 EURS) · 800 retired · 200 still in circulation** (§5b adds 1 live freeze)
 
 ### "What we punted" slide
 Honest scope acknowledgement builds credibility. List: real EU registry oracle, production-grade KYC, zk-privacy on trades, account abstraction, real fiat on/off-ramp, MiCA compliance audit.

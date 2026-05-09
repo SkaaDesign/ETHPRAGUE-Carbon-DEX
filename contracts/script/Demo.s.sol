@@ -9,24 +9,25 @@ import {Retirement} from "../src/Retirement.sol";
 import {CarbonDEX} from "../src/CarbonDEX.sol";
 import {Regulator} from "../src/Regulator.sol";
 
-/// @title Demo — runs the BRIEF §5 happy flow against an already-deployed stack
-/// @notice Three beats from BRIEF §5:
-///           1. Issuance event executes — Company A receives 1,000 EUAs
-///           2. Trade               — Company B swaps EURS for ~200 EUAs on the DEX
-///           3. Surrender           — Company B retires the 200 EUAs (burned forever)
-///         Closing visual: total supply 1,000 → 800.
+/// @title Demo - runs BRIEF §5 happy flow against an already-deployed stack (multi-key)
+/// @notice Single-actor narrative (Company A as protagonist):
+///           Beat 1: Regulator issues 1,000 EUA to Company A
+///           Beat 2: Company A sells 200 surplus EUA on the DEX
+///                   Company B (off-stage) buys those 200 from the pool
+///           Beat 3: Company A retires the remaining 800 EUA
+///         Closing: 1,000 issued, 800 retired, 200 in B's wallet (off-stage).
 ///
-/// @dev    Run with:
-///         forge script script/Demo.s.sol:Demo --rpc-url $RPC_URL --broadcast \
+/// @dev    Required env (multi-key — realistic Sepolia setup):
+///           OPERATOR_PK    — regulator OPERATOR_ROLE holder + initial LP
+///           COMPANY_A_PK   — Company A signer (cement-mainz.eth)
+///           COMPANY_B_PK   — Company B signer (aluminium-bratislava.eth) — off-stage actor
+///
+///         Run with:
+///           forge script script/Demo.s.sol:Demo --rpc-url $RPC_URL --broadcast \
 ///             --sig "run(address,address,address,address,address,address)" \
 ///             $EURS $REGISTRY $CREDIT $RETIREMENT $DEX $REGULATOR
 ///
-///         Required env: PRIVATE_KEY (must be the regulator OPERATOR + companyA + companyB
-///         signer for the demo — for local anvil we use anvil's default funded keys; for
-///         Sepolia we use three separate keys, see Demo.s.sol:DemoMultiKey alt).
-///
-///         For a one-shot run on local anvil, use script/DemoLocal.s.sol which deploys +
-///         seeds + runs the flow in a single invocation.
+///         For a one-shot deploy + seed + demo on local anvil, use script/DemoLocal.s.sol.
 contract Demo is Script {
     function run(
         address payable eursAddr,
@@ -43,96 +44,96 @@ contract Demo is Script {
         CarbonDEX dex = CarbonDEX(dexAddr);
         Regulator regulator = Regulator(regulatorAddr);
 
-        // For single-key demo runs (anvil), one signer plays all roles
-        uint256 signerPk = vm.envUint("PRIVATE_KEY");
-        address signer = vm.addr(signerPk);
-        address companyA = vm.envOr("COMPANY_A", signer);
-        address companyB = vm.envOr("COMPANY_B", signer);
+        uint256 operatorPk = vm.envUint("OPERATOR_PK");
+        uint256 companyAPk = vm.envUint("COMPANY_A_PK");
+        uint256 companyBPk = vm.envUint("COMPANY_B_PK");
 
-        console.log("=== Demo signer:", signer);
-        console.log("=== Company A: ", companyA);
-        console.log("=== Company B: ", companyB);
+        address operator = vm.addr(operatorPk);
+        address companyA = vm.addr(companyAPk);
+        address companyB = vm.addr(companyBPk);
+
+        console.log("Operator:  ", operator);
+        console.log("Company A: ", companyA);
+        console.log("Company B: ", companyB);
         console.log("");
 
-        vm.startBroadcast(signerPk);
-
-        // ─── Pre-seed: register companies, seed liquidity ──────────────
-        // (In production these would be separate prior steps; for demo we batch.)
+        // ─── Pre-seed (idempotent) ──────────────────────────────────────
+        vm.startBroadcast(operatorPk);
 
         if (!registry.isVerified(companyA)) {
             regulator.registerCompany(companyA, ComplianceRegistry.AccountType.Operator, bytes2("DE"), "Cement Mainz");
-            console.log("Registered Company A (Cement Mainz, DE)");
+            console.log("Registered Company A");
         }
-        if (!registry.isVerified(companyB) && companyB != companyA) {
+        if (!registry.isVerified(companyB)) {
             regulator.registerCompany(companyB, ComplianceRegistry.AccountType.Operator, bytes2("SK"), "Aluminium Bratislava");
-            console.log("Registered Company B (Aluminium Bratislava, SK)");
+            console.log("Registered Company B");
+        }
+        if (!registry.isVerified(operator)) {
+            regulator.registerCompany(operator, ComplianceRegistry.AccountType.Trader, bytes2("XX"), "Liquidity Provider");
         }
 
-        // Seed pool with 350k EURS / 5k EUA -> 70 EURS/EUA spot. Same depth as DemoLocal.
-        // Faucet caps at 100k/call, so 4 calls accumulate 400k; we seed 350k and keep 50k buffer.
         if (dex.reserveEURS() == 0) {
             for (uint256 i = 0; i < 4; ++i) eurs.faucet(eurs.FAUCET_MAX());
-            regulator.issueAllowance(signer, 5_000 * 10 ** 18, 2026, bytes2("IN"), bytes2("DE"), keccak256("LP-SEED"));
+            regulator.issueAllowance(operator, 5_000 * 10 ** 18, 2026, bytes2("IN"), bytes2("DE"), keccak256("LP-SEED"));
             eurs.approve(address(dex), 350_000 * 10 ** 18);
             credit.approve(address(dex), 5_000 * 10 ** 18);
             dex.addLiquidity(350_000 * 10 ** 18, 5_000 * 10 ** 18);
             console.log("Seeded pool: 350,000 EURS / 5,000 EUA");
         }
 
-        // --- BEAT 1: Issuance event executes ---
+        // ─── BEAT 1: Issuance event executes ────────────────────────────
         console.log("");
         console.log("=== BEAT 1 - Issuance event executes ===");
         regulator.issueAllowance(
-            companyA,
-            1_000 * 10 ** 18,
-            2026,
-            bytes2("IN"),
-            bytes2("DE"),
-            keccak256("2026-FA-DE-001")
+            companyA, 1_000 * 10 ** 18, 2026, bytes2("IN"), bytes2("DE"), keccak256("2026-FA-DE-001")
         );
+        vm.stopBroadcast();
         console.log("Company A balance:      ", credit.balanceOf(companyA) / 1e18, "EUA");
-        console.log("Total supply:           ", credit.totalSupply() / 1e18, "EUA");
 
-        // --- BEAT 2: Secondary-market trade (exact-output) ---
+        // ─── BEAT 2a: Company A sells 200 surplus ───────────────────────
         console.log("");
-        console.log("=== BEAT 2 - Trade (buy exactly 200 EUA) ===");
+        console.log("=== BEAT 2 - Trade (Company A sells 200 surplus EUA) ===");
+        uint256 sellAmount = 200 * 10 ** 18;
 
-        uint256 desiredOut = 200 * 10 ** 18;
-        uint256 maxIn = 20_000 * 10 ** 18; // generous cap; actual cost at 350k/5k is ~14,627
+        vm.startBroadcast(companyAPk);
+        credit.approve(address(dex), sellAmount);
+        uint256 quotedReceive = dex.getAmountOut(sellAmount, dex.reserveCredit(), dex.reserveEURS());
+        uint256 received = dex.swapCreditForEURS(sellAmount, (quotedReceive * 99) / 100);
+        vm.stopBroadcast();
 
-        // Fund Company B with enough EURS
-        if (eurs.balanceOf(companyB) < maxIn) {
-            eurs.faucet(maxIn);
-            if (companyB != signer) eurs.transfer(companyB, maxIn);
-        }
+        console.log("Company A sold 200 EUA, received", received / 1e18, "EURS");
+        console.log("Spot after A's sale:    ", dex.getSpotPrice() / 1e18, "EURS/EUA");
 
-        if (companyB == signer) {
-            eurs.approve(address(dex), maxIn);
-            uint256 spent = dex.swapEURSForCreditExactOut(desiredOut, maxIn);
-            console.log("Company B paid:         ", spent / 1e18, "EURS for exactly 200 EUA");
-        } else {
-            console.log("Company B swap deferred (multi-key flow); see DemoLocal for single-key path");
-        }
+        // ─── BEAT 2b: Company B (off-stage) buys those 200 ──────────────
+        uint256 maxBSpend = 20_000 * 10 ** 18;
+        vm.startBroadcast(companyBPk);
+        if (eurs.balanceOf(companyB) < maxBSpend) eurs.faucet(maxBSpend);
+        eurs.approve(address(dex), maxBSpend);
+        uint256 bSpent = dex.swapEURSForCreditExactOut(sellAmount, maxBSpend);
+        vm.stopBroadcast();
 
-        console.log("Pool reserves: EURS=", dex.reserveEURS() / 1e18, " Credit=", dex.reserveCredit() / 1e18);
-        console.log("Spot price (EURS/EUA):   ", dex.getSpotPrice() / 1e18);
+        console.log("Company B (off-stage) bought 200 EUA, paid", bSpent / 1e18, "EURS");
+        console.log("Spot after B's buy:     ", dex.getSpotPrice() / 1e18, "EURS/EUA");
 
-        // --- BEAT 3: Surrender ---
+        // ─── BEAT 3: Surrender (Company A retires remaining 800) ───────
         console.log("");
-        console.log("=== BEAT 3 - Surrender ===");
-        if (companyB == signer && credit.balanceOf(companyB) >= desiredOut) {
-            credit.approve(address(retirement), desiredOut);
-            retirement.retire(desiredOut, companyB, "ipfs://sustainability-report-2026-Q4.pdf");
-            console.log("Company B retired:       200 EUA (burned forever)");
-        }
+        console.log("=== BEAT 3 - Surrender (Company A retires 800 EUA) ===");
+        uint256 retireAmount = credit.balanceOf(companyA);
 
+        vm.startBroadcast(companyAPk);
+        credit.approve(address(retirement), retireAmount);
+        retirement.retire(retireAmount, companyA, "ipfs://sustainability-report-2026-Q4.pdf");
+        vm.stopBroadcast();
+
+        console.log("Company A retired:      ", retireAmount / 1e18, "EUA (burned forever)");
+
+        // ─── CLOSING VISUAL ────────────────────────────────────────────
         console.log("");
         console.log("=== CLOSING VISUAL ===");
-        uint256 issued = credit.totalSupply() + 200 * 10 ** 18; // includes the burned 200
-        console.log("Issued:                 ", issued / 1e18, "EUA (this run)");
-        console.log("Retired:                 200 EUA");
-        console.log("Total supply (post-burn):", credit.totalSupply() / 1e18, "EUA");
-
-        vm.stopBroadcast();
+        console.log("Issued to Company A:     1,000 EUA");
+        console.log("A sold to market:        200 EUA");
+        console.log("A retired:               800 EUA (destroyed)");
+        console.log("Still in circulation:    200 EUA (in B's wallet)");
+        console.log("Company A balance:      ", credit.balanceOf(companyA) / 1e18, "EUA");
     }
 }
