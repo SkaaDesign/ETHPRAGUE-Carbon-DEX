@@ -12,16 +12,17 @@
 
 import Link from "next/link";
 import {
-  beatFromSearchParams,
   fmt,
   stateAt,
   type AuditEntry,
 } from "@/lib/demo-state";
+import { getStateForRoute } from "@/lib/chain-state";
 import {
   CTAButton,
   EditorialShell,
   Eyebrow,
   KindChip,
+  LiveBadge,
   StatusPill,
 } from "@/components/ui";
 import { BeatSwitcher } from "@/components/BeatSwitcher";
@@ -36,8 +37,8 @@ export default async function RegulatorPage({
   for (const [k, v] of Object.entries(params)) {
     if (typeof v === "string") usp.set(k, v);
   }
-  const beat = beatFromSearchParams(usp);
-  const state = stateAt(beat);
+  const { state, isLive } = await getStateForRoute(usp);
+  const beat = state.beat;
 
   return (
     <>
@@ -154,6 +155,9 @@ export default async function RegulatorPage({
           />
         </section>
       </EditorialShell>
+      <div className="fixed top-3 right-4 z-50 px-3 py-[6px] bg-surface border border-border rounded-full shadow-sm">
+        <LiveBadge isLive={isLive} beat={beat} />
+      </div>
       <BeatSwitcher current={beat} />
     </>
   );

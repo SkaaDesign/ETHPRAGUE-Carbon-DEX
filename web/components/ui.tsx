@@ -169,6 +169,44 @@ export function TxLink({
 }
 
 /**
+ * Live / sim badge — small visual cue surfacing whether the route is
+ * reading from Sepolia (live) or from the stateAt() simulation. Lives in
+ * the page header next to the brand or nav.
+ */
+export function LiveBadge({
+  isLive,
+  beat,
+  className = "",
+}: {
+  isLive: boolean;
+  beat: number;
+  className?: string;
+}) {
+  if (isLive) {
+    return (
+      <span
+        className={`inline-flex items-center gap-[5px] font-mono text-[10px] tracking-[0.08em] uppercase text-success ${className}`}
+      >
+        <span
+          aria-hidden
+          className="w-[6px] h-[6px] rounded-full bg-success"
+          style={{ animation: "pulse 2s infinite" }}
+        />
+        LIVE · Sepolia
+      </span>
+    );
+  }
+  return (
+    <span
+      className={`inline-flex items-center gap-[5px] font-mono text-[10px] tracking-[0.08em] uppercase text-muted ${className}`}
+    >
+      <span aria-hidden className="w-[6px] h-[6px] rounded-full bg-accent" />
+      SIM · Beat {beat}
+    </span>
+  );
+}
+
+/**
  * EU flag — public observer header.
  * CSS-drawn 22×16 blue rectangle with a yellow star.
  */

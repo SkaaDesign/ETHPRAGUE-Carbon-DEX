@@ -13,14 +13,12 @@ import {
   CTAButton,
   EditorialShell,
   Eyebrow,
+  LiveBadge,
   SourcifyBadge,
   TxLink,
 } from "@/components/ui";
-import {
-  beatFromSearchParams,
-  fmt,
-  stateAt,
-} from "@/lib/demo-state";
+import { fmt, stateAt } from "@/lib/demo-state";
+import { getStateForRoute } from "@/lib/chain-state";
 
 const PILLS = [
   { label: "Overview", active: true },
@@ -35,10 +33,9 @@ export default async function CompanyPage({
   searchParams: Promise<{ beat?: string }>;
 }) {
   const params = await searchParams;
-  const beat = beatFromSearchParams(
-    new URLSearchParams(params as Record<string, string>),
-  );
-  const s = stateAt(beat);
+  const usp = new URLSearchParams(params as Record<string, string>);
+  const { state: s, isLive } = await getStateForRoute(usp);
+  const beat = s.beat;
 
   return (
     <>
@@ -82,6 +79,9 @@ export default async function CompanyPage({
 
         <HoldingsStrip s={s} />
       </EditorialShell>
+      <div className="fixed top-3 right-4 z-50 px-3 py-[6px] bg-surface border border-border rounded-full shadow-sm">
+        <LiveBadge isLive={isLive} beat={beat} />
+      </div>
       <BeatSwitcher current={beat} />
     </>
   );

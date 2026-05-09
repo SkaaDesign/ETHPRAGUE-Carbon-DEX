@@ -10,13 +10,9 @@
 // — 1,000 issued · 800 retired · 200 still circulating (in pool / B's wallet).
 
 import { BeatSwitcher } from "@/components/BeatSwitcher";
-import { EEAShell } from "@/components/ui";
-import {
-  beatFromSearchParams,
-  fmt,
-  QTY_TRADE,
-  stateAt,
-} from "@/lib/demo-state";
+import { EEAShell, LiveBadge } from "@/components/ui";
+import { fmt, QTY_TRADE, stateAt } from "@/lib/demo-state";
+import { getStateForRoute } from "@/lib/chain-state";
 
 const NAV_ITEMS = [
   { label: "Overview", href: "#", active: true },
@@ -37,10 +33,9 @@ export default async function PublicPage({
   searchParams: Promise<{ beat?: string }>;
 }) {
   const params = await searchParams;
-  const beat = beatFromSearchParams(
-    new URLSearchParams(params as Record<string, string>),
-  );
-  const s = stateAt(beat);
+  const usp = new URLSearchParams(params as Record<string, string>);
+  const { state: s, isLive } = await getStateForRoute(usp);
+  const beat = s.beat;
 
   // cap-bar segment widths as % of supply (capped to avoid div-by-zero).
   const denom = Math.max(s.supply, 1);
@@ -272,6 +267,9 @@ export default async function PublicPage({
           </span>
         </footer>
       </EEAShell>
+      <div className="fixed top-3 right-4 z-50 px-3 py-[6px] bg-surface border border-border rounded-full shadow-sm">
+        <LiveBadge isLive={isLive} beat={beat} />
+      </div>
       <BeatSwitcher current={beat} />
     </>
   );
