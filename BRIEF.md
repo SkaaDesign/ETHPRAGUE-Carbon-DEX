@@ -40,6 +40,7 @@ Regulatory framing for backup:
 | 3 | Settlement currency | **Mock EUR ERC-20 token, name `EURS`** |
 | 4 | Regulator simulated as | **Generic "EU ETS Authority"** |
 | 5 | Permission model | **Hard whitelist** — only addresses in `ComplianceRegistry` can hold or trade credits |
+| 6 | Carbon credit token standard | **ERC-20** — single fungible token. Updated 2026-05-09 (was ERC-1155). Composes natively with the V2 fork; matches real EU ETS within-Phase fungibility. Vintage / sector / origin metadata moves to issuance and retirement event payloads. |
 
 ---
 
@@ -73,11 +74,12 @@ ethereum-test-realm/
 ### Contract spec (function-level)
 
 #### `CarbonCredit.sol`
-- **Standard:** ERC-1155 (multi-token: each token id = a credit batch with vintage/sector metadata).
-- **Why ERC-1155 not ERC-20:** real credits have *vintage* (year), *sector* (energy / industry / transport), *origin* (member state), *methodology*. ERC-1155 lets us encode all that natively.
-- **Key state:** per-token-id metadata struct (vintage, sector, originCountry, methodologyId, totalIssued, totalRetired).
-- **Key functions:** `mint(to, tokenId, amount)` (regulator-only), `safeTransferFrom` (whitelist-gated), `retire(tokenId, amount)` (delegated to `Retirement.sol`).
-- **Key events:** `CreditMinted`, `CreditTransferred`, `CreditRetired`.
+- **Standard:** ERC-20 — single fungible token. Updated 2026-05-09 (was ERC-1155).
+- **Why ERC-20 not ERC-1155:** the V2 fork only handles ERC-20 pairs natively; ERC-1155 would force a per-id wrapper or a non-V2 AMM. Real EU ETS treats EUAs as fungible commodities within a phase (a 2024 EUA satisfies a 2026 surrender obligation — banking is unrestricted intra-Phase 4). Modelling them as separate token ids over-segregates what is fungible by law.
+- **Where the metadata lives:** vintage / sector / origin / methodology travel on **issuance and retirement event payloads**, not on the token. Provenance is recoverable from event logs without bloating the token contract.
+- **Key state:** standard ERC-20 (`balanceOf`, `totalSupply`, `allowance`); `MINTER_ROLE` gated to `Regulator`; transfers gated by `ComplianceRegistry.isVerified()` on both `from` and `to`.
+- **Key functions:** `mint(to, amount, vintage, sector, originCountry, issuanceRef)` (regulator-only; emits `CreditMinted` carrying full provenance), `transfer` / `transferFrom` (whitelist-gated), `burnFrom(from, amount)` (called by `Retirement.sol`).
+- **Key events:** `CreditMinted(to, amount, vintage, sector, originCountry, issuanceRef)`, `CreditRetired(from, amount, beneficiary, reasonURI)`. Standard ERC-20 `Transfer` and `Approval` events also fire.
 
 #### `ComplianceRegistry.sol`
 - **Purpose:** the on-chain whitelist of who can hold/trade.
@@ -99,8 +101,8 @@ ethereum-test-realm/
 
 #### `Retirement.sol`
 - **Purpose:** burning credits and emitting permanent, immutable proof-of-offset.
-- **Key function:** `retire(tokenId, amount, beneficiary, reasonURI)` — burns the credits, emits a permanent retirement event with off-chain reason URI (e.g. corporate sustainability report).
-- **Key event:** `Retired(tokenId, amount, beneficiary, reasonURI, timestamp)` — this is the proof companies cite in disclosures.
+- **Key function:** `retire(amount, beneficiary, reasonURI)` — calls `CarbonCredit.burnFrom(msg.sender, amount)`; emits a permanent `Retired` event with off-chain reason URI (e.g. corporate sustainability report). `beneficiary` identifies whose emissions the surrender covers (often `msg.sender`, but allows third-party retirement on behalf of a beneficiary).
+- **Key event:** `Retired(from, amount, beneficiary, reasonURI, timestamp)` — the proof companies cite in disclosures. Vintage isn't re-recorded here; under within-Phase fungibility, retirement isn't tied to a specific vintage. Vintage attribution can be reconstructed off-chain by aggregating `CreditMinted` events for the relevant compliance period.
 
 #### `EURS.sol`
 - **Purpose:** mock settlement currency for the demo.
