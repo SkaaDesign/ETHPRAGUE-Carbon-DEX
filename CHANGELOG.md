@@ -31,6 +31,7 @@ Plain-English log of scope and infrastructure changes since the locked baseline.
 
 - **`design/happy-flow.md`** added — self-contained design spec for the live demo. Three beats × three screens (`/company`, `/regulator`, `/public`) with cast in ENS, design-system constraints (Scandinavian / institutional, IBM Plex + Fraunces, no crypto-kitsch), token-model note, what's-NOT-in-this-demo list, and open design questions for your judgement.
 - **BRIEF §5 rewritten as happy flow** (3 beats — issuance, trade, surrender). **Freeze flow preserved as §5b alternate.** Closing visual: cap-accounting widget on `/public` showing `1,000 issued · 200 retired · 800 in circulation`.
+- **Government-flavoured framing for the regulator UI:** issuance is *not* a discretionary action button — it's a **calendar-driven process**. Two distinct panels on `/regulator`: a **Scheduled allocation events panel** (pre-computed entries with status `SCHEDULED → CONFIRMED → EXECUTED`; the regulator clicks `Execute` to fire the year's allocation) and an **Authority controls panel** (discretionary powers only: freeze, unfreeze, pause). A regulator who could mint allowances on a whim would be ultra vires; we model real-world separation. User-facing language drops "mint" in favour of "issuance" / "issuance event"; the contract primitive stays `CarbonCredit.mint`.
 - Decisions in `design/happy-flow.md §10` are firm; everything else is open to design judgement.
 
 ### For Parth (dev)

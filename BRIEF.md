@@ -59,7 +59,7 @@ Carbon DEX is the **on-chain settlement layer for the EU ETS secondary market.**
 - We pre-empt the *"are you replacing the EU registry?"* question with an honest *"no — we're the secondary market; here's how the rest connects."*
 - The bridge gap (custodian-wrap in v1) is acknowledged, not hidden. Faking native issuance for the demo and pretending there's no bridge is the failure mode.
 
-**For the live demo:** `Regulator.mint()` represents either custodian-wrap (real EUA arrives → token minted) or native issuance (v2/v3 sovereign mint). Same opcode, different upstream story. We don't pick on stage; the narrator clarifies if asked.
+**For the live demo:** the issuance event executed by the regulator represents either custodian-wrap (real EUA arrives → backed token issued) or native issuance (v2/v3 sovereign mint). On-chain it's the same primitive (`CarbonCredit.mint` called by `Regulator`); the upstream story differs. We don't pick on stage; the narrator clarifies if asked. **Issuance is a calendar-driven process, not a discretionary regulator action** — see `design/happy-flow.md §7` for the UI implication (scheduled-events panel vs authority-controls panel).
 
 For real EU ETS regulator powers, allocation calendar, surrender mechanics, and Union Registry architecture, see `research/eu-ets-reality-check.md`.
 
@@ -116,7 +116,7 @@ ethereum-test-realm/
 
 #### `Regulator.sol`
 - **Purpose:** the authority contract. Holds the regulator's powers; in production these would be split across roles, for the demo a single contract.
-- **Powers:** mint credits (calls `CarbonCredit.mint`), pause DEX, blacklist a company, audit (read-only — emits events for every supervised action).
+- **Powers:** issue allowances (executes scheduled allocation events — pre-computed upstream from sector benchmark × historical activity; on-chain primitive is `CarbonCredit.mint`; **not** a discretionary act), freeze a company (via `ComplianceRegistry.freeze`), pause the DEX, audit (read-only — emits events for every supervised action).
 - **Cannot:** trade on the DEX, take fees, front-run, redirect transfers.
 - **Key events:** `RegulatoryAction(actionType, target, reason, timestamp)` — single audit-log stream.
 
@@ -148,7 +148,7 @@ Every action shows: tx hash, Sourcify-verified contract badge, plain-English des
 
 Spine of the live demo. Three laptops on stage = three screens (`/company`, `/regulator`, `/public`). The Company laptop role-switches from Company A to Company B between Beat 1 and Beat 2.
 
-1. **Issuance.** Regulator (`eu-ets-authority.eth`) mints 1,000 EUAs to Company A (`cement-mainz.eth`), tagged vintage 2026 / Industry / DE. Sourcify-verified contract addresses visible. `/company` balance, `/regulator` audit log, and `/public` total supply all update.
+1. **Issuance event executes.** The 2026 free-allocation event fires (pre-computed from sector benchmark × historical activity). Company A (`cement-mainz.eth`, verified cement producer) receives 1,000 EUAs from the EU ETS Authority — vintage 2026, sector Industry, origin DE; metadata travels on the `CreditMinted` event. Sourcify-verified contract addresses visible. `/company` balance, `/regulator` scheduled-events panel + audit log, and `/public` total supply all update.
 2. **Trade.** Company B (`aluminium-bratislava.eth`) swaps EURS for 200 EUAs on the DEX (~€70 / EUA). Trade streams to the regulator dashboard with provenance arrow; public ticker and price chart tick.
 3. **Surrender.** Company B calls `retire(200, beneficiary, reasonURI)`. 200 EUAs burned forever. Permanent retirement certificate issued (copyable URL for sustainability disclosure). Total on-chain supply: 1,000 → 800.
 

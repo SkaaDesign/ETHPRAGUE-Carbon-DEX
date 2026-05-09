@@ -55,7 +55,7 @@
 **`CarbonCredit` is ERC-20** (changed from ERC-1155 on 2026-05-09). Single fungible token. Total supply on-chain = total in circulation. Burn on retirement = real supply contraction, observable via `totalSupply`.
 
 **Vintage / sector / origin metadata lives on events**, not on the token:
-- `CreditMinted(address indexed to, uint256 amount, uint16 vintage, uint8 sector, bytes2 originCountry, uint256 issuanceRef)` — emitted by `Regulator.mint()`
+- `CreditMinted(address indexed to, uint256 amount, uint16 vintage, uint8 sector, bytes2 originCountry, uint256 issuanceRef)` — emitted on issuance (the on-chain primitive `CarbonCredit.mint` is called by `Regulator` when a scheduled allocation event executes)
 - `CreditRetired(address indexed from, uint256 amount, uint16 vintage, address indexed beneficiary, string reasonURI)` — emitted by `Retirement.retire()`
 
 **Implication for design:** wallet balances show a single number ("Company B balance: 200 EUAs"). Provenance ("vintage 2026, cement, DE") is shown in **transaction-detail panels** by reading the corresponding `CreditMinted` event for the original issuance. The `/public` view should let any visitor click an address and see its full mint/transfer/retire history derived from event logs.
@@ -68,15 +68,17 @@ This matches real EU ETS behaviour: EUAs are fungible within Phase 4 (2021-2030)
 
 Each beat is one transaction. Total stage time: ~3 minutes if narrated tightly. One narrator (Nahin), three operators (Company-A clicker, Company-B clicker, Regulator clicker). The Public screen is observational only — operator just keeps it visible.
 
-### Beat 1 — Issuance event
+### Beat 1 — Issuance event executes
 
-> **Narration:** *"It's the start of compliance year 2026. The EU ETS has run its February allocation event. Company A — `cement-mainz.eth`, a verified cement producer — receives 1,000 vintage-2026 EUAs from the EU ETS Authority."*
+> **Narration:** *"It's the start of compliance year 2026. The EU ETS Authority's annual free-allocation event fires — pre-computed weeks earlier from sector benchmark × historical activity. Company A — `cement-mainz.eth`, a verified cement producer — receives 1,000 EUAs (vintage 2026, sector Industry, origin DE). This isn't a discretionary act by the regulator — it's a scheduled, calculated event executing on the calendar."*
+>
+> *(On stage, the regulator operator clicks `Execute` on the 2026 free-allocation entry in the scheduled-events panel. The narration frames it as the event firing, not as the regulator deciding amounts.)*
 
 | Screen | What happens |
 |---|---|
-| **`/company`** *(Company A)* | Wallet balance: **0 → 1,000 EUAs**. Toast / inline notification: *"Allocation received: 1,000 EUAs from `eu-ets-authority.eth`. Vintage 2026 · sector: Industry · origin: DE."* Clickable: tx hash, Sourcify-verified contract badge. New holdings line in portfolio table. |
-| **`/regulator`** | Audit log streams a fresh entry at top: **`ISSUE`** · `1,000 EUAs → cement-mainz.eth` · `vintage 2026, cement, DE` · timestamp · tx hash. Issuance counter ticks `0 → 1,000`. Compliance roster shows both companies as **✅ Verified, not frozen**. Live trade feed: empty. |
-| **`/public`** | Total on-chain supply: **0 → 1,000**. Vintage-2026 panel populates. Public allocation log entry visible. Cap-accounting widget (top right): `1,000 issued · 0 retired · 1,000 in circulation`. No wallet connection required to see any of this. |
+| **`/company`** *(Company A)* | Wallet balance: **0 → 1,000 EUAs**. Toast / inline notification: *"Allocation received: 1,000 EUAs from `eu-ets-authority.eth`. Period 2026 · sector: Industry · origin: DE · ref: 2026-FA-DE-001."* Clickable: tx hash, Sourcify-verified contract badge. New holdings line in portfolio table. |
+| **`/regulator`** | The 2026 free-allocation entry in the **Scheduled allocation events** panel transitions `CONFIRMED` → `EXECUTED`. Audit log streams a fresh entry at top: **`ISSUE`** · `Allocation event 2026 · 1,000 EUAs → cement-mainz.eth` · `vintage 2026 · sector: cement · origin: DE` · `ref: 2026-FA-DE-001` · timestamp · tx hash. Issuance counter ticks `0 → 1,000`. Compliance roster shows both companies as **✅ Verified, not frozen**. Live trade feed: empty. |
+| **`/public`** | Total on-chain supply: **0 → 1,000**. Vintage / sector breakdown widget populates from the `CreditMinted` event payload. Public allocation log entry visible. Cap-accounting widget (top right): `1,000 issued · 0 retired · 1,000 in circulation`. No wallet connection required to see any of this. |
 
 ### Beat 2 — Secondary-market trade
 
@@ -110,9 +112,10 @@ Each beat is one transaction. Total stage time: ~3 minutes if narrated tightly. 
 
 ### `/regulator`
 - **Audit log** is the spine of the screen — top-down stream, newest on top, monospaced, expandable rows. Like a trading-desk blotter, not a social feed.
-- **Compliance roster** in a side rail: every verified address, ENS name, status (verified / frozen / blacklisted), last-action timestamp. Click → drilldown.
+- **Compliance roster** in a side rail: every verified address, ENS name, status (verified / frozen), last-action timestamp. Click → drilldown.
 - **Counter widgets** (issued / retired / in-circulation / pool depth) at the top — institutional KPI strip.
-- **Action buttons** (mint, freeze, pause) deliberately under-decorated — these are *powers*, not *features*. Place them in a "Authority controls" panel with a slight gravitas (small label like *"Use sparingly. All actions logged immutably."*).
+- **Scheduled allocation events panel** — calendar-driven issuance events, pre-computed upstream from sector benchmark × historical activity. Each entry: target, amount, vintage, sector, origin, calculation ref, status (`SCHEDULED` → `CONFIRMED` → `EXECUTED`). The regulator clicks `Execute` on a `CONFIRMED` entry; this represents the year's allocation event firing on the calendar, *not* a discretionary mint. **Issuance is a process, not a button-click.**
+- **Authority controls panel** — discretionary powers only: `freeze(address)`, `unfreeze`, `pause(DEX)`. Deliberately under-decorated (small label like *"Use sparingly. All actions logged immutably."*). **Issuance is deliberately NOT in this panel** — it lives in the scheduled-events panel above. A regulator who could mint allowances on a whim would be ultra vires; we model the real-world separation between calendar-driven issuance and discretionary enforcement.
 - **No live trade feed pyrotechnics.** No pulses, no sound, no glow. A new row enters at the top — full stop.
 
 ### `/public`
@@ -132,8 +135,8 @@ These are scope-honest omissions. Have answers ready for Q&A but no UI for any o
 |---|---|
 | The freeze flow | Saved for §5b. Live demo is happy-path only (per primary demo strategy A). |
 | Auction mechanism | Auctions happen upstream of us (EEX Leipzig). Our `Regulator.mint()` represents either free allocation or post-auction custodian-wrap. |
-| Allocation calendar (Feb 28 / 30 Sept) | Implied by narration, not visualised. Could be a future "Mechanics" artboard for the pitch deck. |
-| Free-allocation benchmark calculation | Off-chain; we just receive the result. |
+| Full year-long allocation calendar (Feb 28 / 30 Sept timeline) | Surfaced as the scheduled-events panel on `/regulator`, not as a year-long timeline visualisation. Could be a future "Mechanics" artboard for the pitch deck. |
+| Free-allocation benchmark calculation | Off-chain (sector × benchmark × activity). The result flows into the scheduled-events panel; the calculation isn't shown. |
 | Verified emissions oracle | We trust the narrator that "Company B emitted 200 tCO₂"; no oracle. |
 | Cross-vintage banking | Doesn't appear in a single-vintage demo. Mention in Q&A: *"a 2024 EUA satisfies a 2026 surrender; banking is unrestricted intra-Phase 4."* |
 | Bridge / custodian wrap | Out of demo, in the pitch slide. The DEX is what's on-chain regardless of bridge model. |
