@@ -9,9 +9,37 @@ Plain-English log of scope and infrastructure changes since the locked baseline.
 
 ## In flight
 
-- **`.gitignore` follow-up:** scope Foundry-side names (`lib/`, `dependencies/`, `out/`, `cache/`, `broadcast/`, `.foundry/`) to `contracts/`. Now more important — Parth's contracts live at `contracts/` on `origin/main`, and `web/lib/contracts.ts` is in BRIEF §4. Patch pending.
-- **Branch reconciliation:** `docs/scope-update` (this branch) carries today's research, ERC-20 pivot, happy flow, and bridge framing. `origin/main` carries Parth's contracts (`c40abad`, `995fad9`). Eventually opens a PR `docs/scope-update` → `main` to integrate.
+- **Install OpenZeppelin + Uniswap V2 deps** as git submodules in `contracts/lib/`. Next step before writing the first contract (`EURS.sol`).
+- **Branch reconciliation:** `docs/scope-update` carries today's research, ERC-20 pivot, happy flow, bridge framing, Foundry scaffold, and docs reshuffle. `origin/main` carries Parth's contracts (`c40abad`, `995fad9`). PR `docs/scope-update` → `main` reconciles when ready.
 - **Frontend scaffold:** Next.js + viem init in `web/` not yet started.
+
+---
+
+## 2026-05-09 (afternoon) — Foundry scaffold + docs reshuffle
+
+**Branch:** `docs/scope-update`. One commit covering both.
+
+### For Parth (dev)
+
+- **`contracts/` scaffolded** via `forge init --no-git`. Empty `src/`, `test/`, `script/` ready for our six contracts. Dev loop is `forge build` → `forge test` against anvil (Foundry's instant local EVM simulator — milliseconds per test).
+- **forge-std submodule** properly tracked at the parent repo level (`.gitmodules` at repo root, not inside `contracts/`). When cloning fresh: `git submodule update --init --recursive` to fetch dep code into `contracts/lib/forge-std/`.
+- **`.gitignore` updated:** `contracts/lib/` is no longer ignored — Foundry deps live there as git submodules, which require tracking via `.gitmodules`. Build artefacts (`out/`, `cache/`, `broadcast/`, `.foundry/`) stay ignored. Comment in `.gitignore` explains.
+- **`forge init` gotcha logged** in `docs/fredrik/learned.md`: by default `forge init` creates a nested `.git/`, which orphans the submodule from the parent repo's view. Fix: `forge init --no-git`, then add forge-std as a submodule from the parent repo root.
+- **Counter.sol boilerplate removed** from `src/`, `test/`, `script/`.
+
+### For Lin (UI / demo staging)
+
+- **No content changes.** `design/happy-flow.md` moved to `docs/design/happy-flow.md`.
+
+### For Nahin (pitch / Q&A)
+
+- **No content changes.** `BRIEF.md`, `HANDOFF.md`, `ethprague_presentation_takeaways.md`, `research/eu-ets-reality-check.md` all moved into `docs/`. Same content, new paths.
+
+### Repo plumbing
+
+- **All docs reshuffled into `docs/`** to declutter root. Root now: `README.md` (tiny pointer), `contracts/`, `docs/`. The README at root links into `docs/` for GitHub landing-page discoverability.
+- **`docs/fredrik/`** is gitignored (Fredrik's personal learning trail; not for the team).
+- **`BUILD-STATUS.md`** now at `docs/BUILD-STATUS.md`. Tracks the build punchlist; flip ❌ → ✅ as items land.
 
 ---
 

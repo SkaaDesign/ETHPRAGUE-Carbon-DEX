@@ -1,6 +1,9 @@
 # ─── TwinCurrent (must never commit) ────────────────────────────────
 .twincurrent-build/
 
+# ─── Fredrik's personal scratch (notes, ledgers, never shared) ──────
+docs/fredrik/
+
 # ─── Claude Code (local agent state, permission grants, MCP creds) ──
 .claude/
 
@@ -13,9 +16,10 @@
 contracts/out/
 contracts/cache/
 contracts/broadcast/
-contracts/lib/
-contracts/dependencies/
 contracts/.foundry/
+# Note: contracts/lib/ is NOT ignored — Foundry tracks dependencies as git submodules there.
+# Submodule contents live in their own repos; only the .gitmodules pointer is committed.
+contracts/dependencies/
 
 # ─── Node / Next.js (web/) ──────────────────────────────────────────
 node_modules/
