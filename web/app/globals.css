@@ -157,7 +157,9 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), system-ui, sans-serif;
-  font-feature-settings: "ss01", "ss02";
+  /* IBM Plex Sans doesn't expose ss01/ss02 stylistic sets — use the universally
+   * available kerning + ligatures + contextual alternates instead. */
+  font-feature-settings: "calt", "kern", "liga";
   min-height: 100vh;
 }
 

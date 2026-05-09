@@ -34,7 +34,7 @@ export const ACTORS = {
   },
   POOL: {
     ens: 'Carbon DEX Pool',
-    addr: '0xD3X0…f10a',
+    addr: '0xD3C0…f10a',
     label: 'AMM pool · EURS ⇄ EUA',
   },
 } as const;

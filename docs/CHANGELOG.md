@@ -11,9 +11,61 @@ Plain-English log of scope and infrastructure changes since the locked baseline.
 
 - **Sepolia onboarding** — Alchemy account + RPC URL + faucet ETH for the deployer wallet. Then `forge script script/Deploy.s.sol:Deploy --rpc-url $SEPOLIA_RPC_URL --broadcast --verify --verifier sourcify`.
 - **ENS registrations on Sepolia** — `eu-ets-authority.eth`, `cement-mainz.eth`, `aluminium-bratislava.eth`.
-- **Frontend wiring to live contracts** — skeleton is up; needs ABIs from `contracts/out/` → `web/lib/contracts.ts` + viem reads on each route. Lands once Sepolia addresses exist.
+- **Frontend wiring to live contracts** — Happy Path UI is built against `stateAt(beat)` simulation; next step is replacing `stateAt` calls with viem event reads once Sepolia addresses land. Three routes already shape-correct — only the data source changes.
 - **`docs/design/happy-flow.md` cleanup** — non-blocking. The doc still references the old two-actor flow; UI was already built against the new single-actor narrative (BRIEF §5 is the source of truth). Sync when convenient.
 - **Parth ping + merge** — `docs/scope-update` → `main` PR. Will tag Parth's last commit as `parth-archive` before merge.
+
+---
+
+## 2026-05-09 (late night) — Frontend Happy Path screens recreated from Claude-design bundle
+
+**Branch:** `docs/scope-update`. Forked-session team `carbon-dex-frontend` (lead + 3 builders + 1 reviewer) recreated the design from `design/source/carbon-dex/` near pixel-perfect. Eight commits across three phases.
+
+### Team structure
+
+| Role | Agent type | Output |
+|---|---|---|
+| `team-lead` | (this session) | Phase 1 foundation + Phase 3 consolidation |
+| `da-reviewer` | devils-advocate | T8 review of T1+T2; PROCEED verdict, ~10 nits surfaced |
+| `public-builder` | general-purpose | T4 — `/public` route |
+| `regulator-builder` | general-purpose | T5 — `/regulator` route |
+| `company-builder` | general-purpose | T6 — `/company` route |
+
+### Phase 1 — Foundation (lead)
+
+- **`design/source/carbon-dex/`** committed as repo reference (5.4 MB; the Claude-design handoff bundle including chats, project files, and reference images).
+- **`web/lib/demo-state.ts`** — TypeScript port of design's `state.jsx` with the main-session resolution numbers (1,000 issued / 200 sold / 800 retired; trade proceeds 13,422 EURS at 350k/5k pool with 0.3% fee). Discriminated union for `AuditEntry` so audit-log components switch on `entry.kind`. `beatFromSearchParams()` defaults to Beat 3 (closing visual).
+- **`web/app/globals.css`** — full design-token palette (~50 named tokens) ported from `happy-path/styles.css`. Two visual languages distinguished: Editorial Calm tokens (regulator + company) and EEA Editorial tokens (public observer). Audit-log kind chips, status pills, accent variants all expressed.
+- **`web/app/layout.tsx`** — five Google Fonts loaded: IBM Plex Sans + IBM Plex Mono + Fraunces (Editorial Calm) and Source Sans 3 + Source Serif 4 (EEA Editorial).
+- **`web/components/ui.tsx`** + **`BeatSwitcher.tsx`** — shared primitives: `EditorialShell`, `EEAShell`, `Eyebrow`, `CTAButton` (5 variants), `StatusPill` (3 kinds), `KindChip` (5 kinds), `SourcifyBadge`, `TxLink`, `EUFlag`. BeatSwitcher is the dev affordance for stepping through `?beat=0..3` on any route.
+
+### Phase 2 — Three routes in parallel (builders)
+
+- **`/public`** — EEA Editorial. EU-flag header, breadcrumbs, gradient hero with Source Serif h1, three-cell cap-accounting tile, segmented cap bar (cement-mainz / pool / retired), live ledger with newest-first beat-driven rows, verified-entities roster, no-wallet footer. Closing visual at Beat 3 reads `1,000 issued · 800 retired · 200 in circulation` — the cap-and-trade money shot.
+- **`/regulator`** — Editorial Calm. KPI strip (4 counters), scheduled allocation events table with EXECUTED/CONFIRMED/SCHEDULED status pills, audit log with ISSUE/SWAP/RETIRE kind chips and `flash-slow` on the freshest row, compliance roster.
+- **`/company`** — Editorial Calm with beat-driven content. Always-on identity tile (avatar + ENS + Verified pill) and balance with delta animations. Beat 0 awaiting tile → Beat 1 allocation receipt with copper RECEIVED toast → Beat 2 swap-settled receipt (200 EUA → 13,422 EURS) → Beat 3 retirement certificate with embossed seal, 7-row filing dl, scannable QR pattern, headline `800 EUA permanently destroyed`. Holdings strip at the bottom.
+
+### Phase 3 — Lead consolidation
+
+- DA nits applied: `0xD3X0…` → `0xD3C0…` (hex-correct decorative pool address); `font-feature-settings: ss01,ss02` → `calt,kern,liga` (Plex Sans doesn't expose ss01/ss02).
+- Final `bun run build`: green. All routes dynamic (server-rendered on `?beat=` reads). TypeScript clean.
+
+### One git-history quirk worth knowing
+
+Two builder commits raced on `git add` in the shared working tree:
+
+| Commit | Subject says | Actually contains |
+|---|---|---|
+| `5b4f119` | Recreate /public — EEA Editorial | `web/app/regulator/page.tsx` (regulator-builder's content) |
+| `4ca8e3f` | Recreate /public — EEA Editorial *(the actual content)* | `web/app/public/page.tsx` (public-builder's content) |
+
+Both files have correct content in HEAD; only the commit subjects are mis-paired for one of them. Documented here so the team knows when reading log.
+
+### What's NOT yet wired
+
+- Live contract reads — frontend uses `stateAt(beat)` simulation (port of designer's intended demo flow). Swap to viem reads when Sepolia addresses land.
+- Wallet connection through-flow tested only structurally (RainbowKit ConnectButton mounts; no real signing yet).
+- Beat-switcher always visible — should hide in production (small env-flag fix).
 
 ---
 
