@@ -43,6 +43,7 @@ contract Retirement {
         regulator = msg.sender;
     }
     
+    // 1. External single retirement
     function retire(
         uint256 tokenId,
         uint256 amount,
@@ -53,9 +54,42 @@ contract Retirement {
         require(amount > 0, "amount must be > 0");
         require(beneficiary != address(0), "invalid beneficiary");
         
-        // Transfer credits from sender to this contract, then burn
+        // Transfer from user to this contract
         carbonCredit.safeTransferFrom(msg.sender, address(this), tokenId, amount, "");
         
+        // Execute core logic
+        _retire(tokenId, amount, beneficiary, reasonURI, proofHash);
+    }
+    
+    // 2. External batch retirement
+    function retireBatch(
+        uint256[] memory tokenIds,
+        uint256[] memory amounts,
+        address beneficiary,
+        string memory reasonURI,
+        string memory proofHash
+    ) external onlyVerified(msg.sender) {
+        require(tokenIds.length == amounts.length, "length mismatch");
+        
+        for (uint256 i = 0; i < tokenIds.length; i++) {
+            require(amounts[i] > 0, "amount must be > 0");
+            
+            // Transfer individual token batch from user to this contract
+            carbonCredit.safeTransferFrom(msg.sender, address(this), tokenIds[i], amounts[i], "");
+            
+            // Execute core logic
+            _retire(tokenIds[i], amounts[i], beneficiary, reasonURI, proofHash);
+        }
+    }
+
+    // 3. Internal helper containing the core burn & state update logic
+    function _retire(
+        uint256 tokenId,
+        uint256 amount,
+        address beneficiary,
+        string memory reasonURI,
+        string memory proofHash
+    ) internal {
         // Burn via CarbonCredit's retireFrom function
         carbonCredit.retireFrom(address(this), tokenId, amount, reasonURI);
         
@@ -75,20 +109,6 @@ contract Retirement {
         
         emit Retired(retirementId, beneficiary, tokenId, amount, reasonURI, block.timestamp);
         emit PermanentOffsetProof(retirementId, proofHash);
-    }
-    
-    function retireBatch(
-        uint256[] memory tokenIds,
-        uint256[] memory amounts,
-        address beneficiary,
-        string memory reasonURI,
-        string memory proofHash
-    ) external onlyVerified(msg.sender) {
-        require(tokenIds.length == amounts.length, "length mismatch");
-        
-        for (uint256 i = 0; i < tokenIds.length; i++) {
-            retire(tokenIds[i], amounts[i], beneficiary, reasonURI, proofHash);
-        }
     }
     
     function getRetirementCount() external view returns (uint256) {
