@@ -113,11 +113,49 @@ When working tree state seems wrong (e.g., file checksums don't match what fork 
 
 ## Active TODO at handoff
 
+### 🔴 Demo blocker — chain reads failing on /regulator (and likely elsewhere)
+
+**Symptom:** Fredrik tested at compact-time on `localhost:3000/regulator` (no `?beat=` param, after restarting `bun run dev`). UI shows `SIM · BEAT 3` badge top-right. Means `getStateForRoute()` in `web/lib/chain-state.ts` hit the catch path at line 328:
+
+```ts
+console.error("[chain-state] live fetch failed; falling back to sim:", msg);
+return { state: stateAt(3), isLive: false, error: msg };
+```
+
+The actual error message is in the `bun run dev` terminal stdout (not surfaced in browser). Possible causes:
+- `process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL` not loaded by server-side code despite `.env.local` being correct
+- Sepolia RPC rate-limit or transport timeout (Alchemy free tier — possible)
+- Contract address mismatch with `addresses.json` (verified: addresses match latest deploy `e2bab10`)
+- `addresses.json` JSON shape mismatch with `chain-state.ts` reads
+- Something else viem-related
+
+**Diagnostic path:**
+1. Tell Fredrik to grep his `bun run dev` terminal for `[chain-state] live fetch failed` — the message after that colon is the cause
+2. Verify `web/.env.local` has both `NEXT_PUBLIC_SEPOLIA_RPC_URL` set AND that the dev server was restarted AFTER it was written (Bun/Next caches env at process start)
+3. Try `cast call` directly against the Sepolia contracts (e.g. `cast call $CARBON_CREDIT "totalSupply()(uint256)" --rpc-url $SEPOLIA_RPC_URL`) to confirm chain reads work outside Next.js
+4. Check if `addresses.json` Sepolia contracts subkeys match what `web/lib/contracts.ts` is reading (key names case-sensitive)
+
+### 🟠 Bad UX — silent fallback to sim hides errors
+
+When chain reads fail, the route silently drops to sim. Two compounding issues:
+1. **No error visible.** Should render an explicit banner like `⚠ Couldn't connect to Sepolia — retry` so user knows.
+2. **Sim-mode lockout.** The Connect-Wallet button is rendered INSIDE the action panels, which only show in live mode. So if RPC fails first load, user has no way to even connect a wallet to retry.
+
+Fix (post-rehearsal):
+- Always render Connect-Wallet button at top of /regulator + /company regardless of `isLive`
+- Replace silent catch in `chain-state.ts` with surfacing the error to UI
+- /public should always render Etherscan deep-links to the deployed contracts even in sim mode (it's read-only; doesn't need wallet)
+
+### 🟠 /public ledger renders hardcoded sim copy
+
+`web/app/public/page.tsx:184-245` — the "Live ledger" section uses hardcoded `<LedgerRow>` strings (`"200 EUA at 58.31 EURS/EUA"`, `"15:04 UTC"`, fixed `ipfs://QmYz…2026.pdf`). After a real trade with different numbers, fixed copy contradicts reality. Should map `s.audit` like `/regulator` does.
+
+### Other open items
+
 | | Status |
 |---|---|
-| `/public` ledger map over `s.audit` instead of hardcoded copy | Open — flagged in `cff99cf` commit message; ~15 min of work |
-| Pre-stage redeploy (~30 min before demo) | Open — see Rehearsal reset workflow above |
-| Demo rehearsal end-to-end with live wallet flow | Open — Fredrik does this; prime supports |
+| Pre-stage redeploy (~30 min before demo) | Open — see Rehearsal reset workflow above; `bash scripts/reset-demo.sh` automates it |
+| Demo rehearsal end-to-end with live wallet flow | **Blocked by chain-read fix above** |
 | Pitch finalisation, Q&A prep, market-size verification | Open — Nahin's lane |
 
 ---
