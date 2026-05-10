@@ -23,12 +23,12 @@
       "explorer": "https://sepolia.etherscan.io",
       "sourcifyVerified": true,
       "contracts": {
-        "EURS": "0x5af6ca223bb760be411bafe9af659224002c7fe2",
-        "ComplianceRegistry": "0x096dd284fe33f95c453e4512e25aa433f0fc8c21",
-        "CarbonCredit": "0x6e3a8a55821da9ad92980857463f215a9927bdcb",
-        "Retirement": "0xdf4f9c1f19a14ac08b91e6f15a4a09b538a381f0",
-        "CarbonDEX": "0x2504b0bce6a9b05fbdbad0e250c89d499d7121b5",
-        "Regulator": "0x326757944b660adf146d7f1dc8b251d24783feba"
+        "EURS": "0x6008909ed3912a31a5c5697dcf22ec61a7c59392",
+        "ComplianceRegistry": "0xa0ca45400aa577057058c4bef0d441bcdeff8582",
+        "CarbonCredit": "0x2117b272189d08bde287136e94f59263f5c5a6ff",
+        "Retirement": "0xc06315ec2a08808602f5d5ad0d5bdd135d882834",
+        "CarbonDEX": "0xfdba0e9e1760979f73f5a6f0087f4e0bed57bb41",
+        "Regulator": "0xf54949cf632ed1502d8e2efc8ba84b5df058583e"
       },
       "_demoReady": "Phase 3 of Deploy.s.sol seeded pool 350k EURS / 5k EUA at €70 spot + pre-issued 500 EUA inventory to Company B (for the bidirectional b-bot mirroring). Companies A + B + deployer all registered. Chain is fresh: zero allocations to A yet, audit log has the LP-seed + B-inventory entries. Click Issue on /regulator to start the demo flow."
     }
