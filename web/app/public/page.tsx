@@ -11,9 +11,10 @@
 
 import { BeatSwitcher } from "@/components/BeatSwitcher";
 import { ChainErrorBanner, EEAShell, LiveBadge } from "@/components/ui";
-import { EnsLink, EtherscanSourcify, EtherscanTx } from "@/components/EtherscanLink";
+import { EnsLink, EtherscanSourcify } from "@/components/EtherscanLink";
+import { SectorCards } from "@/components/SectorCards";
 import { SEPOLIA } from "@/lib/contracts";
-import { fmt, QTY_TRADE, type AuditEntry } from "@/lib/demo-state";
+import { fmt, type AuditEntry } from "@/lib/demo-state";
 import { getStateForRoute } from "@/lib/chain-state";
 
 const NAV_ITEMS = [
@@ -38,12 +39,6 @@ export default async function PublicPage({
   const usp = new URLSearchParams(params as Record<string, string>);
   const { state: s, isLive, error } = await getStateForRoute(usp);
   const beat = s.beat;
-
-  // cap-bar segment widths as % of supply (capped to avoid div-by-zero).
-  const denom = Math.max(s.supply, 1);
-  const wIssued = (s.coBal / denom) * 100;
-  const wPool = ((s.beat >= 2 ? QTY_TRADE : 0) / denom) * 100;
-  const wRetired = (s.retired / denom) * 100;
 
   // copy variants for the "In circulation" delta line.
   const inCircDelta =
@@ -98,83 +93,97 @@ export default async function PublicPage({
           </span>
         </div>
 
-        {/* Hero */}
+        {/* Hero — text left, 3 stat cards right.
+            Bigger landing-page feel; user scrolls down to reach the ledger.
+            Cards subsume the previous cap-accounting tile + cap bar; the
+            "+" button on each card deep-links to the underlying contract on
+            Sepolia Etherscan, reinforcing "every number traces to chain". */}
         <section
-          className="px-6 pt-9 pb-7 border-b border-border-public"
+          className="px-6 pt-12 pb-14 border-b border-border-public"
           style={{
-            background: "linear-gradient(180deg, var(--pub-elev) 0%, #fff 100%)",
+            background:
+              "linear-gradient(180deg, var(--pub-elev) 0%, #fff 80%)",
           }}
         >
-          <p className="font-mono text-[11px] tracking-[0.16em] uppercase font-semibold text-success mb-[14px]">
-            Open data · Phase IV · Vintage 2026
-          </p>
-          <h1 className="font-eea-serif text-[30px] font-normal leading-[1.15] tracking-[-0.012em] text-foreground-deep text-balance max-w-[22ch]">
-            A shared accounting of Europe&rsquo;s carbon budget &mdash; open to
-            anyone, every block.
-          </h1>
+          <div className="grid grid-cols-1 lg:grid-cols-[1.35fr_1fr] gap-10 items-start max-w-[1240px] mx-auto">
+            {/* Left — narrative */}
+            <div>
+              <p className="font-mono text-[11px] tracking-[0.16em] uppercase font-semibold text-success mb-[18px]">
+                Open data · Phase IV · Vintage 2026
+              </p>
+              <h1 className="font-eea-serif text-[40px] sm:text-[48px] lg:text-[54px] font-normal leading-[1.05] tracking-[-0.02em] text-foreground-deep text-balance mb-6 max-w-[18ch]">
+                A shared accounting of Europe&rsquo;s carbon budget &mdash;
+                open to anyone, every block.
+              </h1>
+              <p className="text-[15px] text-muted-strong-public leading-[1.55] max-w-[52ch] mb-8">
+                Every allocation, every trade, every retirement is written to
+                a public ledger, queryable by anyone, no login required. This
+                is what cap-and-trade looks like when the books are actually
+                open.
+              </p>
+              <div className="flex items-center gap-4 text-[12px] font-mono flex-wrap">
+                <EtherscanSourcify address={SEPOLIA.contracts.Regulator} />
+                <span className="text-muted-public/60">·</span>
+                <span className="inline-flex items-center gap-[6px] text-muted-strong-public">
+                  <span
+                    aria-hidden
+                    className="w-[6px] h-[6px] rounded-full bg-success"
+                    style={{ animation: "pulse 2s infinite" }}
+                  />
+                  Live on{" "}
+                  <a
+                    href="https://sepolia.etherscan.io"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-success hover:underline"
+                  >
+                    Sepolia
+                  </a>
+                </span>
+              </div>
+            </div>
+
+            {/* Right — 3 stat cards stacked */}
+            <div className="flex flex-col gap-4">
+              <StatCard
+                tone="issued"
+                label="Issued · vintage 2026"
+                value={fmt(s.supply)}
+                unit="EUA"
+                delta={
+                  s.beat >= 1
+                    ? "▲ allocated · 09 May 2026"
+                    : "awaiting first allocation"
+                }
+                contractAddress={SEPOLIA.contracts.CarbonCredit}
+                actionTitle="Open CarbonCredit contract on Sepolia Etherscan"
+              />
+              <StatCard
+                tone="circulating"
+                label="In circulation"
+                value={fmt(s.inCirculation)}
+                unit="EUA"
+                delta={inCircDelta}
+                contractAddress={SEPOLIA.contracts.CarbonDEX}
+                actionTitle="Open Carbon DEX pool on Sepolia Etherscan"
+              />
+              <StatCard
+                tone="retired"
+                label="Permanently retired"
+                value={fmt(s.retired)}
+                unit="EUA"
+                delta={
+                  s.retired
+                    ? "▲ surrendered against verified emissions"
+                    : "first retirement expected Q4"
+                }
+                deltaDown={!s.retired}
+                contractAddress={SEPOLIA.contracts.Retirement}
+                actionTitle="Open Retirement contract on Sepolia Etherscan"
+              />
+            </div>
+          </div>
         </section>
-
-        {/* Cap accounting tile (3-cell grid, hairline dividers via gap-px) */}
-        <div
-          className="mx-6 mt-0 border border-border-public border-t-[3px] border-t-success grid grid-cols-3 gap-px"
-          style={{ background: "var(--border-public)" }}
-        >
-          <CapCell
-            label="Issued, vintage 2026"
-            value={fmt(s.supply)}
-            unit="EUA"
-            delta={
-              s.beat >= 1 ? "▲ allocated · 09 May 2026" : "awaiting first allocation"
-            }
-          />
-          <CapCell
-            label="In circulation"
-            value={fmt(s.inCirculation)}
-            unit="EUA"
-            delta={inCircDelta}
-          />
-          <CapCell
-            label="Permanently retired"
-            value={fmt(s.retired)}
-            unit="EUA"
-            delta={
-              s.retired
-                ? "▲ surrendered against verified emissions"
-                : "first retirement expected Q4"
-            }
-            deltaDown={!s.retired}
-          />
-        </div>
-
-        {/* Cap bar */}
-        <div
-          className="mx-6 mt-[18px] h-2 rounded-[1px] overflow-hidden flex"
-          style={{ background: "var(--border-public)" }}
-        >
-          {s.supply > 0 && (
-            <>
-              <div
-                className="bg-success h-full"
-                style={{ width: `${wIssued}%` }}
-              />
-              <div
-                className="bg-success-soft h-full"
-                style={{ width: `${wPool}%` }}
-              />
-              <div
-                className="bg-success-deep h-full"
-                style={{ width: `${wRetired}%` }}
-              />
-            </>
-          )}
-        </div>
-
-        {/* Cap legend */}
-        <div className="mx-6 mt-2 flex gap-5 text-[11px] text-muted-strong-public">
-          <LegendSwatch color="var(--success)" label="cement-mainz holdings" />
-          <LegendSwatch color="var(--success-soft)" label="in pool" />
-          <LegendSwatch color="var(--success-deep)" label="retired" />
-        </div>
 
         {/* Live ledger — every entry is sourced from s.audit (live chain
             events when isLive, sim'd from stateAt(beat) when not). Each row
@@ -183,6 +192,7 @@ export default async function PublicPage({
         <Section
           title="Live ledger"
           subtitle="· every transaction, by anyone, with no login"
+          action={<FilterButton />}
         >
           {s.audit.length === 0 ? (
             <div className="py-[18px] text-muted-public-empty text-xs italic text-dim">
@@ -199,37 +209,16 @@ export default async function PublicPage({
           )}
         </Section>
 
-        {/* Verified entities */}
+        {/* Browse sectors — replaces the verified-entities roster.
+            Click → toast (placeholder). Cement is the featured card,
+            story-coherent with cement-mainz on /company. */}
         <Section
-          title="Verified entities"
-          subtitle="· compliance roster (2)"
+          title="Browse by sector"
+          subtitle="· EU ETS Phase IV coverage"
         >
-          <LedgerRow
-            when="verified"
-            what={
-              <>
-                <Ens>cement-mainz.verified-entity.eth</Ens>
-                <Meta>
-                  cement · DE · holdings {fmt(s.coBal)} EUA · retired{" "}
-                  {fmt(s.retired)} EUA
-                </Meta>
-              </>
-            }
-            amt={fmt(s.coBal)}
-            amtUnit="EUA"
-          />
-          <LedgerRow
-            when="verified"
-            what={
-              <>
-                <Ens>aluminium-bratislava.verified-entity.eth</Ens>
-                <Meta>aluminium · SK · holdings {fmt(s.coBalB)} EUA</Meta>
-              </>
-            }
-            amt={fmt(s.coBalB)}
-            amtUnit="EUA"
-            isLast
-          />
+          <div className="pt-2">
+            <SectorCards />
+          </div>
         </Section>
 
         {/* Footer */}
@@ -267,33 +256,80 @@ export default async function PublicPage({
 // 1:1 without spreading minor primitives across files).
 // ─────────────────────────────────────────────────────────────────────────
 
-function CapCell({
+// Hero stat card — pastel surface, label + tonal icon top-left, big number
+// in the body, delta line below, "+" deep-link to the contract on Sepolia
+// Etherscan top-right. Three tones map to the three lifecycle stages of an
+// allowance: issued (amber), in circulation (green), retired (blue).
+function StatCard({
+  tone,
   label,
   value,
   unit,
   delta,
   deltaDown,
+  contractAddress,
+  actionTitle,
 }: {
+  tone: "issued" | "circulating" | "retired";
   label: string;
   value: string;
   unit: string;
   delta: string;
   deltaDown?: boolean;
+  contractAddress: string;
+  actionTitle: string;
 }) {
+  const palette = {
+    issued: {
+      bg: "bg-[#fff1d4]",
+      iconBg: "bg-[#fff8e6]",
+      iconText: "text-[#8a6018]",
+    },
+    circulating: {
+      bg: "bg-[#e2efe6]",
+      iconBg: "bg-[#f0f6f1]",
+      iconText: "text-[#1f5733]",
+    },
+    retired: {
+      bg: "bg-[#e6ecf2]",
+      iconBg: "bg-[#f0f3f7]",
+      iconText: "text-[#1b4f8a]",
+    },
+  }[tone];
   return (
-    <div className="bg-pub-bg pt-1 px-4 pb-0">
-      <div className="text-[10px] text-muted-public uppercase tracking-[0.08em] font-semibold mb-2">
-        {label}
+    <div
+      className={`relative ${palette.bg} rounded-2xl p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04)] transition-shadow hover:shadow-[0_6px_16px_rgba(0,0,0,0.07)]`}
+    >
+      <div className="flex items-center gap-[10px] mb-5">
+        <span
+          aria-hidden
+          className={`w-6 h-6 inline-flex items-center justify-center rounded-[6px] ${palette.iconBg} ${palette.iconText}`}
+        >
+          <ToneIcon tone={tone} />
+        </span>
+        <span className="text-[11px] font-eea-sans tracking-[0.04em] text-foreground-deep/80">
+          {label}
+        </span>
+        <a
+          href={`https://sepolia.etherscan.io/address/${contractAddress}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          title={actionTitle}
+          aria-label={actionTitle}
+          className="ml-auto w-7 h-7 inline-flex items-center justify-center rounded-full bg-foreground-deep text-bright text-[14px] leading-none transition-transform hover:scale-110"
+        >
+          +
+        </a>
       </div>
-      <div className="font-eea-serif text-[38px] font-normal text-foreground-deep leading-none tracking-[-0.02em] tabular-nums">
+      <div className="font-eea-serif text-[44px] leading-none tracking-[-0.02em] text-foreground-deep tabular-nums">
         {value}
-        <small className="text-[13px] text-muted-public font-eea-sans ml-[6px]">
+        <small className="text-[13px] text-foreground-deep/55 font-eea-sans ml-[8px] align-baseline">
           {unit}
         </small>
       </div>
       <div
-        className={`text-[11px] mt-[6px] font-semibold ${
-          deltaDown ? "text-danger" : "text-success"
+        className={`text-[11px] font-eea-sans mt-3 ${
+          deltaDown ? "text-danger" : "text-foreground-deep/70"
         }`}
       >
         {delta}
@@ -302,38 +338,83 @@ function CapCell({
   );
 }
 
-function LegendSwatch({ color, label }: { color: string; label: string }) {
+function ToneIcon({ tone }: { tone: "issued" | "circulating" | "retired" }) {
+  // Lightweight glyphs: down-arrow (issued/distributed), circle-arrows
+  // (circulating), check-shield (retired/permanent).
+  const path =
+    tone === "issued" ? (
+      <path d="M12 4v12m0 0l-5-5m5 5l5-5M5 20h14" />
+    ) : tone === "circulating" ? (
+      <path d="M4 12a8 8 0 0114-5.3L20 5v5h-5M20 12a8 8 0 01-14 5.3L4 19v-5h5" />
+    ) : (
+      <path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6l8-3zm-3 9l2 2 4-4" />
+    );
   return (
-    <span className="inline-flex items-center">
-      <span
-        aria-hidden
-        className="inline-block w-[10px] h-[10px] align-middle mr-[6px] rounded-[1px]"
-        style={{ background: color }}
-      />
-      {label}
-    </span>
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      {path}
+    </svg>
   );
 }
 
 function Section({
   title,
   subtitle,
+  action,
   children,
 }: {
   title: string;
   subtitle: string;
+  /** Optional right-aligned element (e.g. a Filter button) on the title row. */
+  action?: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
-    <section className="px-6 pt-6 pb-2">
+    <section className="mx-6 mt-4 bg-surface rounded-2xl border border-border-public p-6 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
       <h2 className="font-eea-serif text-[18px] font-medium text-foreground-deep mb-3 pb-2 border-b border-border-public flex items-baseline gap-[10px]">
         {title}
         <small className="font-eea-sans text-[11px] font-normal text-muted-public tracking-[0.04em]">
           {subtitle}
         </small>
+        {action && <span className="ml-auto">{action}</span>}
       </h2>
       <div className="flex flex-col">{children}</div>
     </section>
+  );
+}
+
+// Non-functional placeholder — Lin's call to surface the affordance now;
+// wiring real filter state comes after demo if it sticks.
+function FilterButton() {
+  return (
+    <button
+      type="button"
+      title="Filter (coming soon)"
+      className="inline-flex items-center gap-[6px] px-[10px] py-[5px] text-[10px] font-mono uppercase tracking-[0.08em] text-muted-public border border-border-public rounded-[6px] hover:text-success hover:border-success transition-colors"
+    >
+      <svg
+        width="11"
+        height="11"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        aria-hidden
+      >
+        <path d="M3 6h18M6 12h12M10 18h4" />
+      </svg>
+      Filter
+    </button>
   );
 }
 
@@ -343,18 +424,29 @@ function LedgerRow({
   amt,
   amtUnit,
   isLast,
+  actionHref,
+  actionTitle,
 }: {
   when: React.ReactNode;
   what: React.ReactNode;
   amt: string;
   amtUnit: string;
   isLast?: boolean;
+  /** When present, render an icon-only "open on Etherscan" button at the
+   *  right edge and apply a subtle hover tint to the whole row. */
+  actionHref?: string;
+  actionTitle?: string;
 }) {
+  const cols = actionHref
+    ? "grid-cols-[80px_1fr_auto_auto]"
+    : "grid-cols-[80px_1fr_auto]";
   return (
     <div
-      className={`grid grid-cols-[80px_1fr_auto] gap-[14px] py-3 text-[13px] items-baseline ${
-        isLast ? "" : "border-b border-border-row-light"
-      }`}
+      className={`group grid ${cols} gap-[14px] py-3 px-2 -mx-2 rounded-[6px] text-[13px] items-baseline transition-all duration-150 ${
+        actionHref
+          ? "hover:bg-[#eaf2ec] hover:shadow-[0_1px_4px_rgba(0,0,0,0.04)]"
+          : ""
+      } ${isLast ? "" : "border-b border-border-row-light"}`}
     >
       <div className="font-mono text-[11px] text-muted-public tracking-[0.02em]">
         {when}
@@ -366,13 +458,40 @@ function LedgerRow({
           {amtUnit}
         </small>
       </div>
+      {actionHref && (
+        <a
+          href={actionHref}
+          target="_blank"
+          rel="noopener noreferrer"
+          title={actionTitle ?? "Open on Sepolia Etherscan"}
+          aria-label={actionTitle ?? "Open on Sepolia Etherscan"}
+          className="self-center inline-flex items-center justify-center w-7 h-7 rounded-full text-muted-public hover:text-success hover:bg-success/10 transition-colors"
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden
+          >
+            <path d="M7 17 17 7" />
+            <path d="M7 7h10v10" />
+          </svg>
+        </a>
+      )}
     </div>
   );
 }
 
 // Render-from-AuditEntry — switches on entry.kind and produces the
-// kind-specific row content. Tx hash (when present) becomes an Etherscan
-// deep link sitting under the timestamp.
+// kind-specific row content. The whole row is hover-tinted and an icon
+// button at the right opens the tx on Etherscan; in-row tx-hash and
+// per-name Etherscan links are intentionally absent — one click target
+// per row keeps the ledger scannable (Lin's call).
 function AuditLedgerRow({
   entry,
   isLast,
@@ -380,24 +499,10 @@ function AuditLedgerRow({
   entry: AuditEntry;
   isLast?: boolean;
 }) {
-  const when = (
-    <>
-      {entry.ts}
-      {entry.txHash ? (
-        <span className="block mt-[2px]">
-          <EtherscanTx
-            hash={entry.txHash}
-            short={entry.hash}
-            className="!text-[10px] !text-muted-public hover:!text-success"
-          />
-        </span>
-      ) : (
-        <span className="block mt-[2px] text-[10px] text-muted-public/70">
-          {entry.hash}
-        </span>
-      )}
-    </>
-  );
+  const when = entry.ts;
+  const txHref = entry.txHash
+    ? `https://sepolia.etherscan.io/tx/${entry.txHash}`
+    : undefined;
 
   switch (entry.kind) {
     case "ISSUE":
@@ -405,13 +510,16 @@ function AuditLedgerRow({
         <LedgerRow
           when={when}
           isLast={isLast}
+          actionHref={txHref}
+          actionTitle="Open issuance tx on Sepolia Etherscan"
           what={
             <>
               <strong className="font-semibold text-foreground-deep">
                 Allocation
               </strong>{" "}
-              · <Ens>eu-ets-authority.eth</Ens> → <Ens>{entry.to}</Ens>
-              <Meta>{entry.meta}</Meta>
+              · <EnsName>eu-ets-authority.eth</EnsName> →{" "}
+              <EnsName>{entry.to}</EnsName>
+              <MetaHover>{entry.meta}</MetaHover>
             </>
           }
           amt={`+${stripUnit(entry.amount)}`}
@@ -423,15 +531,18 @@ function AuditLedgerRow({
         <LedgerRow
           when={when}
           isLast={isLast}
+          actionHref={txHref}
+          actionTitle="Open swap tx on Sepolia Etherscan"
           what={
             <>
               <strong className="font-semibold text-foreground-deep">
                 Trade
               </strong>{" "}
-              · <Ens>{entry.from}</Ens> → <Ens>{entry.to}</Ens>
-              <Meta>
+              · <EnsName>{entry.from}</EnsName> →{" "}
+              <EnsName>{entry.to}</EnsName>
+              <MetaHover>
                 {entry.outAmount} sold · {entry.inAmount} received · {entry.meta}
-              </Meta>
+              </MetaHover>
             </>
           }
           amt={`−${stripUnit(entry.outAmount)}`}
@@ -443,13 +554,15 @@ function AuditLedgerRow({
         <LedgerRow
           when={when}
           isLast={isLast}
+          actionHref={txHref}
+          actionTitle="Open retirement tx on Sepolia Etherscan"
           what={
             <>
               <strong className="font-semibold text-foreground-deep">
                 Retirement
               </strong>{" "}
-              · <Ens>{entry.from}</Ens>
-              <Meta>{entry.meta}</Meta>
+              · <EnsName>{entry.from}</EnsName>
+              <MetaHover>{entry.meta}</MetaHover>
             </>
           }
           amt={`−${stripUnit(entry.amount)}`}
@@ -462,13 +575,15 @@ function AuditLedgerRow({
         <LedgerRow
           when={when}
           isLast={isLast}
+          actionHref={txHref}
+          actionTitle="Open enforcement tx on Sepolia Etherscan"
           what={
             <>
               <strong className="font-semibold text-foreground-deep">
                 {entry.kind === "FREEZE" ? "Authority freeze" : "Authority pause"}
               </strong>{" "}
-              · <Ens>{entry.target}</Ens>
-              <Meta>{entry.reason}</Meta>
+              · <EnsName>{entry.target}</EnsName>
+              <MetaHover>{entry.reason}</MetaHover>
             </>
           }
           amt="—"
@@ -476,6 +591,15 @@ function AuditLedgerRow({
         />
       );
   }
+}
+
+// Plain styled name — non-clickable, used inside ledger rows where the
+// row's right-side button is the single action target. Verified-entities
+// rows below still use <Ens> (EnsLink) since they have no tx-button.
+function EnsName({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="font-mono text-success text-xs">{children}</span>
+  );
 }
 
 // "1,000 EUA" → "1,000". Tolerates EURS too (for symmetry with SWAP fields).
@@ -492,6 +616,17 @@ function Ens({ children }: { children: React.ReactNode }) {
 function Meta({ children }: { children: React.ReactNode }) {
   return (
     <span className="block text-[11px] text-muted-public mt-[2px]">
+      {children}
+    </span>
+  );
+}
+
+// Hidden by default; revealed when the parent .group (a LedgerRow) is
+// hovered. Used inside audit rows to keep the ledger compact and scannable
+// — full provenance only when the user expresses intent to see it.
+function MetaHover({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="hidden group-hover:block text-[11px] text-muted-public mt-[2px]">
       {children}
     </span>
   );

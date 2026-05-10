@@ -83,32 +83,67 @@ export default async function CompanyPage({
         clockSuffix="UTC · WALLET CONNECTED"
         pills={PILLS}
       >
-        <ChainErrorBanner error={error} />
+        <Wrap>
+          <ChainErrorBanner error={error} />
+        </Wrap>
 
-        <BalanceTile state={s} isLive={isLive} />
+        {/* Identity strip — slim header, identity + verified + deadline */}
+        <Wrap>
+          <IdentityStrip />
+        </Wrap>
+
+        {/* KPI row — 3 equal-weight cards subsume the old BalanceTile body
+            + HoldingsStrip. Less vertical space, easier scan. */}
+        <Wrap>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <KpiCard
+              label="Allowances on hand"
+              value={fmt(s.coBal)}
+              unit="EUA"
+              sub={
+                s.retired > 0
+                  ? `vintage 2026 · ${fmt(s.retired)} retired lifetime`
+                  : "vintage 2026 · no retirements yet"
+              }
+            />
+            <KpiCard
+              label="Cash position"
+              value={fmt(s.coEurs)}
+              unit="EURS"
+              sub="available for trade"
+            />
+            <KpiCard
+              label="Mark-to-market"
+              value={fmt(Math.round(s.coBal * s.spotPrice))}
+              unit="EURS"
+              sub={`spot ${s.spotPrice.toFixed(2)} EURS / EUA`}
+            />
+          </div>
+        </Wrap>
 
         {isLive ? (
-          // Live mode: persistent product UI, role-gated by wallet.
-          // The action panels handle their own connect/wrong-wallet states.
-          // SurrenderPanel embeds RetirementCertificateLive on success.
-          <>
-            <TradingDesk />
-            <SurrenderPanel />
-          </>
+          // Live mode: actions side-by-side at lg+, stacked on smaller widths.
+          // Each panel handles its own connect / wrong-wallet states inside.
+          <Wrap>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
+              <TradingDesk />
+              <SurrenderPanel />
+            </div>
+          </Wrap>
         ) : (
           // Sim mode (?beat=N): beat-driven story per the design canvas.
           // Visual fallback for stage demo if anything live breaks.
-          <>
+          <Wrap>
             {beat === 0 && <Awaiting />}
             {beat === 1 && <AllocationReceipt />}
             {beat === 2 && <SwapReceipt s={s} />}
             {beat === 3 && <Certificate />}
-          </>
+          </Wrap>
         )}
 
-        <HoldingsStrip s={s} />
-
-        <YourActivity audit={s.audit} />
+        <Wrap>
+          <YourActivity audit={s.audit} />
+        </Wrap>
       </EditorialShell>
       <div className="fixed top-3 right-4 z-50 flex items-center gap-2">
         <div className="px-3 py-[6px] bg-surface border border-border rounded-full shadow-sm">
@@ -122,91 +157,74 @@ export default async function CompanyPage({
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// 1 · Identity + balance tile (always visible)
+// 1 · Layout primitives (max-width wrap, identity strip, KPI card)
 // ─────────────────────────────────────────────────────────────────────────
 
-function BalanceTile({ state: s, isLive }: { state: ReturnType<typeof stateAt>; isLive: boolean }) {
-  // Sim mode: beat is the source of truth, deltas describe the staged story.
-  // Live mode: beat is derived from event existence (see chain-state.ts), so once
-  // ANY retire event is on chain, beat=3 forever and the delta would lie about
-  // the current click's effect. The action panels (TradingDesk/SurrenderPanel)
-  // already own success-state messaging in live mode, so we just hide the delta.
-  const delta = isLive
-    ? null
-    : s.beat === 1
-      ? { text: "▲ +1,000 received", down: false }
-      : s.beat === 2
-        ? { text: "▼ −200 sold", down: true }
-        : s.beat === 3
-          ? { text: "▼ −800 retired", down: true }
-          : null;
-
+// Centers each row + caps width on big monitors so the panels don't stretch
+// uncomfortably wide. EditorialShell's flex column already handles vertical
+// gap between rows.
+function Wrap({ children }: { children: React.ReactNode }) {
   return (
-    <div className="bg-surface rounded-[14px] px-7 pt-[26px] pb-6 relative overflow-hidden">
-      {/* Identity row */}
-      <div className="flex items-center gap-[10px] mb-[14px]">
-        <span
-          aria-hidden
-          className="w-7 h-7 rounded-full bg-[linear-gradient(135deg,#c8d4b8,#4a7d5e)]"
-        />
-        <div className="font-mono text-xs leading-[1.2]">
+    <div className="max-w-[1280px] mx-auto w-full">{children}</div>
+  );
+}
+
+// Slim header: avatar + ENS + verified pill + surrender-deadline reminder.
+// Replaces the old BalanceTile's identity block; balance numbers move to the
+// KPI cards below for breathing room.
+function IdentityStrip() {
+  return (
+    <div className="bg-surface rounded-2xl border border-border px-6 py-4 flex items-center gap-3 flex-wrap shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+      <span
+        aria-hidden
+        className="w-8 h-8 rounded-full bg-[linear-gradient(135deg,#c8d4b8,#4a7d5e)] flex-shrink-0"
+      />
+      <div className="min-w-0">
+        <div className="font-mono text-[13px] leading-[1.2] text-foreground">
           cement-mainz.verified-entity.eth
-          <small className="block font-sans text-[10px] text-muted mt-[2px] tracking-[0.04em] uppercase">
-            verified emitter · cement · DE
-          </small>
         </div>
-        <span className="ml-auto inline-flex items-center gap-[5px] text-[10px] tracking-[0.08em] uppercase text-success font-semibold">
-          <span aria-hidden>✓</span>Verified
-        </span>
+        <small className="block font-sans text-[10px] text-muted mt-[2px] tracking-[0.06em] uppercase">
+          Verified emitter · cement · DE
+        </small>
       </div>
-
-      <Eyebrow>Wallet balance · vintage 2026</Eyebrow>
-
-      <div
-        key={`bal-${s.beat}`}
-        className="flash flex items-baseline gap-[10px] font-display font-normal text-[64px] tracking-[-0.03em] leading-none tabular-nums my-1"
-      >
-        {fmt(s.coBal)}
-        <span className="font-sans text-[13px] text-muted font-medium tracking-normal">
-          EUA
-        </span>
-        {delta && (
-          <span
-            className={`font-sans text-[11px] font-semibold tracking-[0.04em] uppercase ml-2 ${
-              delta.down ? "text-danger" : "text-success"
-            }`}
-          >
-            {delta.text}
-          </span>
-        )}
-      </div>
-
-      <div className="border-t border-border-row-cream mt-2 pt-[14px]">
-        <Row label="EURS balance" value={`${fmt(s.coEurs)} EURS`} />
-        <Row label="Surrender deadline" value="30 Sept 2027" />
-        <Row label="Network" value="Sepolia · block 18,294,441" last />
-      </div>
+      <span className="ml-auto inline-flex items-center gap-[5px] text-[10px] tracking-[0.08em] uppercase text-success font-semibold">
+        <span aria-hidden>✓</span>Verified
+      </span>
+      <span className="text-[11px] text-muted font-mono tracking-[0.04em] hidden sm:inline">
+        Surrender deadline · 30 Sept 2027
+      </span>
     </div>
   );
 }
 
-function Row({
+// Clean stat tile — white surface, subtle border, soft shadow that lifts
+// on hover. No pastel tones (those live on /public to differentiate the
+// public observer aesthetic from the company portal).
+function KpiCard({
   label,
   value,
-  last,
+  unit,
+  sub,
 }: {
   label: string;
   value: string;
-  last?: boolean;
+  unit: string;
+  sub?: string;
 }) {
   return (
-    <div
-      className={`flex justify-between items-baseline gap-3 py-2 text-xs ${
-        last ? "" : "border-b border-border-row-cream"
-      }`}
-    >
-      <span className="text-muted">{label}</span>
-      <span className="font-mono tabular-nums">{value}</span>
+    <div className="bg-surface rounded-2xl border border-border p-6 shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-shadow hover:shadow-[0_6px_16px_rgba(0,0,0,0.06)]">
+      <Eyebrow>{label}</Eyebrow>
+      <div className="font-display font-normal text-[34px] leading-none tracking-[-0.02em] tabular-nums text-foreground mt-3">
+        {value}
+        <small className="font-sans text-[12px] text-muted ml-[6px] font-normal">
+          {unit}
+        </small>
+      </div>
+      {sub && (
+        <div className="text-[11px] text-muted font-sans mt-3 leading-[1.4]">
+          {sub}
+        </div>
+      )}
     </div>
   );
 }
@@ -413,9 +431,9 @@ function YourActivity({ audit }: { audit: AuditEntry[] }) {
   });
 
   return (
-    <div className="bg-surface rounded-[14px] px-[22px] py-[18px]">
+    <div className="bg-surface rounded-2xl border border-border p-6 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
       <Eyebrow>Your activity · cement-mainz</Eyebrow>
-      <h3 className="font-display font-normal text-[17px] mt-[2px] mb-3">
+      <h3 className="font-display font-normal text-[18px] mt-1 mb-3">
         Past allocations, trades, retirements
       </h3>
       {mine.length === 0 ? (
@@ -487,22 +505,3 @@ function ActivityBody({ entry }: { entry: AuditEntry }) {
   }
 }
 
-function HoldingsStrip({ s }: { s: ReturnType<typeof stateAt> }) {
-  return (
-    <div className="bg-surface rounded-[14px] px-[22px] py-4">
-      <Eyebrow>Holdings · live</Eyebrow>
-      <div className="mt-2">
-        <Row label="Allowances on hand" value={`${fmt(s.coBal)} EUA`} />
-        <Row
-          label="Spot price"
-          value={`${s.spotPrice.toFixed(2)} EURS / EUA`}
-        />
-        <Row
-          label="Mark-to-market value"
-          value={`${fmt(Math.round(s.coBal * s.spotPrice))} EURS`}
-        />
-        <Row label="Retired (lifetime)" value={`${fmt(s.retired)} EUA`} last />
-      </div>
-    </div>
-  );
-}

@@ -117,7 +117,7 @@ function PanelShell({
   children: React.ReactNode;
 }) {
   return (
-    <section className="bg-surface rounded-[14px] px-7 pt-[22px] pb-[22px] border border-border">
+    <section className="bg-surface rounded-2xl p-6 border border-border shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
       <Eyebrow>{eyebrow}</Eyebrow>
       <h3 className="font-display text-[20px] leading-[1.2] mt-1 mb-[2px]">
         {title}

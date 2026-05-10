@@ -17,7 +17,7 @@
   --surface: #ffffff;             /* portal interior + tile */
   --ec-bg: #f0eee6;               /* Editorial Calm body bg (cream) */
   --ec-surface-alt: #0e0e0e;      /* dark tiles inside ec (swap form) */
-  --pub-bg: #ffffff;              /* Public Observer body */
+  --pub-bg: #f3f4ee;              /* Public Observer body — soft cream so white cards visibly segment */
   --pub-elev: #f7f8f4;            /* hero gradient end + crumbs strip + footer */
   --pub-section-divider: #e5e7e2;
 
@@ -79,6 +79,14 @@
   /* ── EU brand (public flag) ─────────────────────────────── */
   --eu-blue: #003399;
   --eu-yellow: #ffcc00;
+
+  /* ── Visible row hover (pub-elev was too close to white to read) ── */
+  --pub-row-hover: #eef3ee;
+}
+
+@keyframes slideup {
+  from { transform: translate(-50%, 100%); opacity: 0; }
+  to   { transform: translate(-50%, 0);    opacity: 1; }
 }
 
 @theme inline {
