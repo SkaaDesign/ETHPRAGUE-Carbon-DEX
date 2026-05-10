@@ -106,7 +106,10 @@ function shortHash(h: `0x${string}` | string): string {
 async function fetchAllEvents() {
   const client = getClient();
   const latest = await client.getBlockNumber();
-  const fromBlock = latest > 50_000n ? latest - 50_000n : 0n;
+  // Alchemy free-tier rate-limits eth_getLogs hard at wide ranges (HTTP 429 →
+  // Promise.all rejects → silent SIM fallback). 5k blocks = ~16.7 hr at 12s/blk,
+  // well above the gap between reset-demo.sh and stage.
+  const fromBlock = latest > 5_000n ? latest - 5_000n : 0n;
 
   const [mintLogs, swapLogs, retireLogs] = await Promise.all([
     client.getContractEvents({
@@ -173,6 +176,7 @@ function buildAuditFromEvents(events: FetchedEvents, beat: Beat): AuditEntry[] {
         id: `s-${aSell.blockNumber}-${aSell.logIndex}`,
         ts: CLOCKS[2],
         hash: shortHash(aSell.transactionHash),
+        txHash: aSell.transactionHash,
         kind: "SWAP",
         from: ensFor(aSell.args.sender as Address),
         to: ensFor(SEPOLIA.contracts.CarbonDEX),
