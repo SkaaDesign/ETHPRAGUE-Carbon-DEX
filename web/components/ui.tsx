@@ -147,6 +147,43 @@ export function SourcifyBadge({ className = "" }: { className?: string }) {
 }
 
 /**
+ * Chain-error banner — surfaces when `getStateForRoute` caught an RPC failure
+ * and dropped to sim. Renders nothing when `error` is undefined. The route is
+ * still rendering with sim-fallback data; this banner is what tells the user
+ * "the numbers below are not live, here's why" instead of pretending.
+ */
+export function ChainErrorBanner({
+  error,
+  className = "",
+}: {
+  error?: string;
+  className?: string;
+}) {
+  if (!error) return null;
+  return (
+    <div
+      role="status"
+      className={`bg-accent-soft border border-accent rounded-[10px] px-5 py-[14px] text-xs leading-[1.5] flex gap-3 items-start ${className}`}
+    >
+      <span
+        aria-hidden
+        className="font-mono text-[10px] tracking-[0.16em] uppercase bg-accent text-foreground px-2 py-[3px] rounded-[3px] flex-shrink-0 mt-[1px]"
+      >
+        Sim · fallback
+      </span>
+      <div className="flex-1 min-w-0">
+        <p className="font-display text-[13px] leading-[1.3] mb-[2px]">
+          Chain reads failed — showing simulated state.
+        </p>
+        <p className="font-mono text-[10px] text-muted break-words leading-[1.45]">
+          {error}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+/**
  * `.tx-link` — tx hash / external link styled as success-green underline mono.
  */
 export function TxLink({

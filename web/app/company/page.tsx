@@ -10,6 +10,7 @@
 
 import { BeatSwitcher } from "@/components/BeatSwitcher";
 import {
+  ChainErrorBanner,
   CTAButton,
   EditorialShell,
   Eyebrow,
@@ -20,6 +21,7 @@ import {
 import { fmt, stateAt } from "@/lib/demo-state";
 import { getStateForRoute } from "@/lib/chain-state";
 import { TradingDesk, SurrenderPanel } from "@/components/actions";
+import { HeaderWalletStatus } from "@/components/HeaderWalletStatus";
 
 // Force dynamic — actions.tsx pulls in wagmi which validates WalletConnect
 // projectId at module load. Static prerender at build time would fail
@@ -41,7 +43,7 @@ export default async function CompanyPage({
 }) {
   const params = await searchParams;
   const usp = new URLSearchParams(params as Record<string, string>);
-  const { state: s, isLive } = await getStateForRoute(usp);
+  const { state: s, isLive, error } = await getStateForRoute(usp);
   const beat = s.beat;
 
   return (
@@ -77,6 +79,8 @@ export default async function CompanyPage({
         clockSuffix="UTC · WALLET CONNECTED"
         pills={PILLS}
       >
+        <ChainErrorBanner error={error} />
+
         <BalanceTile state={s} isLive={isLive} />
 
         {isLive ? (
@@ -100,8 +104,11 @@ export default async function CompanyPage({
 
         <HoldingsStrip s={s} />
       </EditorialShell>
-      <div className="fixed top-3 right-4 z-50 px-3 py-[6px] bg-surface border border-border rounded-full shadow-sm">
-        <LiveBadge isLive={isLive} beat={beat} />
+      <div className="fixed top-3 right-4 z-50 flex items-center gap-2">
+        <div className="px-3 py-[6px] bg-surface border border-border rounded-full shadow-sm">
+          <LiveBadge isLive={isLive} beat={beat} />
+        </div>
+        <HeaderWalletStatus />
       </div>
       <BeatSwitcher current={beat} />
     </>

@@ -10,10 +10,10 @@
 // — 1,000 issued · 800 retired · 200 still circulating (in pool / B's wallet).
 
 import { BeatSwitcher } from "@/components/BeatSwitcher";
-import { EEAShell, LiveBadge } from "@/components/ui";
-import { EtherscanSourcify } from "@/components/EtherscanLink";
+import { ChainErrorBanner, EEAShell, LiveBadge } from "@/components/ui";
+import { EtherscanSourcify, EtherscanTx } from "@/components/EtherscanLink";
 import { SEPOLIA } from "@/lib/contracts";
-import { fmt, QTY_TRADE, stateAt } from "@/lib/demo-state";
+import { fmt, QTY_TRADE, type AuditEntry } from "@/lib/demo-state";
 import { getStateForRoute } from "@/lib/chain-state";
 
 const NAV_ITEMS = [
@@ -36,7 +36,7 @@ export default async function PublicPage({
 }) {
   const params = await searchParams;
   const usp = new URLSearchParams(params as Record<string, string>);
-  const { state: s, isLive } = await getStateForRoute(usp);
+  const { state: s, isLive, error } = await getStateForRoute(usp);
   const beat = s.beat;
 
   // cap-bar segment widths as % of supply (capped to avoid div-by-zero).
@@ -58,6 +58,12 @@ export default async function PublicPage({
   return (
     <>
       <EEAShell navItems={NAV_ITEMS} crumbs={CRUMBS}>
+        {error && (
+          <div className="px-6 pt-4">
+            <ChainErrorBanner error={error} />
+          </div>
+        )}
+
         {/* Top transparency strip — "everything reads from chain" reinforcement */}
         <div className="px-6 py-[10px] bg-pub-bg border-b border-border-public flex flex-wrap gap-x-6 gap-y-1 text-[11px] text-muted-public font-mono tracking-[0.04em]">
           <span>
@@ -170,78 +176,26 @@ export default async function PublicPage({
           <LegendSwatch color="var(--success-deep)" label="retired" />
         </div>
 
-        {/* Live ledger */}
+        {/* Live ledger — every entry is sourced from s.audit (live chain
+            events when isLive, sim'd from stateAt(beat) when not). Each row
+            renders kind-specific copy and, when txHash is present, a deep
+            link to the tx on Sepolia Etherscan. */}
         <Section
           title="Live ledger"
           subtitle="· every transaction, by anyone, with no login"
         >
-          {s.beat < 1 && (
+          {s.audit.length === 0 ? (
             <div className="py-[18px] text-muted-public-empty text-xs italic text-dim">
               No transactions yet. The 2026 allocation event is queued.
             </div>
-          )}
-
-          {s.beat >= 3 && (
-            <LedgerRow
-              when="15:04 UTC"
-              what={
-                <>
-                  <strong className="font-semibold text-foreground-deep">
-                    Retirement
-                  </strong>{" "}
-                  · <Ens>cement-mainz.verified-entity.eth</Ens>
-                  <Meta>
-                    beneficiary · Q4-2026 emissions · reasonURI:
-                    ipfs://QmYz…2026.pdf
-                  </Meta>
-                </>
-              }
-              amt="−800"
-              amtUnit="EUA · burned"
-            />
-          )}
-
-          {s.beat >= 2 && (
-            <LedgerRow
-              when="14:38 UTC"
-              what={
-                <>
-                  <strong className="font-semibold text-foreground-deep">
-                    Trade
-                  </strong>{" "}
-                  · <Ens>cement-mainz.verified-entity.eth</Ens> → Carbon DEX Pool
-                  <Meta>
-                    200 EUA at ~{s.effectivePrice.toFixed(2)} EURS/EUA ·{" "}
-                    {fmt(s.tradeProceedsEurs)} EURS settled · slippage{" "}
-                    {s.slippagePct.toFixed(2)}%
-                  </Meta>
-                </>
-              }
-              amt="−200"
-              amtUnit="EUA · wallet → pool"
-            />
-          )}
-
-          {s.beat >= 1 && (
-            <LedgerRow
-              when="14:32 UTC"
-              what={
-                <>
-                  <strong className="font-semibold text-foreground-deep">
-                    Allocation
-                  </strong>{" "}
-                  · <Ens>eu-ets-authority.eth</Ens> →{" "}
-                  <Ens>cement-mainz.verified-entity.eth</Ens>
-                  <Meta>
-                    vintage 2026 · sector cement · origin DE · ref
-                    2026-FA-DE-001
-                  </Meta>
-                </>
-              }
-              amt="+1,000"
-              amtUnit="EUA · issued"
-              isLast={s.beat === 1}
-            />
+          ) : (
+            s.audit.map((entry, i) => (
+              <AuditLedgerRow
+                key={entry.id}
+                entry={entry}
+                isLast={i === s.audit.length - 1}
+              />
+            ))
           )}
         </Section>
 
@@ -390,7 +344,7 @@ function LedgerRow({
   amtUnit,
   isLast,
 }: {
-  when: string;
+  when: React.ReactNode;
   what: React.ReactNode;
   amt: string;
   amtUnit: string;
@@ -414,6 +368,119 @@ function LedgerRow({
       </div>
     </div>
   );
+}
+
+// Render-from-AuditEntry — switches on entry.kind and produces the
+// kind-specific row content. Tx hash (when present) becomes an Etherscan
+// deep link sitting under the timestamp.
+function AuditLedgerRow({
+  entry,
+  isLast,
+}: {
+  entry: AuditEntry;
+  isLast?: boolean;
+}) {
+  const when = (
+    <>
+      {entry.ts}
+      {entry.txHash ? (
+        <span className="block mt-[2px]">
+          <EtherscanTx
+            hash={entry.txHash}
+            short={entry.hash}
+            className="!text-[10px] !text-muted-public hover:!text-success"
+          />
+        </span>
+      ) : (
+        <span className="block mt-[2px] text-[10px] text-muted-public/70">
+          {entry.hash}
+        </span>
+      )}
+    </>
+  );
+
+  switch (entry.kind) {
+    case "ISSUE":
+      return (
+        <LedgerRow
+          when={when}
+          isLast={isLast}
+          what={
+            <>
+              <strong className="font-semibold text-foreground-deep">
+                Allocation
+              </strong>{" "}
+              · <Ens>eu-ets-authority.eth</Ens> → <Ens>{entry.to}</Ens>
+              <Meta>{entry.meta}</Meta>
+            </>
+          }
+          amt={`+${stripUnit(entry.amount)}`}
+          amtUnit="EUA · issued"
+        />
+      );
+    case "SWAP":
+      return (
+        <LedgerRow
+          when={when}
+          isLast={isLast}
+          what={
+            <>
+              <strong className="font-semibold text-foreground-deep">
+                Trade
+              </strong>{" "}
+              · <Ens>{entry.from}</Ens> → <Ens>{entry.to}</Ens>
+              <Meta>
+                {entry.outAmount} sold · {entry.inAmount} received · {entry.meta}
+              </Meta>
+            </>
+          }
+          amt={`−${stripUnit(entry.outAmount)}`}
+          amtUnit="EUA · wallet → pool"
+        />
+      );
+    case "RETIRE":
+      return (
+        <LedgerRow
+          when={when}
+          isLast={isLast}
+          what={
+            <>
+              <strong className="font-semibold text-foreground-deep">
+                Retirement
+              </strong>{" "}
+              · <Ens>{entry.from}</Ens>
+              <Meta>{entry.meta}</Meta>
+            </>
+          }
+          amt={`−${stripUnit(entry.amount)}`}
+          amtUnit="EUA · burned"
+        />
+      );
+    case "FREEZE":
+    case "PAUSE":
+      return (
+        <LedgerRow
+          when={when}
+          isLast={isLast}
+          what={
+            <>
+              <strong className="font-semibold text-foreground-deep">
+                {entry.kind === "FREEZE" ? "Authority freeze" : "Authority pause"}
+              </strong>{" "}
+              · <Ens>{entry.target}</Ens>
+              <Meta>{entry.reason}</Meta>
+            </>
+          }
+          amt="—"
+          amtUnit="enforcement"
+        />
+      );
+  }
+}
+
+// "1,000 EUA" → "1,000". Tolerates EURS too (for symmetry with SWAP fields).
+function stripUnit(s: string): string {
+  return s.replace(/\s*(EUA|EURS)\s*$/i, "").trim();
 }
 
 function Ens({ children }: { children: React.ReactNode }) {

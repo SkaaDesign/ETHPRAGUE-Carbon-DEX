@@ -18,6 +18,7 @@ import {
 } from "@/lib/demo-state";
 import { getStateForRoute } from "@/lib/chain-state";
 import {
+  ChainErrorBanner,
   CTAButton,
   EditorialShell,
   Eyebrow,
@@ -28,6 +29,7 @@ import {
 import { BeatSwitcher } from "@/components/BeatSwitcher";
 import { EtherscanTx } from "@/components/EtherscanLink";
 import { IssueAllocationPanel } from "@/components/actions";
+import { HeaderWalletStatus } from "@/components/HeaderWalletStatus";
 
 // Force dynamic — actions.tsx pulls in wagmi which validates WalletConnect
 // projectId at module load. Static prerender at build time would fail
@@ -45,7 +47,7 @@ export default async function RegulatorPage({
   for (const [k, v] of Object.entries(params)) {
     if (typeof v === "string") usp.set(k, v);
   }
-  const { state, isLive } = await getStateForRoute(usp);
+  const { state, isLive, error } = await getStateForRoute(usp);
   const beat = state.beat;
 
   return (
@@ -61,6 +63,8 @@ export default async function RegulatorPage({
           { label: "Powers" },
         ]}
       >
+        <ChainErrorBanner error={error} />
+
         {/* 1. KPI counters — single white tile, 4 columns */}
         <section className="bg-surface rounded-[14px] grid grid-cols-4 overflow-hidden">
           <Counter label="Issued · vintage 2026" value={fmt(state.supply)} />
@@ -186,8 +190,11 @@ export default async function RegulatorPage({
           />
         </section>
       </EditorialShell>
-      <div className="fixed top-3 right-4 z-50 px-3 py-[6px] bg-surface border border-border rounded-full shadow-sm">
-        <LiveBadge isLive={isLive} beat={beat} />
+      <div className="fixed top-3 right-4 z-50 flex items-center gap-2">
+        <div className="px-3 py-[6px] bg-surface border border-border rounded-full shadow-sm">
+          <LiveBadge isLive={isLive} beat={beat} />
+        </div>
+        <HeaderWalletStatus />
       </div>
       <BeatSwitcher current={beat} />
     </>
