@@ -21,12 +21,12 @@ export const SEPOLIA = {
     // reset-demo.sh redeploy. Chain seeded (350k/5k pool, B has 500 EUA
     // inventory) but A has zero allocations yet — clicking Execute on
     // /regulator starts the demo flow.
-    EURS: "0x4341296cf236c0354184dce841d94b5eef733591" as Address,
-    ComplianceRegistry: "0x63875b4820e71639788cc37e8d2938787c68fa06" as Address,
-    CarbonCredit: "0x61def93c3733d487a4e677a5a946b77c8577de8a" as Address,
-    Retirement: "0xfd9a6845d7f29a1ca5121a423984f95d59c3996c" as Address,
-    CarbonDEX: "0x2ed5f85d3797000a2b968457f15b1f2af46395e2" as Address,
-    Regulator: "0x4cadcc19f9bd2c62b4d65eefc6dc6428d3ff9e83" as Address,
+    EURS: "0xb66acabcceed6c31e2ecf1bf81b331adcf5f5714" as Address,
+    ComplianceRegistry: "0xc3dd74c2947263d16c18abf6d6327b0c57559714" as Address,
+    CarbonCredit: "0x657d5eb4349e2d8ec091493c6cd90a5f692ec891" as Address,
+    Retirement: "0x7eab1342e18e97beea56bcc1b10e3d81853cfe83" as Address,
+    CarbonDEX: "0x981ee98018cd1c76df641988991455405d797189" as Address,
+    Regulator: "0x5cf9d8cc8d7ebc5bd8d3f79b5f3a3176ac913626" as Address,
   },
   // Demo wallets — all from contracts/script/addresses.json `ens` section.
   // ENS subdomain registrations on Sepolia are pending; for now the UI maps
