@@ -6,8 +6,7 @@
   "private": true,
   "scripts": {
     "start": "node --no-warnings=ExperimentalWarning --loader ts-node/esm src/main.ts",
-    "build": "tsc",
-    "postinstall": "npm run build"
+    "build": "tsc"
   },
   "dependencies": {
     "apify": "^3.4.4",

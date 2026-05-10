@@ -1,20 +1,26 @@
-# Apify Node 20 base image — comes with apify CLI, ts-node, build cache layout.
+# Apify Node 20 base image — comes with apify CLI helpers + non-root user.
 FROM apify/actor-node:20
 
-# Copy package manifests first for layer-cache-friendly installs.
+# Layer 1: dependency manifest only — caches install layer when only
+# source changes. Copying tsconfig here keeps `npx tsc` working in the
+# build step further down with no extra mounts.
 COPY --chown=myuser:myuser package*.json tsconfig.json ./
 
-# Install dependencies (apify base image runs as non-root `myuser`).
-RUN npm install --omit=dev --no-audit --no-fund \
-    && npm cache clean --force \
-    && echo "Node $(node --version), npm $(npm --version)"
+# Single install with devDeps included so `tsc` is available for the
+# build step. `--ignore-scripts` skips both the postinstall on this
+# package AND the upstream `apify-client` preinstall that pins pnpm —
+# a hard-block on plain npm without it.
+RUN npm install --no-audit --no-fund --ignore-scripts
 
-# Copy actor source last so source-only changes invalidate fewer layers.
+# Layer 2: actor source.
 COPY --chown=myuser:myuser . ./
 
-# Build the TypeScript actor; runtime entrypoint is dist/main.js.
-RUN npm install --no-audit --no-fund typescript@5.6 \
-    && npx tsc \
-    && npm prune --omit=dev
+# Build TypeScript → dist/ (entrypoint: dist/main.js).
+RUN npx tsc
+
+# Strip devDeps from the final image for a smaller runtime footprint.
+RUN npm prune --omit=dev --ignore-scripts \
+    && npm cache clean --force \
+    && echo "Node $(node --version), npm $(npm --version)"
 
 CMD ["node", "dist/main.js"]
