@@ -1,0 +1,98 @@
+// Sepolia Etherscan deep links — every tx hash and verified address on
+// the live UI is one click from chain truth. Core to the "regulator-
+// supervised on-chain" pitch: judges click any name, any tx, any amount,
+// follow it back to the chain in one step.
+//
+// Display as monospace short-hash. Hover reveals the full hash via the
+// native title tooltip. Click opens the explorer in a new tab.
+//
+// Server-renderable — no hooks. Use the read-only variants in route
+// pages directly; the client wallet-action panels can import the same
+// components since they're plain anchor tags.
+
+import type { Address } from "viem";
+
+const ETHERSCAN_BASE = "https://sepolia.etherscan.io";
+
+function shortenHex(hex: string, head = 6, tail = 4): string {
+  if (hex.length <= head + tail + 2) return hex;
+  return `${hex.slice(0, head)}…${hex.slice(-tail)}`;
+}
+
+export function EtherscanTx({
+  hash,
+  short,
+  className = "",
+}: {
+  hash: string;
+  /** Optional pre-shortened display, e.g. "0x4d1a…7e2" — saves shortening twice when caller already trimmed. */
+  short?: string;
+  className?: string;
+}) {
+  const display = short ?? shortenHex(hash);
+  return (
+    <a
+      href={`${ETHERSCAN_BASE}/tx/${hash}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      title={`${hash} — open on Sepolia Etherscan`}
+      className={`font-mono text-[11px] text-success hover:underline ${className}`}
+    >
+      {display}
+      <span aria-hidden className="ml-[3px] opacity-70 text-[9px]">
+        ↗
+      </span>
+    </a>
+  );
+}
+
+export function EtherscanAddress({
+  address,
+  label,
+  className = "",
+}: {
+  address: Address | string;
+  /** Display override (e.g. ENS name). Falls back to shortened address. */
+  label?: string;
+  className?: string;
+}) {
+  const display = label ?? shortenHex(address);
+  return (
+    <a
+      href={`${ETHERSCAN_BASE}/address/${address}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      title={`${address} — open on Sepolia Etherscan`}
+      className={`font-mono text-[11px] text-success hover:underline ${className}`}
+    >
+      {display}
+      <span aria-hidden className="ml-[3px] opacity-70 text-[9px]">
+        ↗
+      </span>
+    </a>
+  );
+}
+
+/**
+ * "Sourcify-verified ✓" badge that links to the contract on Etherscan
+ * (Etherscan picks up Sourcify verification automatically when both have it).
+ */
+export function EtherscanSourcify({
+  address,
+  className = "",
+}: {
+  address: Address | string;
+  className?: string;
+}) {
+  return (
+    <a
+      href={`${ETHERSCAN_BASE}/address/${address}#code`}
+      target="_blank"
+      rel="noopener noreferrer"
+      title={`${address} — verified contract source on Etherscan`}
+      className={`inline-flex items-center gap-[5px] text-[10px] tracking-[0.08em] uppercase text-success font-semibold hover:underline ${className}`}
+    >
+      <span aria-hidden>✓</span>Sourcify-verified
+    </a>
+  );
+}

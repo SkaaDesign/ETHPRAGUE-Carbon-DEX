@@ -11,6 +11,8 @@
 
 import { BeatSwitcher } from "@/components/BeatSwitcher";
 import { EEAShell, LiveBadge } from "@/components/ui";
+import { EtherscanSourcify } from "@/components/EtherscanLink";
+import { SEPOLIA } from "@/lib/contracts";
 import { fmt, QTY_TRADE, stateAt } from "@/lib/demo-state";
 import { getStateForRoute } from "@/lib/chain-state";
 
@@ -56,6 +58,40 @@ export default async function PublicPage({
   return (
     <>
       <EEAShell navItems={NAV_ITEMS} crumbs={CRUMBS}>
+        {/* Top transparency strip — "everything reads from chain" reinforcement */}
+        <div className="px-6 py-[10px] bg-pub-bg border-b border-border-public flex flex-wrap gap-x-6 gap-y-1 text-[11px] text-muted-public font-mono tracking-[0.04em]">
+          <span>
+            <span className="text-foreground-deep font-semibold">2</span>{" "}
+            verified entities
+          </span>
+          <span className="text-muted-public/60">·</span>
+          <span>
+            <EtherscanSourcify
+              address={SEPOLIA.contracts.Regulator}
+              className="!text-[11px] !tracking-[0.04em] !normal-case !font-mono !font-normal"
+            />
+            {" "}
+            <span className="text-foreground-deep font-semibold">6/6</span>
+          </span>
+          <span className="text-muted-public/60">·</span>
+          <span className="inline-flex items-center gap-[5px]">
+            <span
+              aria-hidden
+              className="w-[6px] h-[6px] rounded-full bg-success"
+              style={{ animation: "pulse 2s infinite" }}
+            />
+            Live on{" "}
+            <a
+              href="https://sepolia.etherscan.io"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-success hover:underline"
+            >
+              Sepolia
+            </a>
+          </span>
+        </div>
+
         {/* Hero */}
         <section
           className="px-6 pt-9 pb-7 border-b border-border-public"
@@ -251,16 +287,13 @@ export default async function PublicPage({
             />
             No wallet required · all reads from on-chain events
           </span>
-          <span className="ml-auto">
-            Contracts{" "}
-            <a href="#" className="text-success no-underline">
-              Sourcify-verified ✓
-            </a>{" "}
-            ·{" "}
+          <span className="ml-auto inline-flex items-center gap-3">
+            Contracts <EtherscanSourcify address={SEPOLIA.contracts.Regulator} />
+            <span className="text-muted-public">·</span>
             <a href="#" className="text-success no-underline">
               Methodology
-            </a>{" "}
-            ·{" "}
+            </a>
+            <span className="text-muted-public">·</span>
             <a href="#" className="text-success no-underline">
               CSV download
             </a>

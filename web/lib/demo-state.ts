@@ -76,6 +76,7 @@ export type AuditEntry =
       id: string;
       ts: string;
       hash: string;
+      txHash?: string;
       kind: 'ISSUE';
       amount: string; // "1,000 EUA"
       to: string; // "cement-mainz.verified-entity.eth"
@@ -85,6 +86,7 @@ export type AuditEntry =
       id: string;
       ts: string;
       hash: string;
+      txHash?: string;
       kind: 'SWAP';
       from: string; // "cement-mainz.verified-entity.eth"
       to: string; // "Carbon DEX Pool"
@@ -96,6 +98,7 @@ export type AuditEntry =
       id: string;
       ts: string;
       hash: string;
+      txHash?: string;
       kind: 'RETIRE';
       amount: string; // "800 EUA"
       from: string; // "cement-mainz.verified-entity.eth"
@@ -105,6 +108,7 @@ export type AuditEntry =
       id: string;
       ts: string;
       hash: string;
+      txHash?: string;
       kind: 'FREEZE' | 'PAUSE';
       target: string;
       reason: string;

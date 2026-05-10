@@ -19,6 +19,13 @@ import {
 } from "@/components/ui";
 import { fmt, stateAt } from "@/lib/demo-state";
 import { getStateForRoute } from "@/lib/chain-state";
+import { TradingDesk, SurrenderPanel } from "@/components/actions";
+
+// Force dynamic — actions.tsx pulls in wagmi which validates WalletConnect
+// projectId at module load. Static prerender at build time would fail
+// without a real projectId env var; dynamic rendering means validation
+// only happens at request time when the user has loaded the page.
+export const dynamic = "force-dynamic";
 
 const PILLS = [
   { label: "Overview", active: true },
@@ -72,10 +79,24 @@ export default async function CompanyPage({
       >
         <BalanceTile state={s} />
 
-        {beat === 0 && <Awaiting />}
-        {beat === 1 && <AllocationReceipt />}
-        {beat === 2 && <SwapReceipt s={s} />}
-        {beat === 3 && <Certificate />}
+        {isLive ? (
+          // Live mode: persistent product UI, role-gated by wallet.
+          // The action panels handle their own connect/wrong-wallet states.
+          // SurrenderPanel embeds RetirementCertificateLive on success.
+          <>
+            <TradingDesk />
+            <SurrenderPanel />
+          </>
+        ) : (
+          // Sim mode (?beat=N): beat-driven story per the design canvas.
+          // Visual fallback for stage demo if anything live breaks.
+          <>
+            {beat === 0 && <Awaiting />}
+            {beat === 1 && <AllocationReceipt />}
+            {beat === 2 && <SwapReceipt s={s} />}
+            {beat === 3 && <Certificate />}
+          </>
+        )}
 
         <HoldingsStrip s={s} />
       </EditorialShell>

@@ -26,6 +26,14 @@ import {
   StatusPill,
 } from "@/components/ui";
 import { BeatSwitcher } from "@/components/BeatSwitcher";
+import { EtherscanTx } from "@/components/EtherscanLink";
+import { IssueAllocationPanel } from "@/components/actions";
+
+// Force dynamic — actions.tsx pulls in wagmi which validates WalletConnect
+// projectId at module load. Static prerender at build time would fail
+// without a real projectId env var; dynamic rendering means validation
+// only happens at request time when the user has loaded the page.
+export const dynamic = "force-dynamic";
 
 export default async function RegulatorPage({
   searchParams,
@@ -71,15 +79,31 @@ export default async function RegulatorPage({
             process, not a button-click.
           </p>
 
-          {/* Row a) cement-mainz — live at Beat 0, executed at Beat ≥ 1 */}
+          {/* Row a) cement-mainz.
+              Live mode: status reflects chain (EXECUTED if any issuance fired, else CONFIRMED).
+              Sim mode: keep the beat-gated Execute → ?beat=1 link as visual fallback. */}
           <SchedRow
             ref_="2026-FA-DE-001"
             who="cement-mainz.verified-entity.eth"
             meta="free allocation · cement · DE · vintage 2026"
             qty="1,000"
-            tone={beat === 0 ? "live" : "executed"}
+            tone={
+              isLive
+                ? state.supply > 0
+                  ? "executed"
+                  : "live"
+                : beat === 0
+                  ? "live"
+                  : "executed"
+            }
             right={
-              beat === 0 ? (
+              isLive ? (
+                state.supply > 0 ? (
+                  <StatusPill kind="EXECUTED" />
+                ) : (
+                  <StatusPill kind="CONFIRMED" />
+                )
+              ) : beat === 0 ? (
                 <Link href="/regulator?beat=1">
                   <CTAButton variant="warn">Execute →</CTAButton>
                 </Link>
@@ -105,6 +129,13 @@ export default async function RegulatorPage({
             right={<StatusPill kind="SCHEDULED" />}
           />
         </section>
+
+        {/* Persistent action panel — live mode only.
+            The "Execute scheduled allocation" form is always visible to the
+            regulator wallet (role-gated). Hidden in sim mode (?beat=N), where
+            the beat-driven Execute button on the scheduled-events row above
+            takes over as the visual storytelling device. */}
+        {isLive && <IssueAllocationPanel />}
 
         {/* 3. Audit log */}
         <section className="bg-surface rounded-[14px] pt-[18px] pb-2 flex flex-col flex-1 min-h-[240px] overflow-hidden">
@@ -242,8 +273,12 @@ function AuditRow({ entry, fresh }: { entry: AuditEntry; fresh: boolean }) {
       <span className="leading-snug">
         <AuditBody entry={entry} />
       </span>
-      <span className="font-mono text-[10px] text-dim">
-        {"hash" in entry ? entry.hash : ""}
+      <span className="text-[10px] text-dim">
+        {entry.txHash ? (
+          <EtherscanTx hash={entry.txHash} short={entry.hash} className="text-[10px]" />
+        ) : (
+          <span className="font-mono">{entry.hash}</span>
+        )}
       </span>
     </div>
   );
