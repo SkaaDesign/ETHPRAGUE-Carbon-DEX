@@ -1,6 +1,5 @@
 {
   "_doc": "Live deployment addresses for Carbon DEX. anvil-local section is the deterministic CREATE chain that DemoLocal.s.sol produces against anvil's default funded keys (account 0); sepolia section is the actual Sepolia deployment from 2026-05-10 (Deploy.s.sol --broadcast --verify --verifier sourcify, all 6 contracts Sourcify exact_match).",
-
   "networks": {
     "anvil-local": {
       "chainId": 31337,
@@ -24,17 +23,16 @@
       "explorer": "https://sepolia.etherscan.io",
       "sourcifyVerified": true,
       "contracts": {
-        "EURS": "0x4b0ef7cd80f45e8e8c3aa6571e865f99cf080e33",
-        "ComplianceRegistry": "0x667f0235cf1ca841d75592663ea28bf88da28d93",
-        "CarbonCredit": "0xfb05601e1e3c188688cfb6a13167a0d369e6f196",
-        "Retirement": "0x36523834ea166b47e05213ec9f27f35dea6b8dc7",
-        "CarbonDEX": "0x55aaec9eda82b25c48840be2c4e920b7696fbd1d",
-        "Regulator": "0xe8927f6955016bf11760530ef3c0764d04f9d4ea"
+        "EURS": "0x5af6ca223bb760be411bafe9af659224002c7fe2",
+        "ComplianceRegistry": "0x096dd284fe33f95c453e4512e25aa433f0fc8c21",
+        "CarbonCredit": "0x6e3a8a55821da9ad92980857463f215a9927bdcb",
+        "Retirement": "0xdf4f9c1f19a14ac08b91e6f15a4a09b538a381f0",
+        "CarbonDEX": "0x2504b0bce6a9b05fbdbad0e250c89d499d7121b5",
+        "Regulator": "0x326757944b660adf146d7f1dc8b251d24783feba"
       },
       "_demoReady": "Phase 3 of Deploy.s.sol seeded pool 350k EURS / 5k EUA at €70 spot + pre-issued 500 EUA inventory to Company B (for the bidirectional b-bot mirroring). Companies A + B + deployer all registered. Chain is fresh: zero allocations to A yet, audit log has the LP-seed + B-inventory entries. Click Issue on /regulator to start the demo flow."
     }
   },
-
   "ens": {
     "_naming": "Subdomain scheme: 'verified-entity.eth' is owned by the regulator (institutional namespace). Each verified company gets a subdomain on registration. Regulator itself uses bare 'eu-ets-authority.eth'. Live on Sepolia ENS as of 2026-05-10 — Parth registered the two .eth names then transferred to our deployer; we created the two subdomains. All four names resolve correctly via cast resolve-name.",
     "regulator": {
@@ -62,6 +60,5 @@
       "registered": true
     }
   },
-
   "defaultNetwork": "sepolia"
 }
