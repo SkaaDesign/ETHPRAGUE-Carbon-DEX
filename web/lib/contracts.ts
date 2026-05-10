@@ -80,6 +80,8 @@ export const CARBON_CREDIT_ABI = parseAbi([
   "function totalSupply() view returns (uint256)",
   "function balanceOf(address account) view returns (uint256)",
   "function decimals() view returns (uint8)",
+  "function approve(address spender, uint256 value) returns (bool)",
+  "function allowance(address owner, address spender) view returns (uint256)",
 ]);
 
 export const CARBON_DEX_ABI = parseAbi([
@@ -87,10 +89,15 @@ export const CARBON_DEX_ABI = parseAbi([
   "event LiquidityAdded(address indexed provider, uint256 amountEURS, uint256 amountCredit, uint256 lpMinted)",
   "function getReserves() view returns (uint256 _reserveEURS, uint256 _reserveCredit)",
   "function getSpotPrice() view returns (uint256)",
+  "function swapCreditForEURS(uint256 amountIn, uint256 minAmountOut) returns (uint256 amountOut)",
+  "function swapEURSForCredit(uint256 amountIn, uint256 minAmountOut) returns (uint256 amountOut)",
+  "function swapCreditForEURSExactOut(uint256 amountOut, uint256 maxAmountIn) returns (uint256 amountIn)",
+  "function swapEURSForCreditExactOut(uint256 amountOut, uint256 maxAmountIn) returns (uint256 amountIn)",
 ]);
 
 export const RETIREMENT_ABI = parseAbi([
   "event Retired(address indexed from, uint256 amount, address indexed beneficiary, string reasonURI, uint256 timestamp)",
+  "function retire(uint256 amount, address beneficiary, string reasonURI)",
 ]);
 
 export const COMPLIANCE_REGISTRY_ABI = parseAbi([
@@ -102,6 +109,7 @@ export const COMPLIANCE_REGISTRY_ABI = parseAbi([
 
 export const REGULATOR_ABI = parseAbi([
   "event RegulatoryAction(uint8 indexed actionType, address indexed target, address indexed by, string reason, uint256 timestamp)",
+  "function issueAllowance(address to, uint256 amount, uint16 vintage, bytes2 sector, bytes2 originCountry, bytes32 issuanceRef)",
 ]);
 
 export const EURS_ABI = parseAbi([
@@ -109,4 +117,6 @@ export const EURS_ABI = parseAbi([
   "function balanceOf(address account) view returns (uint256)",
   "function totalSupply() view returns (uint256)",
   "function decimals() view returns (uint8)",
+  "function approve(address spender, uint256 value) returns (bool)",
+  "function allowance(address owner, address spender) view returns (uint256)",
 ]);
