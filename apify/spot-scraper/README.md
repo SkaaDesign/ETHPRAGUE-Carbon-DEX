@@ -20,23 +20,29 @@ One record per run, shape:
 
 ## Local run
 
+Use **bun** to install — one of the upstream Apify packages (`apify-client`)
+ships a `npx only-allow pnpm` preinstall that breaks plain `npm install`. Bun
+skips lifecycle scripts by default, so the install just works.
+
 ```bash
 cd apify/spot-scraper
-npm install
-npx apify run --purge
+bun install
+bunx apify run --purge
 # → check storage/datasets/default/000000001.json
 ```
 
 ## Deploy to Apify
 
 ```bash
-# 1. one-time login
-npx apify login
+# 1. one-time login (opens browser → confirm Apify session)
+bunx apify login
 
 # 2. push the actor (uploads source, builds Docker image on Apify)
-cd apify/spot-scraper
-npx apify push
+bunx apify push
 ```
+
+> Prefer a global install? `npm install -g apify-cli` (bypasses the local
+> install dance entirely), then use bare `apify login` / `apify push`.
 
 After the build finishes, the actor appears in the Apify console. Note the actor ID (e.g. `your-username/carbon-dex-spot-scraper`).
 
