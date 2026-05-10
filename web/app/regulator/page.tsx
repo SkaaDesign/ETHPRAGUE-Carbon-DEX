@@ -97,7 +97,7 @@ export default async function RegulatorPage({
         <Wrap>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
             {/* Scheduled allocation events */}
-            <section className="bg-surface rounded-2xl border border-border p-6 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+            <section className="surface-card p-6">
               <h3 className="font-display font-normal text-[18px] mb-1">
                 Scheduled allocation events
               </h3>
@@ -155,7 +155,7 @@ export default async function RegulatorPage({
             </section>
 
             {/* Compliance roster */}
-            <section className="bg-surface rounded-2xl border border-border p-6 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+            <section className="surface-card p-6">
               <h3 className="font-display font-normal text-[18px] mb-3">
                 Compliance roster
               </h3>
@@ -194,7 +194,7 @@ export default async function RegulatorPage({
 
         {/* Audit log — full width at the bottom */}
         <Wrap>
-          <section className="bg-surface rounded-2xl border border-border pt-6 pb-2 flex flex-col min-h-[240px] overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+          <section className="surface-card pt-6 pb-2 flex flex-col min-h-[240px] overflow-hidden">
             <h3 className="font-display font-normal text-[18px] px-[22px] pb-3 border-b border-border flex items-baseline gap-[10px]">
               Audit log
               <small className="font-mono text-[10px] tracking-[0.16em] uppercase text-muted font-normal">
@@ -238,7 +238,7 @@ function Wrap({ children }: { children: React.ReactNode }) {
 
 function IdentityStrip() {
   return (
-    <div className="bg-surface rounded-2xl border border-border px-6 py-4 flex items-center gap-3 flex-wrap shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+    <div className="surface-card px-6 py-4 flex items-center gap-3 flex-wrap">
       <span
         aria-hidden
         className="w-8 h-8 rounded-full bg-[linear-gradient(135deg,#1a2419,#2d6e4e)] flex-shrink-0"
@@ -271,7 +271,7 @@ function KpiCard({
   unit: string;
 }) {
   return (
-    <div className="bg-surface rounded-2xl border border-border p-6 shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-shadow hover:shadow-[0_6px_16px_rgba(0,0,0,0.06)]">
+    <div className="surface-card surface-card-hover p-6">
       <Eyebrow>{label}</Eyebrow>
       <div className="font-display font-normal text-[34px] leading-none tracking-[-0.02em] tabular-nums text-foreground mt-3">
         {value}

@@ -176,7 +176,7 @@ function Wrap({ children }: { children: React.ReactNode }) {
 function IdentityStrip() {
   const records = recordsForEns(COMPANY_A_ENS);
   return (
-    <div className="bg-surface rounded-2xl border border-border px-6 py-4 flex items-center gap-3 flex-wrap shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+    <div className="surface-card px-6 py-4 flex items-center gap-3 flex-wrap">
       <span
         aria-hidden
         className="w-8 h-8 rounded-full bg-[linear-gradient(135deg,#c8d4b8,#4a7d5e)] flex-shrink-0"
@@ -218,7 +218,7 @@ function KpiCard({
   sub?: string;
 }) {
   return (
-    <div className="bg-surface rounded-2xl border border-border p-6 shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-shadow hover:shadow-[0_6px_16px_rgba(0,0,0,0.06)]">
+    <div className="surface-card surface-card-hover p-6">
       <Eyebrow>{label}</Eyebrow>
       <div className="font-display font-normal text-[34px] leading-none tracking-[-0.02em] tabular-nums text-foreground mt-3">
         {value}
@@ -437,7 +437,7 @@ function YourActivity({ audit }: { audit: AuditEntry[] }) {
   });
 
   return (
-    <div className="bg-surface rounded-2xl border border-border p-6 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+    <div className="surface-card p-6">
       <Eyebrow>Your activity · cement-mainz</Eyebrow>
       <h3 className="font-display font-normal text-[18px] mt-1 mb-3">
         Past allocations, trades, retirements

@@ -75,7 +75,7 @@ export function CTAButton({
   return (
     <button
       {...props}
-      className={`inline-flex items-center gap-2 px-5 py-[11px] rounded-full font-medium text-xs leading-none cursor-pointer disabled:cursor-not-allowed transition-colors ${variants[variant]} ${className}`}
+      className={`inline-flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-[13px] leading-none tracking-[0.01em] cursor-pointer disabled:cursor-not-allowed transition-all duration-200 hover:-translate-y-[1px] active:translate-y-0 shadow-[0_2px_6px_rgba(0,0,0,0.08)] hover:shadow-[0_6px_16px_rgba(0,0,0,0.14)] ${variants[variant]} ${className}`}
     >
       {children}
     </button>
@@ -285,7 +285,7 @@ export function EditorialShell({
   children: ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-ec-bg flex flex-col font-sans text-foreground">
+    <div className="min-h-screen bg-ec-textured flex flex-col font-sans text-foreground">
       <header className="flex items-center gap-[14px] px-5 pt-4 pb-[14px]">
         <div className="flex items-center gap-2 font-display font-medium text-base">
           <span aria-hidden className="w-4 h-4 rounded-full bg-foreground" />
@@ -333,7 +333,7 @@ export function EEAShell({
   children: ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-pub-bg flex flex-col font-eea-sans">
+    <div className="min-h-screen bg-pub-textured flex flex-col font-eea-sans">
       {/* Top bar */}
       <header className="bg-pub-bg px-6 py-3 border-b border-border-public flex items-center gap-[18px] text-xs">
         <div className="flex items-center gap-[9px] text-foreground font-semibold">

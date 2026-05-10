@@ -66,7 +66,7 @@ export function SectorCards() {
             key={s.key}
             type="button"
             onClick={() => setToast(`${s.name} sector page — coming soon`)}
-            className="group relative text-left rounded-2xl p-6 bg-surface border border-border-public shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition duration-200 ease-out hover:-translate-y-1 hover:scale-105 hover:border-success hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-success/40"
+            className="group relative text-left p-6 surface-card surface-card-hover hover:scale-105 hover:border-success/50 focus:outline-none focus:ring-2 focus:ring-success/40"
           >
             <div className="flex justify-between items-start gap-3 mb-10">
               <div>
