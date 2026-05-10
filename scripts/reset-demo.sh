@@ -40,9 +40,11 @@ LOG="broadcast/Deploy.s.sol/11155111/run-latest.json"
 test -f "$LOG" || { echo "FATAL: no broadcast log at $LOG"; exit 1; }
 
 # Use node (always present in this repo) instead of jq for portability —
-# Windows Git Bash typically doesn't have jq installed.
+# Windows Git Bash typically doesn't have jq installed. Use readFileSync
+# instead of require() so the relative path is resolved from bash's cwd
+# (require resolves from the script's location, which is undefined for -e).
 extract() {
-  node -e "const j=require(process.argv[1]); const t=j.transactions.find(t=>t.contractName==='$1'); if(!t){process.exit(1)} console.log(t.contractAddress)" "$LOG"
+  node -e "const fs=require('fs');const j=JSON.parse(fs.readFileSync(process.argv[1],'utf8'));const t=j.transactions.find(t=>t.contractName===process.argv[2]);if(!t){process.exit(1)}console.log(t.contractAddress)" "$LOG" "$1"
 }
 
 EURS=$(extract EURS)
