@@ -3,12 +3,13 @@
 // Beat-switcher dev tool.
 //
 // Floating bottom-right pill that lets you step through ?beat=0..3 on any
-// of the three routes. Lives in the corner during development; should be
-// hidden in production via NEXT_PUBLIC_HIDE_BEAT_SWITCHER (or removed).
+// of the three routes. Hidden by default; set NEXT_PUBLIC_SHOW_BEAT_SWITCHER=1
+// in `.env.local` to bring it back during development.
 //
 // Not a mock — it's a time-traveler over the chain's eventual state. Each
 // beat corresponds to a real moment the demo will reach: pre-allocation,
-// post-issuance, post-trade, post-retire.
+// post-issuance, post-trade, post-retire. The `?beat=N` URL fallback still
+// works for stage-demo emergencies regardless of this pill's visibility.
 
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
@@ -22,8 +23,12 @@ const BEATS: { n: Beat; label: string }[] = [
 ];
 
 export function BeatSwitcher({ current }: { current: Beat }) {
+  // Hooks must run on every render (rules-of-hooks); the env-gate happens
+  // after them. NEXT_PUBLIC_ env values are inlined at build time, so the
+  // branch is effectively constant per build.
   const pathname = usePathname();
   const params = useSearchParams();
+  if (process.env.NEXT_PUBLIC_SHOW_BEAT_SWITCHER !== "1") return null;
 
   return (
     <div
