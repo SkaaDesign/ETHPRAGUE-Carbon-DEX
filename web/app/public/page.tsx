@@ -11,7 +11,7 @@
 
 import { BeatSwitcher } from "@/components/BeatSwitcher";
 import { ChainErrorBanner, EEAShell, LiveBadge } from "@/components/ui";
-import { EtherscanSourcify, EtherscanTx } from "@/components/EtherscanLink";
+import { EnsLink, EtherscanSourcify, EtherscanTx } from "@/components/EtherscanLink";
 import { SEPOLIA } from "@/lib/contracts";
 import { fmt, QTY_TRADE, type AuditEntry } from "@/lib/demo-state";
 import { getStateForRoute } from "@/lib/chain-state";
@@ -202,7 +202,7 @@ export default async function PublicPage({
         {/* Verified entities */}
         <Section
           title="Verified entities"
-          subtitle="· compliance roster (12)"
+          subtitle="· compliance roster (2)"
         >
           <LedgerRow
             when="verified"
@@ -484,9 +484,9 @@ function stripUnit(s: string): string {
 }
 
 function Ens({ children }: { children: React.ReactNode }) {
-  return (
-    <span className="font-mono text-success text-xs">{children}</span>
-  );
+  // Click-through to Sepolia Etherscan for any name in the ACTOR_ENS map;
+  // falls back to a plain styled span otherwise (e.g. for design-time labels).
+  return <EnsLink name={String(children)} />;
 }
 
 function Meta({ children }: { children: React.ReactNode }) {

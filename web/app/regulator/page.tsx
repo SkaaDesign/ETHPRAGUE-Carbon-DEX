@@ -27,7 +27,7 @@ import {
   StatusPill,
 } from "@/components/ui";
 import { BeatSwitcher } from "@/components/BeatSwitcher";
-import { EtherscanTx } from "@/components/EtherscanLink";
+import { EnsLink, EtherscanTx } from "@/components/EtherscanLink";
 import { IssueAllocationPanel } from "@/components/actions";
 import { HeaderWalletStatus } from "@/components/HeaderWalletStatus";
 
@@ -305,7 +305,8 @@ function AuditBody({ entry }: { entry: AuditEntry }) {
     case "ISSUE":
       return (
         <>
-          <strong className={strongCls}>{entry.amount}</strong> → {entry.to}
+          <strong className={strongCls}>{entry.amount}</strong> →{" "}
+          <EnsLink name={entry.to} />
           {" · "}
           {meta(entry.meta)}
         </>
@@ -313,7 +314,8 @@ function AuditBody({ entry }: { entry: AuditEntry }) {
     case "SWAP":
       return (
         <>
-          <strong className={strongCls}>{entry.from}</strong> ⇄ {entry.to} ·{" "}
+          <EnsLink name={entry.from} className="!font-semibold" /> ⇄{" "}
+          <EnsLink name={entry.to} className="!font-semibold" /> ·{" "}
           <strong className={strongCls}>{entry.outAmount}</strong> sold ·{" "}
           {entry.inAmount} received{meta(entry.meta)}
         </>
@@ -321,7 +323,8 @@ function AuditBody({ entry }: { entry: AuditEntry }) {
     case "RETIRE":
       return (
         <>
-          <strong className={strongCls}>{entry.amount}</strong> · {entry.from}
+          <strong className={strongCls}>{entry.amount}</strong> ·{" "}
+          <EnsLink name={entry.from} />
           {meta(entry.meta)}
         </>
       );
@@ -329,7 +332,7 @@ function AuditBody({ entry }: { entry: AuditEntry }) {
     case "PAUSE":
       return (
         <>
-          <strong className={strongCls}>{entry.target}</strong>
+          <EnsLink name={entry.target} className="!font-semibold" />
           {meta(entry.reason)}
         </>
       );
@@ -357,8 +360,8 @@ function RosterRow({
         last ? "" : "border-b border-border-row"
       }`}
     >
-      <span className="font-mono">
-        {name}
+      <span>
+        <EnsLink name={name} className="!text-xs" />
         <small className="block font-sans text-[10px] text-muted mt-[2px]">
           {sub}
         </small>

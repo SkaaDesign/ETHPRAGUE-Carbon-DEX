@@ -14,14 +14,18 @@ import {
   CTAButton,
   EditorialShell,
   Eyebrow,
+  KindChip,
   LiveBadge,
   SourcifyBadge,
   TxLink,
 } from "@/components/ui";
-import { fmt, stateAt } from "@/lib/demo-state";
+import { fmt, stateAt, type AuditEntry } from "@/lib/demo-state";
 import { getStateForRoute } from "@/lib/chain-state";
 import { TradingDesk, SurrenderPanel } from "@/components/actions";
 import { HeaderWalletStatus } from "@/components/HeaderWalletStatus";
+import { EtherscanTx } from "@/components/EtherscanLink";
+
+const COMPANY_A_ENS = "cement-mainz.verified-entity.eth";
 
 // Force dynamic — actions.tsx pulls in wagmi which validates WalletConnect
 // projectId at module load. Static prerender at build time would fail
@@ -103,6 +107,8 @@ export default async function CompanyPage({
         )}
 
         <HoldingsStrip s={s} />
+
+        <YourActivity audit={s.audit} />
       </EditorialShell>
       <div className="fixed top-3 right-4 z-50 flex items-center gap-2">
         <div className="px-3 py-[6px] bg-surface border border-border rounded-full shadow-sm">
@@ -393,6 +399,93 @@ function Certificate() {
 // ─────────────────────────────────────────────────────────────────────────
 // 6 · Holdings strip (always visible at bottom)
 // ─────────────────────────────────────────────────────────────────────────
+
+// ─────────────────────────────────────────────────────────────────────────
+// 7 · Your activity (filtered audit log — only entries involving cement-mainz)
+// ─────────────────────────────────────────────────────────────────────────
+
+function YourActivity({ audit }: { audit: AuditEntry[] }) {
+  const mine = audit.filter((e) => {
+    if (e.kind === "ISSUE") return e.to === COMPANY_A_ENS;
+    if (e.kind === "SWAP") return e.from === COMPANY_A_ENS;
+    if (e.kind === "RETIRE") return e.from === COMPANY_A_ENS;
+    return false;
+  });
+
+  return (
+    <div className="bg-surface rounded-[14px] px-[22px] py-[18px]">
+      <Eyebrow>Your activity · cement-mainz</Eyebrow>
+      <h3 className="font-display font-normal text-[17px] mt-[2px] mb-3">
+        Past allocations, trades, retirements
+      </h3>
+      {mine.length === 0 ? (
+        <p className="text-xs italic text-dim">
+          No activity yet. Your allocations, trades, and retirements appear
+          here as they hit the chain.
+        </p>
+      ) : (
+        <ul className="flex flex-col">
+          {mine.map((entry) => (
+            <ActivityRow key={entry.id} entry={entry} />
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+function ActivityRow({ entry }: { entry: AuditEntry }) {
+  return (
+    <li className="grid grid-cols-[68px_72px_1fr_auto] gap-3 py-[10px] text-xs items-baseline border-b border-border-row last:border-b-0">
+      <span className="font-mono text-[10px] text-dim tracking-[0.04em]">
+        {entry.ts}
+      </span>
+      <KindChip kind={entry.kind} />
+      <span className="leading-snug font-mono">
+        <ActivityBody entry={entry} />
+      </span>
+      <span className="text-[10px] text-dim">
+        {entry.txHash ? (
+          <EtherscanTx
+            hash={entry.txHash}
+            short={entry.hash}
+            className="!text-[10px]"
+          />
+        ) : (
+          <span className="font-mono">{entry.hash}</span>
+        )}
+      </span>
+    </li>
+  );
+}
+
+function ActivityBody({ entry }: { entry: AuditEntry }) {
+  switch (entry.kind) {
+    case "ISSUE":
+      return (
+        <>
+          Received <strong className="text-foreground">{entry.amount}</strong>{" "}
+          from regulator
+        </>
+      );
+    case "SWAP":
+      return (
+        <>
+          Swapped <strong className="text-foreground">{entry.outAmount}</strong>{" "}
+          → <strong className="text-foreground">{entry.inAmount}</strong>
+        </>
+      );
+    case "RETIRE":
+      return (
+        <>
+          Retired <strong className="text-foreground">{entry.amount}</strong>
+        </>
+      );
+    case "FREEZE":
+    case "PAUSE":
+      return null;
+  }
+}
 
 function HoldingsStrip({ s }: { s: ReturnType<typeof stateAt> }) {
   return (

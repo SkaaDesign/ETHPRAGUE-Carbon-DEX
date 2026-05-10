@@ -74,6 +74,21 @@ export function ensFor(address: Address | string): string {
   return ACTOR_ENS[lowered] ?? `${address.slice(0, 6)}…${address.slice(-4)}`;
 }
 
+// Reverse map: ENS-style display name → underlying Address. Used by
+// EnsLink to make every on-screen entity name click-through-able to
+// Sepolia Etherscan, so judges can verify any actor in one click.
+export const ENS_TO_ADDRESS: Record<string, Address> = (() => {
+  const out: Record<string, Address> = {};
+  for (const [addr, ens] of Object.entries(ACTOR_ENS)) {
+    if (!(ens in out)) out[ens] = addr as Address;
+  }
+  return out;
+})();
+
+export function addressForEns(name: string): Address | null {
+  return ENS_TO_ADDRESS[name] ?? null;
+}
+
 // ─────────────────────────────────────────────────────────────────────────
 // ABIs (minimal — only what the frontend reads)
 // ─────────────────────────────────────────────────────────────────────────

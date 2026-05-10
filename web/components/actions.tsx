@@ -47,6 +47,16 @@ import {
 import { CTAButton, Eyebrow, SourcifyBadge } from "@/components/ui";
 import { EtherscanTx } from "@/components/EtherscanLink";
 
+// Real EU ETS allowances are whole-unit only — a 2026 EUA is one tonne CO2,
+// indivisible. Our ERC-20 has 18 decimals at the contract layer (so the AMM
+// math composes cleanly) but the UI enforces integer amounts on every input
+// that takes EUA. parseEUA discards anything after the decimal silently —
+// the input also has step="1" and inputMode="numeric" to nudge users.
+function parseEUA(s: string): bigint {
+  const whole = Math.max(0, parseInt(s || "0", 10) || 0);
+  return parseEther(String(whole));
+}
+
 // ─────────────────────────────────────────────────────────────────────────
 // Local form primitives (panels stay self-contained — see lane discipline)
 // ─────────────────────────────────────────────────────────────────────────
@@ -226,7 +236,7 @@ export function IssueAllocationPanel() {
         functionName: "issueAllowance",
         args: [
           recipient as Address,
-          parseEther(amount || "0"),
+          parseEUA(amount),
           Number(vintage),
           stringToHex(sector, { size: 2 }),
           stringToHex(origin, { size: 2 }),
@@ -265,11 +275,15 @@ export function IssueAllocationPanel() {
           </Field>
 
           <div className="grid grid-cols-2 gap-[14px]">
-            <Field label="Amount (EUA)">
+            <Field label="Amount (EUA)" hint="Whole units only — 1 EUA = 1 tCO₂">
               <Input
                 value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                inputMode="decimal"
+                onChange={(e) =>
+                  setAmount(e.target.value.replace(/[^0-9]/g, ""))
+                }
+                inputMode="numeric"
+                step="1"
+                min="1"
                 placeholder="1000"
               />
             </Field>
@@ -419,7 +433,8 @@ export function TradingDesk() {
   const { amountInWei, quoteOut, minOut } = useMemo(() => {
     let inWei = 0n;
     try {
-      inWei = parseEther(amount || "0");
+      // Sell side pays EUA (whole-unit only); buy side pays EURS (decimals OK).
+      inWei = side === "sell" ? parseEUA(amount) : parseEther(amount || "0");
     } catch {
       inWei = 0n;
     }
@@ -621,13 +636,23 @@ export function TradingDesk() {
             </span>
           </div>
 
-          {/* Amount input */}
-          <Field label={`You pay (${inSymbol})`}>
+          {/* Amount input — EUA whole-unit only on sell side; EURS decimals on buy. */}
+          <Field
+            label={`You pay (${inSymbol})`}
+            hint={side === "sell" ? "Whole units only" : undefined}
+          >
             <Input
               value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              inputMode="decimal"
-              placeholder="0.00"
+              onChange={(e) =>
+                setAmount(
+                  side === "sell"
+                    ? e.target.value.replace(/[^0-9]/g, "")
+                    : e.target.value,
+                )
+              }
+              inputMode={side === "sell" ? "numeric" : "decimal"}
+              step={side === "sell" ? "1" : "0.01"}
+              placeholder={side === "sell" ? "200" : "0.00"}
             />
           </Field>
 
@@ -794,7 +819,7 @@ export function SurrenderPanel() {
 
   let amountInWei = 0n;
   try {
-    amountInWei = parseEther(amount || "0");
+    amountInWei = parseEUA(amount);
   } catch {
     amountInWei = 0n;
   }
@@ -876,11 +901,18 @@ export function SurrenderPanel() {
       ) : (
         <>
           <form onSubmit={submit} className="space-y-[14px]">
-            <Field label="Amount (EUA)" hint={`Wallet balance · ${fmtUnits(balance)} EUA`}>
+            <Field
+              label="Amount (EUA)"
+              hint={`Whole units only · wallet balance ${fmtUnits(balance)} EUA`}
+            >
               <Input
                 value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                inputMode="decimal"
+                onChange={(e) =>
+                  setAmount(e.target.value.replace(/[^0-9]/g, ""))
+                }
+                inputMode="numeric"
+                step="1"
+                min="1"
                 placeholder="800"
               />
             </Field>

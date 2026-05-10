@@ -11,6 +11,7 @@
 // components since they're plain anchor tags.
 
 import type { Address } from "viem";
+import { addressForEns } from "@/lib/contracts";
 
 const ETHERSCAN_BASE = "https://sepolia.etherscan.io";
 
@@ -69,6 +70,43 @@ export function EtherscanAddress({
       <span aria-hidden className="ml-[3px] opacity-70 text-[9px]">
         ↗
       </span>
+    </a>
+  );
+}
+
+/**
+ * Renders an ENS-style entity name as a clickable link to its Sepolia
+ * Etherscan address page when the name is known in our ACTOR_ENS map.
+ * Falls back to a plain styled span otherwise. No trailing arrow — kept
+ * lean for inline use in audit-log rows where a row may chain several names.
+ */
+export function EnsLink({
+  name,
+  address,
+  className = "",
+}: {
+  name: string;
+  /** Override the address lookup (use when caller already has the address). */
+  address?: Address;
+  className?: string;
+}) {
+  const addr = address ?? addressForEns(name);
+  if (!addr) {
+    return (
+      <span className={`font-mono text-success text-xs ${className}`}>
+        {name}
+      </span>
+    );
+  }
+  return (
+    <a
+      href={`${ETHERSCAN_BASE}/address/${addr}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      title={`${name} · ${addr} — open on Sepolia Etherscan`}
+      className={`font-mono text-success text-xs hover:underline ${className}`}
+    >
+      {name}
     </a>
   );
 }
