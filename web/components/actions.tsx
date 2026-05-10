@@ -459,20 +459,51 @@ export function TradingDesk() {
     isSuccess: swapSuccess,
   } = useWaitForTransactionReceipt({ hash: swapHash });
 
-  // Auto-fire swap once approve confirms.
+  // Auto-fire swap once approve confirms. Re-reads reserves at swap-time so
+  // minOut reflects the pool state right now — not the 5s-stale memo and not
+  // the snapshot from before the approve confirmation. Approve takes ~10-30s
+  // on Sepolia; the b-bot or any other actor can move the pool in that window.
   useEffect(() => {
     if (!approveSuccess || swapHash || swapPending) return;
-    if (amountInWei <= 0n || quoteOut <= 0n) return;
-    writeSwap({
-      address: SEPOLIA.contracts.CarbonDEX,
-      abi: CARBON_DEX_ABI,
-      functionName:
-        side === "sell" ? "swapCreditForEURS" : "swapEURSForCredit",
-      args: [amountInWei, minOut],
-    });
+    if (amountInWei <= 0n) return;
+    let cancelled = false;
+    (async () => {
+      const fresh = await refetchReserves();
+      if (cancelled) return;
+      const r = fresh.data as readonly [bigint, bigint] | undefined;
+      if (!r) return;
+      const reserveIn = side === "sell" ? r[1] : r[0];
+      const reserveOut = side === "sell" ? r[0] : r[1];
+      const out = v2AmountOut(amountInWei, reserveIn, reserveOut);
+      if (out <= 0n) return;
+      const slipBps = Math.max(
+        0,
+        Math.min(5000, Math.round(Number(slippagePct || "0") * 100)),
+      );
+      const min = (out * BigInt(10000 - slipBps)) / 10000n;
+      writeSwap({
+        address: SEPOLIA.contracts.CarbonDEX,
+        abi: CARBON_DEX_ABI,
+        functionName:
+          side === "sell" ? "swapCreditForEURS" : "swapEURSForCredit",
+        args: [amountInWei, min],
+      });
+    })();
+    return () => {
+      cancelled = true;
+    };
     // we intentionally only key on approveSuccess to avoid re-firing
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [approveSuccess]);
+
+  // If the swap tx errors (user rejects, slippage breach, etc.) after approve
+  // succeeded, clear both states so the button returns to "idle" and the user
+  // can resubmit without a page reload.
+  useEffect(() => {
+    if (!swapError) return;
+    resetApprove();
+    resetSwap();
+  }, [swapError, resetApprove, resetSwap]);
 
   // On swap success: refresh balances + server state, reset form.
   useEffect(() => {
@@ -789,6 +820,14 @@ export function SurrenderPanel() {
     return () => clearTimeout(t);
   }, [retireSuccess, refetchBal, router]);
 
+  // If retire errors after approve succeeded, clear both so the button
+  // returns to idle and the user can resubmit without a page reload.
+  useEffect(() => {
+    if (!retireError) return;
+    resetApprove();
+    resetRetire();
+  }, [retireError, resetApprove, resetRetire]);
+
   function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!allowed) return;
@@ -1060,11 +1099,16 @@ function fmtUnits(wei: bigint): string {
 
 function errMessage(err: unknown): string | null {
   if (!err) return null;
-  if (err instanceof Error) {
-    // Wagmi/viem errors are verbose — surface the short reason if present.
-    const msg = err.message || "";
-    const firstLine = msg.split("\n")[0];
-    return firstLine.length > 220 ? `${firstLine.slice(0, 220)}…` : firstLine;
+  // viem's BaseError exposes a curated `shortMessage` (e.g. "User rejected the
+  // request.") — prefer it over the verbose stack message.
+  if (typeof err === "object" && err !== null) {
+    const e = err as { shortMessage?: unknown; message?: unknown };
+    if (typeof e.shortMessage === "string" && e.shortMessage) {
+      return e.shortMessage;
+    }
+    if (typeof e.message === "string" && e.message) {
+      return e.message.split("\n")[0];
+    }
   }
   return String(err);
 }
