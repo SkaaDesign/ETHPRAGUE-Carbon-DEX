@@ -10,7 +10,7 @@
 #
 # Usage (from repo root):  bash scripts/reset-demo.sh
 #
-# Requires: contracts/.env populated; bun + jq + foundry on PATH; main checked out.
+# Requires: contracts/.env populated; bun + node + foundry on PATH; main checked out.
 
 set -euo pipefail
 
@@ -39,12 +39,18 @@ echo "─── Phase 2: Extract new addresses from broadcast log ───"
 LOG="broadcast/Deploy.s.sol/11155111/run-latest.json"
 test -f "$LOG" || { echo "FATAL: no broadcast log at $LOG"; exit 1; }
 
-EURS=$(jq -r '[.transactions[] | select(.contractName=="EURS")][0].contractAddress' "$LOG")
-REGISTRY=$(jq -r '[.transactions[] | select(.contractName=="ComplianceRegistry")][0].contractAddress' "$LOG")
-CREDIT=$(jq -r '[.transactions[] | select(.contractName=="CarbonCredit")][0].contractAddress' "$LOG")
-RETIREMENT=$(jq -r '[.transactions[] | select(.contractName=="Retirement")][0].contractAddress' "$LOG")
-DEX=$(jq -r '[.transactions[] | select(.contractName=="CarbonDEX")][0].contractAddress' "$LOG")
-REGULATOR=$(jq -r '[.transactions[] | select(.contractName=="Regulator")][0].contractAddress' "$LOG")
+# Use node (always present in this repo) instead of jq for portability —
+# Windows Git Bash typically doesn't have jq installed.
+extract() {
+  node -e "const j=require(process.argv[1]); const t=j.transactions.find(t=>t.contractName==='$1'); if(!t){process.exit(1)} console.log(t.contractAddress)" "$LOG"
+}
+
+EURS=$(extract EURS)
+REGISTRY=$(extract ComplianceRegistry)
+CREDIT=$(extract CarbonCredit)
+RETIREMENT=$(extract Retirement)
+DEX=$(extract CarbonDEX)
+REGULATOR=$(extract Regulator)
 
 cat <<EOF
   EURS:               $EURS
@@ -56,28 +62,49 @@ cat <<EOF
 EOF
 
 echo ""
-echo "─── Phase 3: Patch contracts/script/addresses.json ───"
+echo "─── Phase 3: Patch contracts/script/addresses.json + web/lib/contracts.ts ───"
 cd ..
 ADDR_JSON="contracts/script/addresses.json"
+WEB_TS="web/lib/contracts.ts"
+TODAY=$(date -u +%Y-%m-%d)
 
-TMP=$(mktemp)
-jq --arg e "$EURS" --arg r "$REGISTRY" --arg c "$CREDIT" --arg ret "$RETIREMENT" --arg d "$DEX" --arg reg "$REGULATOR" --arg date "$(date -u +%Y-%m-%d)" '
-  .networks.sepolia.contracts = {
-    "EURS": $e,
-    "ComplianceRegistry": $r,
-    "CarbonCredit": $c,
-    "Retirement": $ret,
-    "CarbonDEX": $d,
-    "Regulator": $reg
-  } | .networks.sepolia.deployedAt = $date
-' "$ADDR_JSON" > "$TMP"
-mv "$TMP" "$ADDR_JSON"
-
+# addresses.json: surgical replace of the sepolia.contracts object + deployedAt.
+node -e "
+const fs=require('fs');
+const j=JSON.parse(fs.readFileSync('$ADDR_JSON','utf8'));
+j.networks.sepolia.contracts = {
+  EURS: '$EURS',
+  ComplianceRegistry: '$REGISTRY',
+  CarbonCredit: '$CREDIT',
+  Retirement: '$RETIREMENT',
+  CarbonDEX: '$DEX',
+  Regulator: '$REGULATOR'
+};
+j.networks.sepolia.deployedAt = '$TODAY';
+fs.writeFileSync('$ADDR_JSON', JSON.stringify(j, null, 2) + '\n');
+"
 echo "✓ addresses.json updated"
+
+# web/lib/contracts.ts: regex replace of each address line in the SEPOLIA block.
+node -e "
+const fs=require('fs');
+let s=fs.readFileSync('$WEB_TS','utf8');
+const replace=(name,addr)=>{
+  s=s.replace(new RegExp('(' + name + ':\\\\s*\")0x[a-fA-F0-9]+(\" as Address)'), '\$1' + addr + '\$2');
+};
+replace('EURS','$EURS');
+replace('ComplianceRegistry','$REGISTRY');
+replace('CarbonCredit','$CREDIT');
+replace('Retirement','$RETIREMENT');
+replace('CarbonDEX','$DEX');
+replace('Regulator','$REGULATOR');
+fs.writeFileSync('$WEB_TS', s);
+"
+echo "✓ web/lib/contracts.ts updated"
 
 echo ""
 echo "─── Phase 4: Commit + push ───"
-git add "$ADDR_JSON"
+git add "$ADDR_JSON" "$WEB_TS"
 git commit -m "Sepolia redeploy: rehearsal canvas reset
 
 Fresh deploy via Deploy.s.sol; pool seeded; B pre-seeded with 500 EUA. New addresses on the sepolia section of addresses.json. Bot needs restart with new DEX address.

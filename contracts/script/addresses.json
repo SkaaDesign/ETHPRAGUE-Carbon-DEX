@@ -18,18 +18,18 @@
     },
     "sepolia": {
       "chainId": 11155111,
-      "rpcUrl": "https://eth-sepolia.g.alchemy.com/v2/YOUR_KEY",
+      "rpcUrl": "https://ethereum-sepolia-rpc.publicnode.com",
       "deployedAt": "2026-05-10",
       "deployer": "0xE6fff6076BD6d82d3071b451BAba308C0fA97E1c",
       "explorer": "https://sepolia.etherscan.io",
       "sourcifyVerified": true,
       "contracts": {
-        "EURS": "0x4ccc62424438c6ab2e150313fad945268d91f0d8",
-        "ComplianceRegistry": "0x583e6ef1fae082503dce30fb85c0f59d75fe8ca1",
-        "CarbonCredit": "0xc7dc8831c26e2c71987b2f468f6289fe31d3669e",
-        "Retirement": "0xf302ba42f68eb9f328b6624fd269b0e49c6cca31",
-        "CarbonDEX": "0xdb248b81736464e026d31d1251a845868e541218",
-        "Regulator": "0xad4ed2f3475c974258dabaf8f8bff192232fb85f"
+        "EURS": "0x652833e365bb8e4722f75323e8b77a7c88504f4d",
+        "ComplianceRegistry": "0xd1f8d52001afa874e4bcee69646e968ab7fedfe3",
+        "CarbonCredit": "0x2e185908218c755c3bd2f9e4e629c3133bb5d44f",
+        "Retirement": "0x96270cd9c7e4a8327432cf7fcc558260330f1263",
+        "CarbonDEX": "0x9139117cb910ce41781728ee7e14d9b0b4cfdc5a",
+        "Regulator": "0x7e4e36de195ac81e6ff7295156785b4c500edde3"
       },
       "_demoReady": "Phase 3 of Deploy.s.sol seeded pool 350k EURS / 5k EUA at €70 spot + pre-issued 500 EUA inventory to Company B (for the bidirectional b-bot mirroring). Companies A + B + deployer all registered. Chain is fresh: zero allocations to A yet, audit log has the LP-seed + B-inventory entries. Click Issue on /regulator to start the demo flow."
     }
