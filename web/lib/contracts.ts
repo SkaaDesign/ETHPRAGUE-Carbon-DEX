@@ -17,12 +17,16 @@ import { sepolia, foundry } from "viem/chains";
 export const SEPOLIA = {
   chain: sepolia,
   contracts: {
-    EURS: "0xe986d8d98a2dbf8684590d63a3b32ecd36bd38d0" as Address,
-    ComplianceRegistry: "0x1969cabd76674c55de85df2ab1959655890731e0" as Address,
-    CarbonCredit: "0xf78c0a349e20d6cd09f3be572ab7837fc66626fc" as Address,
-    Retirement: "0xfff2c6a18aaf0eaaedd12e8e31e5b903f5040add" as Address,
-    CarbonDEX: "0x832d74c42dc13487de0c61dd6ed8e52f406ce281" as Address,
-    Regulator: "0x77778bf033d88c459a912c435e7a8a2460a2c08e" as Address,
+    // Re-synced 2026-05-10 from contracts/script/addresses.json after fresh
+    // redeploy at commit a796297. Chain seeded (350k/5k pool, B has 500
+    // EUA inventory) but A has zero allocations yet — clicking Execute
+    // on /regulator starts the demo flow.
+    EURS: "0x4ccc62424438c6ab2e150313fad945268d91f0d8" as Address,
+    ComplianceRegistry: "0x583e6ef1fae082503dce30fb85c0f59d75fe8ca1" as Address,
+    CarbonCredit: "0xc7dc8831c26e2c71987b2f468f6289fe31d3669e" as Address,
+    Retirement: "0xf302ba42f68eb9f328b6624fd269b0e49c6cca31" as Address,
+    CarbonDEX: "0xdb248b81736464e026d31d1251a845868e541218" as Address,
+    Regulator: "0xad4ed2f3475c974258dabaf8f8bff192232fb85f" as Address,
   },
   // Demo wallets — all from contracts/script/addresses.json `ens` section.
   // ENS subdomain registrations on Sepolia are pending; for now the UI maps

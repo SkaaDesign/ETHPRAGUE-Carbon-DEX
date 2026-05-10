@@ -79,12 +79,16 @@ When suggesting role splits: treat Parth as a separate dev resource (he types co
 - `parth-archive` tag at `2e36c93` preserves Parth's pre-merge work.
 
 ### Sepolia addresses (source of truth: `contracts/script/addresses.json`)
-- EURS: `0xe986d8d98a2dbf8684590d63a3b32ecd36bd38d0`
-- ComplianceRegistry: `0x1969cabd76674c55de85df2ab1959655890731e0`
-- CarbonCredit: `0xf78c0a349e20d6cd09f3be572ab7837fc66626fc`
-- Retirement: `0xfff2c6a18aaf0eaaedd12e8e31e5b903f5040add`
-- CarbonDEX: `0x832d74c42dc13487de0c61dd6ed8e52f406ce281`
-- Regulator: `0x77778bf033d88c459a912c435e7a8a2460a2c08e`
+Last redeployed 2026-05-10. Chain is fresh: pool seeded 350k EURS / 5k EUA at €70 spot, B pre-loaded with 500 EUA inventory, but **A has zero allocations yet** — clicking Execute on `/regulator` starts the demo flow.
+
+- EURS: `0x4ccc62424438c6ab2e150313fad945268d91f0d8`
+- ComplianceRegistry: `0x583e6ef1fae082503dce30fb85c0f59d75fe8ca1`
+- CarbonCredit: `0xc7dc8831c26e2c71987b2f468f6289fe31d3669e`
+- Retirement: `0xf302ba42f68eb9f328b6624fd269b0e49c6cca31`
+- CarbonDEX: `0xdb248b81736464e026d31d1251a845868e541218`
+- Regulator: `0xad4ed2f3475c974258dabaf8f8bff192232fb85f`
+
+When prime redeploys, these change — but `addresses.json` is the source of truth, and `web/lib/contracts.ts` mirrors it. Re-sync both on each redeploy.
 
 ### Demo wallets
 - Regulator: `0xE6fff6076BD6d82d3071b451BAba308C0fA97E1c` (`eu-ets-authority.eth`)
