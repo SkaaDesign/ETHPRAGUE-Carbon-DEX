@@ -72,6 +72,14 @@ const EFFECTIVE_PRICE = TRADE_PROCEEDS_EURS / QTY_TRADE;
 const SLIPPAGE_PCT =
   ((SPOT_PRICE_INITIAL - EFFECTIVE_PRICE) / SPOT_PRICE_INITIAL) * 100;
 
+// Mints to these addresses are deploy-time plumbing (LP seed to deployer,
+// B's pre-loaded inventory for the bidirectional bot) and are excluded
+// from the audit log + supply counter so the demo narrative stays clean.
+const ADMIN_MINT_RECIPIENTS = new Set<string>([
+  SEPOLIA.wallets.regulator.toLowerCase(),
+  SEPOLIA.wallets.companyB.toLowerCase(),
+]);
+
 // ERC-20 18-decimal → display number (truncates fractional)
 function toUnits(wei: bigint): number {
   return Number(wei / 10n ** 18n);
@@ -80,23 +88,46 @@ function toUnits(wei: bigint): number {
 // bytes2 → 2-char ASCII (e.g. 0x4445 → "DE")
 function bytes2ToString(b: `0x${string}`): string {
   try {
-    return hexToString(b).replace(/\0+$/, "");
+    const decoded = hexToString(b).replace(/\0+$/, "");
+    if (!/^[\x20-\x7e]*$/.test(decoded)) return b;
+    return decoded;
   } catch {
     return b;
   }
 }
 
-// bytes32 → null-terminated ASCII (e.g. 0x323032362d4641… → "2026-FA-DE-001")
+// bytes32 → null-terminated ASCII when printable, otherwise short hex.
+// Defensive: deploy-time refs are sometimes random bytes, not text — those
+// must not render as garbled UTF-8 mojibake.
 function bytes32ToString(b: `0x${string}`): string {
   try {
-    return hexToString(b).replace(/\0+$/, "");
+    const decoded = hexToString(b).replace(/\0+$/, "");
+    if (decoded && /^[\x20-\x7e]+$/.test(decoded)) return decoded;
+    return `${b.slice(0, 10)}…${b.slice(-4)}`;
   } catch {
-    return b;
+    return `${b.slice(0, 10)}…${b.slice(-4)}`;
   }
 }
 
 function shortHash(h: `0x${string}` | string): string {
   return `${h.slice(0, 6)}…${h.slice(-3)}`;
+}
+
+// Back-compute event time from latest block + 12s/block Sepolia cadence.
+// Avoids per-block getBlock RPC calls; accurate within a few seconds even
+// for older events, plenty for an audit-log timestamp.
+function tsFromBlock(
+  blockNumber: bigint,
+  latestNumber: bigint,
+  latestTs: number,
+): string {
+  const ago = Number(latestNumber - blockNumber) * 12;
+  const eventSec = latestTs - ago;
+  const d = new Date(eventSec * 1000);
+  const hh = String(d.getUTCHours()).padStart(2, "0");
+  const mm = String(d.getUTCMinutes()).padStart(2, "0");
+  const ss = String(d.getUTCSeconds()).padStart(2, "0");
+  return `${hh}:${mm}:${ss}`;
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -105,7 +136,11 @@ function shortHash(h: `0x${string}` | string): string {
 
 async function fetchAllEvents() {
   const client = getClient();
-  const latest = await client.getBlockNumber();
+  // getBlock() returns full block (with timestamp) — same RPC cost as
+  // getBlockNumber(), but unlocks per-event clock display via back-compute.
+  const latestBlock = await client.getBlock();
+  const latest = latestBlock.number;
+  const latestTs = Number(latestBlock.timestamp);
   const fromBlock = latest > 50_000n ? latest - 50_000n : 0n;
 
   const [mintLogs, swapLogs, retireLogs] = await Promise.all([
@@ -132,89 +167,128 @@ async function fetchAllEvents() {
     }),
   ]);
 
-  return { mintLogs, swapLogs, retireLogs };
+  return { mintLogs, swapLogs, retireLogs, latest, latestTs };
 }
 
 type FetchedEvents = Awaited<ReturnType<typeof fetchAllEvents>>;
+
+// Real allocations (filters out LP-seed mints to deployer + B's pre-loaded
+// inventory). The audit log + supply counter both consume this set.
+function realMints(events: FetchedEvents) {
+  return events.mintLogs.filter(
+    (l) =>
+      !ADMIN_MINT_RECIPIENTS.has(
+        (l.args.to as Address).toLowerCase(),
+      ),
+  );
+}
 
 // ─────────────────────────────────────────────────────────────────────────
 // Audit log construction
 // ─────────────────────────────────────────────────────────────────────────
 
-function buildAuditFromEvents(events: FetchedEvents, beat: Beat): AuditEntry[] {
-  const audit: AuditEntry[] = [];
+// Build the audit log from ALL events on chain (not just one of each kind),
+// sorted newest-first with real per-block timestamps. Filters out admin
+// plumbing mints (LP seed, B inventory) so the demo narrative stays clean.
+function buildAuditFromEvents(events: FetchedEvents): AuditEntry[] {
+  type Sortable = { blockNumber: bigint; logIndex: number; entry: AuditEntry };
+  const items: Sortable[] = [];
+  const ts = (b: bigint) => tsFromBlock(b, events.latest, events.latestTs);
 
-  if (beat >= 3 && events.retireLogs[0]) {
-    const l = events.retireLogs[0];
-    audit.push({
-      id: `r-${l.blockNumber}-${l.logIndex}`,
-      ts: CLOCKS[3],
-      hash: shortHash(l.transactionHash),
-      txHash: l.transactionHash,
-      kind: "RETIRE",
-      amount: `${fmt(toUnits(l.args.amount as bigint))} EUA`,
-      from: ensFor(l.args.from as Address),
-      meta: `beneficiary: ${ensFor(l.args.beneficiary as Address)} · reasonURI: ${l.args.reasonURI || "—"}`,
+  for (const l of realMints(events)) {
+    items.push({
+      blockNumber: l.blockNumber,
+      logIndex: l.logIndex,
+      entry: {
+        id: `m-${l.blockNumber}-${l.logIndex}`,
+        ts: ts(l.blockNumber),
+        hash: shortHash(l.transactionHash),
+        txHash: l.transactionHash,
+        kind: "ISSUE",
+        amount: `${fmt(toUnits(l.args.amount as bigint))} EUA`,
+        to: ensFor(l.args.to as Address),
+        meta: `vintage ${l.args.vintage} · sector ${bytes2ToString(l.args.sector as `0x${string}`)} · origin ${bytes2ToString(l.args.originCountry as `0x${string}`)} · ref ${bytes32ToString(l.args.issuanceRef as `0x${string}`)}`,
+      },
     });
   }
 
-  if (beat >= 2) {
-    // A's sell = first Swap by companyA where credits go IN (isEURSIn=false)
-    const aSell = events.swapLogs.find(
-      (l) =>
-        (l.args.sender as Address)?.toLowerCase() ===
-          SEPOLIA.wallets.companyA.toLowerCase() && l.args.isEURSIn === false,
-    );
-    if (aSell) {
-      const inEUA = toUnits(aSell.args.amountIn as bigint);
-      const outEURS = toUnits(aSell.args.amountOut as bigint);
-      const effective = inEUA > 0 ? outEURS / inEUA : 0;
-      audit.push({
-        id: `s-${aSell.blockNumber}-${aSell.logIndex}`,
-        ts: CLOCKS[2],
-        hash: shortHash(aSell.transactionHash),
-        txHash: aSell.transactionHash,
+  for (const l of events.swapLogs) {
+    const sender = l.args.sender as Address;
+    const amountIn = toUnits(l.args.amountIn as bigint);
+    const amountOut = toUnits(l.args.amountOut as bigint);
+    const isEURSIn = l.args.isEURSIn as boolean;
+    // Sender perspective: outAmount = what they gave up, inAmount = received.
+    const outAmount = isEURSIn
+      ? `${fmt(amountIn)} EURS`
+      : `${fmt(amountIn)} EUA`;
+    const inAmount = isEURSIn
+      ? `${fmt(amountOut)} EUA`
+      : `${fmt(amountOut)} EURS`;
+    // Effective price is always EURS-per-EUA regardless of swap direction.
+    const eff = isEURSIn
+      ? amountOut > 0
+        ? amountIn / amountOut
+        : 0
+      : amountIn > 0
+        ? amountOut / amountIn
+        : 0;
+    items.push({
+      blockNumber: l.blockNumber,
+      logIndex: l.logIndex,
+      entry: {
+        id: `s-${l.blockNumber}-${l.logIndex}`,
+        ts: ts(l.blockNumber),
+        hash: shortHash(l.transactionHash),
+        txHash: l.transactionHash,
         kind: "SWAP",
-        from: ensFor(aSell.args.sender as Address),
+        from: ensFor(sender),
         to: ensFor(SEPOLIA.contracts.CarbonDEX),
-        outAmount: `${fmt(inEUA)} EUA`,
-        inAmount: `${fmt(outEURS)} EURS`,
-        meta: `effective ${effective.toFixed(2)} EURS/EUA · spot ${SPOT_PRICE_INITIAL.toFixed(2)} before · counterparty verified`,
-      });
-    }
-  }
-
-  if (beat >= 1 && events.mintLogs[0]) {
-    const l = events.mintLogs[0];
-    audit.push({
-      id: `m-${l.blockNumber}-${l.logIndex}`,
-      ts: CLOCKS[1],
-      hash: shortHash(l.transactionHash),
-      txHash: l.transactionHash,
-      kind: "ISSUE",
-      amount: `${fmt(toUnits(l.args.amount as bigint))} EUA`,
-      to: ensFor(l.args.to as Address),
-      meta: `vintage ${l.args.vintage} · sector ${bytes2ToString(l.args.sector as `0x${string}`)} · origin ${bytes2ToString(l.args.originCountry as `0x${string}`)} · ref ${bytes32ToString(l.args.issuanceRef as `0x${string}`)}`,
+        outAmount,
+        inAmount,
+        meta: `effective ${eff.toFixed(2)} EURS/EUA · counterparty verified`,
+      },
     });
   }
 
-  return audit;
+  for (const l of events.retireLogs) {
+    items.push({
+      blockNumber: l.blockNumber,
+      logIndex: l.logIndex,
+      entry: {
+        id: `r-${l.blockNumber}-${l.logIndex}`,
+        ts: ts(l.blockNumber),
+        hash: shortHash(l.transactionHash),
+        txHash: l.transactionHash,
+        kind: "RETIRE",
+        amount: `${fmt(toUnits(l.args.amount as bigint))} EUA`,
+        from: ensFor(l.args.from as Address),
+        meta: `beneficiary: ${ensFor(l.args.beneficiary as Address)} · reasonURI: ${l.args.reasonURI || "—"}`,
+      },
+    });
+  }
+
+  // Newest first — block desc, then logIndex desc as tie-breaker.
+  items.sort((a, b) => {
+    if (a.blockNumber !== b.blockNumber)
+      return Number(b.blockNumber - a.blockNumber);
+    return b.logIndex - a.logIndex;
+  });
+
+  return items.map((s) => s.entry);
 }
 
 // ─────────────────────────────────────────────────────────────────────────
 // Aggregate counters from event sums
 // ─────────────────────────────────────────────────────────────────────────
 
-function cumulativeIssued(events: FetchedEvents, beat: Beat): number {
-  if (beat < 1) return 0;
-  return events.mintLogs.reduce(
+function cumulativeIssued(events: FetchedEvents): number {
+  return realMints(events).reduce(
     (sum, l) => sum + toUnits(l.args.amount as bigint),
     0,
   );
 }
 
-function cumulativeRetired(events: FetchedEvents, beat: Beat): number {
-  if (beat < 3) return 0;
+function cumulativeRetired(events: FetchedEvents): number {
   return events.retireLogs.reduce(
     (sum, l) => sum + toUnits(l.args.amount as bigint),
     0,
@@ -227,7 +301,7 @@ function cumulativeRetired(events: FetchedEvents, beat: Beat): number {
 
 async function readCurrentSnapshot() {
   const client = getClient();
-  const [coBalEUA, coBalEURS, reserves] = await Promise.all([
+  const [coBalEUA, coBalEURS, coBalEUA_B, reserves] = await Promise.all([
     client.readContract({
       address: SEPOLIA.contracts.CarbonCredit,
       abi: CARBON_CREDIT_ABI,
@@ -241,6 +315,12 @@ async function readCurrentSnapshot() {
       args: [SEPOLIA.wallets.companyA],
     }),
     client.readContract({
+      address: SEPOLIA.contracts.CarbonCredit,
+      abi: CARBON_CREDIT_ABI,
+      functionName: "balanceOf",
+      args: [SEPOLIA.wallets.companyB],
+    }),
+    client.readContract({
       address: SEPOLIA.contracts.CarbonDEX,
       abi: CARBON_DEX_ABI,
       functionName: "getReserves",
@@ -250,6 +330,7 @@ async function readCurrentSnapshot() {
   return {
     coBal: toUnits(coBalEUA),
     coEurs: toUnits(coBalEURS),
+    coBalB: toUnits(coBalEUA_B),
     poolEurs: toUnits(reserves[0]),
     poolEua: toUnits(reserves[1]),
   };
@@ -262,19 +343,22 @@ async function readCurrentSnapshot() {
 async function fetchLiveState(): Promise<DemoState> {
   const events = await fetchAllEvents();
 
-  // Derive beat from how many events have fired
+  // Beat derived from real (non-admin) events. LP-seed mint to deployer
+  // exists from deploy time; without filtering, beat would jump to 1
+  // before the user clicks Issue, which would be a lie.
+  const realMintCount = realMints(events).length;
   const beat: Beat =
     events.retireLogs.length > 0
       ? 3
       : events.swapLogs.length > 0
         ? 2
-        : events.mintLogs.length > 0
+        : realMintCount > 0
           ? 1
           : 0;
 
   const reads = await readCurrentSnapshot();
-  const supply = cumulativeIssued(events, beat);
-  const retired = cumulativeRetired(events, beat);
+  const supply = cumulativeIssued(events);
+  const retired = cumulativeRetired(events);
 
   return {
     beat,
@@ -284,6 +368,7 @@ async function fetchLiveState(): Promise<DemoState> {
     inCirculation: supply - retired,
     coBal: reads.coBal,
     coEurs: reads.coEurs,
+    coBalB: reads.coBalB,
     poolEua: reads.poolEua,
     poolEurs: reads.poolEurs,
     spotPriceInitial: SPOT_PRICE_INITIAL,
@@ -293,7 +378,7 @@ async function fetchLiveState(): Promise<DemoState> {
     tradeProceedsEurs: TRADE_PROCEEDS_EURS,
     buyerCostEurs: BUYER_COST_EURS,
     lpFeeEurs: LP_FEE_EURS,
-    audit: buildAuditFromEvents(events, beat),
+    audit: buildAuditFromEvents(events),
   };
 }
 

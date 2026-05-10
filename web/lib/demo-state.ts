@@ -118,12 +118,15 @@ export type DemoState = {
   beat: Beat;
   clock: string;
   // Aggregate counters
-  supply: number; // EUAs issued by regulator (cumulative)
+  supply: number; // EUAs issued by regulator (cumulative, real allocations only — LP/B-inventory mints excluded)
   retired: number; // EUAs surrendered (burned)
   inCirculation: number; // supply - retired
   // cement-mainz wallet
   coBal: number; // EUA
   coEurs: number; // EURS
+  // aluminium-bratislava wallet — read live from chain so the b-bot's
+  // counter-trades visibly move B's balance on /public + /regulator rosters.
+  coBalB: number; // EUA
   // Pool reserves
   poolEua: number;
   poolEurs: number;
@@ -201,6 +204,7 @@ export function stateAt(beat: Beat): DemoState {
     inCirculation,
     coBal,
     coEurs,
+    coBalB: 820, // sim-only — real chain value comes from chain-state.ts
     poolEua,
     poolEurs,
     spotPriceInitial: SPOT_PRICE_INITIAL,

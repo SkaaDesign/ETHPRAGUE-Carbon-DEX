@@ -177,7 +177,7 @@ export default async function RegulatorPage({
           <RosterRow
             name="aluminium-bratislava.verified-entity.eth"
             sub="aluminium · SK"
-            balance="820 EUA"
+            balance={`${fmt(state.coBalB)} EUA`}
             status="✓ Verified"
           />
           <RosterRow

@@ -223,10 +223,10 @@ export default async function PublicPage({
             what={
               <>
                 <Ens>aluminium-bratislava.verified-entity.eth</Ens>
-                <Meta>aluminium · SK · 11 other emitters in roster</Meta>
+                <Meta>aluminium · SK · holdings {fmt(s.coBalB)} EUA</Meta>
               </>
             }
-            amt="820"
+            amt={fmt(s.coBalB)}
             amtUnit="EUA"
             isLast
           />
