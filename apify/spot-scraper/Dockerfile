@@ -7,10 +7,12 @@ FROM apify/actor-node:20
 COPY --chown=myuser:myuser package*.json tsconfig.json ./
 
 # Single install with devDeps included so `tsc` is available for the
-# build step. `--ignore-scripts` skips both the postinstall on this
-# package AND the upstream `apify-client` preinstall that pins pnpm —
-# a hard-block on plain npm without it.
-RUN npm install --no-audit --no-fund --ignore-scripts
+# build step. `--include=dev` is required because the Apify base image
+# sets NODE_ENV=production, which would otherwise make npm silently skip
+# everything in devDependencies. `--ignore-scripts` skips both the
+# postinstall on this package AND the upstream `apify-client` preinstall
+# that pins pnpm — a hard-block on plain npm without it.
+RUN npm install --no-audit --no-fund --ignore-scripts --include=dev
 
 # Layer 2: actor source.
 COPY --chown=myuser:myuser . ./
