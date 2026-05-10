@@ -20,6 +20,7 @@ import { SectorCards } from "@/components/SectorCards";
 import { SEPOLIA, recordsForEns } from "@/lib/contracts";
 import { fmt, type AuditEntry } from "@/lib/demo-state";
 import { getStateForRoute } from "@/lib/chain-state";
+import { fetchApifySpot, spreadPct, timeAgo } from "@/lib/apify-spot";
 
 const NAV_ITEMS = [
   { label: "Overview", href: "#", active: true },
@@ -41,7 +42,12 @@ export default async function PublicPage({
 }) {
   const params = await searchParams;
   const usp = new URLSearchParams(params as Record<string, string>);
-  const { state: s, isLive, error } = await getStateForRoute(usp);
+  // Live chain state + off-chain spot price (Apify) fetched in parallel —
+  // never block on Apify; null result hides the comparison surface entirely.
+  const [{ state: s, isLive, error }, spot] = await Promise.all([
+    getStateForRoute(usp),
+    fetchApifySpot(),
+  ]);
   const beat = s.beat;
 
   // copy variants for the "In circulation" delta line.
@@ -95,6 +101,18 @@ export default async function PublicPage({
               Sepolia
             </a>
           </span>
+          {spot && s.spotPrice > 0 && (
+            <>
+              <span className="text-muted-public/60">·</span>
+              <SpotComparison
+                poolSpot={s.spotPrice}
+                refSpot={spot.price}
+                refSource={spot.source}
+                refSourceUrl={spot.sourceUrl}
+                fetchedAt={spot.fetchedAt}
+              />
+            </>
+          )}
         </div>
 
         {/* Hero — text left, 3 stat cards right.
@@ -639,6 +657,60 @@ function EnsName({ children }: { children: React.ReactNode }) {
 // "1,000 EUA" → "1,000". Tolerates EURS too (for symmetry with SWAP fields).
 function stripUnit(s: string): string {
   return s.replace(/\s*(EUA|EURS)\s*$/i, "").trim();
+}
+
+// Pool-vs-real spot comparison — single line in the transparency strip.
+// Tooltip carries the source + freshness; the figure itself stays compact
+// to fit the strip on a single visual row even at narrow widths.
+function SpotComparison({
+  poolSpot,
+  refSpot,
+  refSource,
+  refSourceUrl,
+  fetchedAt,
+}: {
+  poolSpot: number;
+  refSpot: number;
+  refSource: string;
+  refSourceUrl?: string;
+  fetchedAt: string;
+}) {
+  const spread = spreadPct(poolSpot, refSpot);
+  const spreadCls =
+    Math.abs(spread) < 0.5
+      ? "text-muted-public"
+      : spread > 0
+        ? "text-success"
+        : "text-danger";
+  const arrow = spread > 0 ? "▲" : spread < 0 ? "▼" : "·";
+  const title = `Pool spot read from CarbonDEX.getReserves(); reference spot scraped via Apify from ${refSource} ${timeAgo(fetchedAt)}.`;
+  return (
+    <span
+      className="inline-flex items-baseline gap-[6px]"
+      title={title}
+    >
+      <span>
+        Spot · pool €{poolSpot.toFixed(2)} / real €{refSpot.toFixed(2)}
+      </span>
+      <span className={`font-semibold ${spreadCls}`}>
+        {arrow} {Math.abs(spread).toFixed(2)}%
+      </span>
+      {refSourceUrl ? (
+        <a
+          href={refSourceUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-success/70 hover:text-success"
+          aria-label={`Open ${refSource} carbon page`}
+          title={`${refSource} · open source page`}
+        >
+          ↗
+        </a>
+      ) : (
+        <span className="text-muted-public/60">via {refSource}</span>
+      )}
+    </span>
+  );
 }
 
 function Ens({ children }: { children: React.ReactNode }) {

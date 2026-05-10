@@ -1,0 +1,13 @@
+{
+  "actorSpecification": 1,
+  "name": "carbon-dex-spot-scraper",
+  "title": "EU ETS spot-price scraper",
+  "description": "Fetches the current EU Allowance (EUA) spot price from Trading Economics' free guest commodities feed and pushes a single record to the default dataset. Designed to run on a schedule (e.g. hourly) so the latest dataset item always reflects a fresh quote that Carbon DEX can read via the Apify REST API.",
+  "version": "0.1",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "storages": {
+    "dataset": "./dataset_schema.json"
+  },
+  "dockerfile": "../Dockerfile"
+}

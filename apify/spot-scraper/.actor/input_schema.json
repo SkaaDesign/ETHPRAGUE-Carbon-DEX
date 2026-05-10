@@ -1,0 +1,22 @@
+{
+  "title": "Spot-scraper input",
+  "description": "No required input. Optional override fields let you point the actor at a different commodity feed without redeploying.",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "feedUrl": {
+      "title": "Trading Economics feed URL",
+      "type": "string",
+      "description": "Override the default commodities feed URL.",
+      "editor": "textfield",
+      "default": "https://api.tradingeconomics.com/markets/commodity?c=guest:guest&f=json"
+    },
+    "symbolPattern": {
+      "title": "Symbol/name regex (case-insensitive)",
+      "type": "string",
+      "description": "Regex used to find the EUA row inside the commodities feed. Default matches both 'Carbon' and 'EUA'.",
+      "editor": "textfield",
+      "default": "carbon|eua"
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "name": "carbon-dex-spot-scraper",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Apify actor that scrapes the current EU Allowance (EUA) spot price.",
+  "private": true,
+  "scripts": {
+    "start": "node --no-warnings=ExperimentalWarning --loader ts-node/esm src/main.ts",
+    "build": "tsc",
+    "postinstall": "npm run build"
+  },
+  "dependencies": {
+    "apify": "^3.4.4",
+    "got-scraping": "^4.0.7"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.0"
+  }
+}
