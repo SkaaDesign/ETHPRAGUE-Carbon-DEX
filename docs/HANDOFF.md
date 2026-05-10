@@ -52,7 +52,7 @@ Lead with the answer. Tables and short bullets > paragraphs. No trailing summari
 ### Team is real (4 humans + Claude)
 | Person | Role |
 |---|---|
-| **Fredrik** | TwinCurrent founder, Claude manager, directs Claude Code. Does not write code himself. |
+| **Fredrik** | Team lead, directs Claude Code. Does not write code himself. |
 | **Parth** | CS major — human dev, can implement directly without Claude. |
 | **Nahin** | Business / pitch / regulatory framing / judge Q&A prep. |
 | **Lin** | UI/UX — wireframes, visual design, demo staging. |
@@ -156,7 +156,7 @@ Memories worth saving on first opportunity (these don't auto-transfer from the s
 | feedback | Team composition (Fredrik + Parth + Nahin + Lin) | §3 above |
 | project | ETHPrague Carbon DEX — regulator-supervised, EU compliance angle | `BRIEF.md` |
 | project | Toolchain locked: Foundry + viem + Next.js + Sourcify + ENS | `BRIEF.md` |
-| user | Fredrik — Danish, TwinCurrent founder, fast study, comfortable directing AI agents | history |
+| user | Fredrik — Danish, team lead, fast study, comfortable directing AI agents | history |
 
 ---
 

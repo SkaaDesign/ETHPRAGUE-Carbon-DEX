@@ -207,7 +207,7 @@ Stretch features (Account Abstraction, Apify live price feed) only revisited if 
 
 | Person | Role-in-real-life | Likely contribution |
 |---|---|---|
-| **Fredrik** | TwinCurrent founder, Claude manager | Direction, contracts oversight via Claude Code, integration glue. Does not write code himself. |
+| **Fredrik** | Team lead, Claude manager | Direction, contracts oversight via Claude Code, integration glue. Does not write code himself. |
 | **Parth** | CS major | Dev — contracts and/or frontend implementation |
 | **Nahin** | Business | Pitch, narrative, regulatory framing, judge Q&A prep |
 | **Lin** | UI/UX | Wireframes, visual design, demo staging |

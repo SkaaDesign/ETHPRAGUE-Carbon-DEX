@@ -1,7 +1,7 @@
-# ─── TwinCurrent (must never commit) ────────────────────────────────
+# ─── Internal tooling artefacts (defensive ignore) ──────────────────
 .twincurrent-build/
 
-# ─── Fredrik's personal scratch (notes, ledgers, never shared) ──────
+# ─── Personal scratch (local notes, never shared) ───────────────────
 docs/fredrik/
 
 # ─── Claude Code (local agent state, permission grants, MCP creds) ──
