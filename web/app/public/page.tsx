@@ -11,9 +11,13 @@
 
 import { BeatSwitcher } from "@/components/BeatSwitcher";
 import { ChainErrorBanner, EEAShell, LiveBadge } from "@/components/ui";
-import { EnsLink, EtherscanSourcify } from "@/components/EtherscanLink";
+import {
+  EnsAppLink,
+  EnsLink,
+  EtherscanSourcify,
+} from "@/components/EtherscanLink";
 import { SectorCards } from "@/components/SectorCards";
-import { SEPOLIA } from "@/lib/contracts";
+import { SEPOLIA, recordsForEns } from "@/lib/contracts";
 import { fmt, type AuditEntry } from "@/lib/demo-state";
 import { getStateForRoute } from "@/lib/chain-state";
 
@@ -298,7 +302,7 @@ function StatCard({
   }[tone];
   return (
     <div
-      className={`relative ${palette.bg} rounded-2xl p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04)] transition-shadow hover:shadow-[0_6px_16px_rgba(0,0,0,0.07)]`}
+      className={`relative ${palette.bg} surface-card-tinted p-6`}
     >
       <div className="flex items-center gap-[10px] mb-5">
         <span
@@ -379,7 +383,7 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="mx-6 mt-4 bg-surface rounded-2xl border border-border-public p-6 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+    <section className="mx-6 mt-4 surface-card p-6">
       <h2 className="font-eea-serif text-[18px] font-medium text-foreground-deep mb-3 pb-2 border-b border-border-public flex items-baseline gap-[10px]">
         {title}
         <small className="font-eea-sans text-[11px] font-normal text-muted-public tracking-[0.04em]">
@@ -593,13 +597,43 @@ function AuditLedgerRow({
   }
 }
 
-// Plain styled name — non-clickable, used inside ledger rows where the
-// row's right-side button is the single action target. Verified-entities
-// rows below still use <Ens> (EnsLink) since they have no tx-button.
+// Entity name — used inside ledger rows. When the ENS name has a record
+// in our ENS_RECORDS mirror (verified emitter), promote the legal name
+// + ticker as the visible label and tuck the raw ENS name into the title
+// tooltip; an inline ↗ button always opens the ENS profile on Sepolia
+// (sepolia.app.ens.domains/<name>) where judges see the live records.
+//
+// Falls back to plain ENS-styled mono for the regulator (eu-ets-authority.eth)
+// — which is itself a registered ENS, so ↗ still works — and to a plain
+// span for non-ENS labels like "Carbon DEX Pool".
 function EnsName({ children }: { children: React.ReactNode }) {
-  return (
-    <span className="font-mono text-success text-xs">{children}</span>
-  );
+  const name = String(children);
+  const records = recordsForEns(name);
+  if (records) {
+    return (
+      <span
+        className="inline-flex items-baseline gap-[6px] align-baseline"
+        title={`${name} · open ENS profile to see records & track record`}
+      >
+        <span className="font-eea-sans text-[13px] font-medium text-foreground-deep">
+          {records.name}
+        </span>
+        <span className="font-mono text-[10px] tracking-[0.08em] uppercase text-success">
+          {records.ticker}
+        </span>
+        <EnsAppLink name={name} className="self-center" />
+      </span>
+    );
+  }
+  if (name.endsWith(".eth")) {
+    return (
+      <span className="inline-flex items-baseline gap-[4px] align-baseline">
+        <span className="font-mono text-success text-xs">{name}</span>
+        <EnsAppLink name={name} className="self-center" />
+      </span>
+    );
+  }
+  return <span className="font-mono text-success text-xs">{name}</span>;
 }
 
 // "1,000 EUA" → "1,000". Tolerates EURS too (for symmetry with SWAP fields).
