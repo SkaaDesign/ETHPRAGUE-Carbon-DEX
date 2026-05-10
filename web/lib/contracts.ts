@@ -21,10 +21,10 @@ export const SEPOLIA = {
     // reset-demo.sh redeploy. Chain seeded (350k/5k pool, B has 500 EUA
     // inventory) but A has zero allocations yet — clicking Execute on
     // /regulator starts the demo flow.
-    EURS: "0x6008909ed3912a31a5c5697dcf22ec61a7c59392" as Address,
-    ComplianceRegistry: "0xa0ca45400aa577057058c4bef0d441bcdeff8582" as Address,
-    CarbonCredit: "0x2117b272189d08bde287136e94f59263f5c5a6ff" as Address,
-    Retirement: "0xc06315ec2a08808602f5d5ad0d5bdd135d882834" as Address,
+    EURS: "0xf4897d8829519320ead644ca77b0d1925591b417" as Address,
+    ComplianceRegistry: "0xa15230296e5409dd32f3e264e6fa150fffc46c40" as Address,
+    CarbonCredit: "0x395aba8167474bc115dec536b117f0c8fefacd48" as Address,
+    Retirement: "0xd68c91a08c109046729610cacfd12460ffcb8fa6" as Address,
     CarbonDEX: "0xfdba0e9e1760979f73f5a6f0087f4e0bed57bb41" as Address,
     Regulator: "0xf54949cf632ed1502d8e2efc8ba84b5df058583e" as Address,
   },
