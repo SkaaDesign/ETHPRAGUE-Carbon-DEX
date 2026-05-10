@@ -2,9 +2,9 @@
 
 > **Audience:** Claude Code session that lands fresh in this repo. The user (Fredrik) won't read this — write to him directly in his preferred terse style.
 >
-> **Date written:** 2026-05-08 · **Last updated:** 2026-05-09 (post-fork)
+> **Date written:** 2026-05-08 · **Last updated:** 2026-05-10 (live wiring landed)
 >
-> **Bottom line:** scope is locked in `BRIEF.md` (v2 — ERC-20 pivot, happy-flow demo, bridge framing all integrated 2026-05-09). Read `BRIEF.md` first; then `CHANGELOG.md` to see what changed in the most recent session. Don't re-open settled decisions. Building starts from here.
+> **Bottom line:** Sepolia live. Six contracts deployed + Sourcify-verified. ENS subdomains registered. Frontend reads chain state and broadcasts real txs. Persistent product UI panels (Issue / Trade / Surrender) wired into routes with role-gated wallets. Read `BRIEF.md` first for scope; then `CHANGELOG.md` for session-by-session deltas; then **§4 below** for the latest snapshot. Don't re-open settled decisions.
 
 ---
 
@@ -61,52 +61,69 @@ When suggesting role splits: treat Parth as a separate dev resource (he types co
 
 ---
 
-## 4. Project state at handoff (as of 2026-05-09 post-fork)
+## 4. Project state at handoff (as of 2026-05-10 evening — live wiring landed)
 
-- **Scope (v2):** locked in `BRIEF.md`. §3 architectural decisions still settled (AMM Uniswap V2 fork, B2B compliance, EURS, EU ETS Authority, hard whitelist) plus row 6 added: `CarbonCredit` is **ERC-20** (changed from ERC-1155 — composes natively with V2 fork; matches real EU ETS within-Phase fungibility; vintage / sector / origin metadata on issuance and retirement event payloads). §3.5 (new) pins us as the on-chain settlement layer for the secondary market — **not** a registry replacement; v1 wrapped / v2 native / v3 auction roadmap. §5 is the happy-flow demo (3 beats: issuance → trade → surrender). §5b preserves the freeze flow as drama-version alternate. §14 Q&A entries (Regulator-MEV, Bridge, Derivatives) are now grounded in research findings.
-- **Tooling locked:** Foundry (v1.7.1 installed on Fredrik's machine, path in `~/.bashrc`), Next.js + viem, Sourcify + ENS. **Demo chain: Sepolia L1** (decided 2026-05-08, native ENS, fewer moving pieces).
-- **Stretch (not in core):** Account Abstraction, Apify live ETS price feed.
-- **Deferred:** wallet UX (RainbowKit vs Privy — decide when frontend dev starts), pitch script polish (Day 3), judge Q&A rehearsal, role-split detail, cut-list.
-- **Code:** Our 6 contracts live in `contracts/` on `docs/scope-update`. **66 tests pass in ~19ms.** Deploy + DemoLocal scripts work end-to-end on anvil. Parth's contracts at `origin/main` `my-smart-contract/` were reviewed; consolidation decision is **use ours wholesale, lift small items (audit fn, DEX view helpers) — see CHANGELOG 2026-05-09 (later evening) for full reasoning.** Merge PR (with `parth-archive` tag on Parth's last commit) and ping-Parth-first are open work.
-- **Doc work:** `docs/scope-update` carries the full scope evolution + all contract code + Deploy + DemoLocal. **Not yet pushed.** Local `main` is 1 ahead of `origin/main` (an old CHANGELOG-only commit, will be superseded by the PR) and 2 behind (Parth's contracts, will be superseded by the PR after merge).
+### Where we are
+- **Scope (v2):** locked in `BRIEF.md`. ERC-20 carbon token; AMM Uniswap V2 fork; B2B compliance; mock `EURS` settlement; "EU ETS Authority" regulator; hard whitelist; happy-flow demo §5 (issuance → trade → surrender) primary, freeze flow §5b alternate. §3.5 pins us as secondary-market settlement layer (not registry replacement). §14 Q&A grounded in research.
+- **Contracts:** 6/6 live on Sepolia, all Sourcify exact_match (deployed 2026-05-10). 72+ Foundry tests pass. Pool seeded 350k EURS / 5k EUA.
+- **ENS:** all four subdomains registered + resolving on Sepolia (`eu-ets-authority.eth`, `verified-entity.eth` namespace, `cement-mainz.verified-entity.eth`, `aluminium-bratislava.verified-entity.eth`).
+- **B-side bot:** `contracts/script/b-side-bot.ts` mirrors A's trades both directions (sell + buy). `Deploy.s.sol` pre-seeds B with 500 EUA inventory so the bot can mirror.
+- **Frontend:** three routes live-wired via viem to Sepolia. `getStateForRoute` reads chain state for default URL; `?beat=N` URL forces sim-mode visual fallback. `LiveBadge` top-right surfaces which mode. Persistent product UI panels (`IssueAllocationPanel`, `TradingDesk`, `SurrenderPanel`) role-gated by connected wallet. Wagmi + RainbowKit; multi-tx flows auto-chained (approve → action); `router.refresh()` after confirm. `EtherscanTx`/`EtherscanSourcify` deep-links across audit log + footer. `/public` top stat strip ("2 verified entities · Sourcify-verified 6/6 · Live on Sepolia").
 
-### Branch state (visual)
+### Where we sit on git
+- **Branch:** `main`. Working tree clean.
+- **Local main is 2 commits ahead of `origin/main`** (unpushed):
+  - `639d7b9` — Persistent action panels (IssueAllocation / TradingDesk / SurrenderPanel)
+  - `58c7732` — Live-mode integration + Etherscan deep-links + /public top stat
+- All earlier work merged via PR #1 (`212aed9`) and PR #2 (`d6479cf`).
+- `parth-archive` tag at `2e36c93` preserves Parth's pre-merge work.
 
-```
-                                      ┌─ docs/scope-update (HEAD, ~14 commits, local-only)
-                                      │   research · ERC-20 · happy flow · bridge framing
-                                      │   docs reshuffle · OZ install · CPMM decision
-                                      │   6 contracts (66 tests) · audit + DEX view lifts
-                                      │   Deploy + DemoLocal scripts (e2e on anvil)
-                                      │
-... d33d5a9 ── 5382a7d ── ef5aacc ────┤
-                  │                   │
-                  │  (local main: 1 ahead of origin/main, supersedes on merge)
-                  │
-                  └────── c40abad ── 995fad9 (origin/main — Parth's contracts; tag as parth-archive before merge)
-                  └────── ...cbf21f6 (origin/smart-contract — Parth's WIP; leave as-is)
-```
+### Sepolia addresses (source of truth: `contracts/script/addresses.json`)
+- EURS: `0xe986d8d98a2dbf8684590d63a3b32ecd36bd38d0`
+- ComplianceRegistry: `0x1969cabd76674c55de85df2ab1959655890731e0`
+- CarbonCredit: `0xf78c0a349e20d6cd09f3be572ab7837fc66626fc`
+- Retirement: `0xfff2c6a18aaf0eaaedd12e8e31e5b903f5040add`
+- CarbonDEX: `0x832d74c42dc13487de0c61dd6ed8e52f406ce281`
+- Regulator: `0x77778bf033d88c459a912c435e7a8a2460a2c08e`
+
+### Demo wallets
+- Regulator: `0xE6fff6076BD6d82d3071b451BAba308C0fA97E1c` (`eu-ets-authority.eth`)
+- Company A: `0xEd271DB443dc53533D2edB3A5d4b3BF0F3DE70ED` (`cement-mainz.verified-entity.eth`)
+- Company B: `0x6B6Fdc8Ed3d79812d0C28ed4C219e760817B9a5d` (`aluminium-bratislava.verified-entity.eth`) — bot-controlled, off-stage
+
+### Recurring traps (don't get caught again)
+- **`web/lib/wagmi.ts` projectId fallback.** Use `||` not `??`. Reverted three times now. If `??`, an empty-string env value passes through, RainbowKit throws "No projectId found", and `/_not-found` prerender breaks the build.
+- **/regulator + /company export `dynamic = "force-dynamic"`.** Required because `actions.tsx` pulls in wagmi at module load. Without it, static prerender hits the projectId check at build time.
+- **TS target ES2020+** for BigInt literals (`50_000n`, etc.) — needed for viem chain reads.
 
 ---
 
 ## 5. What to do next
 
-PR #1 merged into main as of `212aed9` (2026-05-10). Backend foundation + scope + frontend skeleton + design source all on main. Next moves are operational: get to Sepolia, get to a rehearsable end-to-end demo.
+Most of the build is shipped. Remaining work is operational: live test, push, optional polish, demo rehearsal.
 
-1. ✅ ~~Devils-advocate review~~ — done; PROCEED verdict, fixes applied.
-2. ✅ ~~Parth ping + push + PR~~ — done; merged as `212aed9`. `parth-archive` tag at `2e36c93`.
-3. **Sepolia onboarding (USER ACTION — gates everything below).** See `contracts/.env.example` for the full env-var checklist. Need: Alchemy Sepolia HTTPS RPC URL (free signup); three test wallets (`cast wallet new` × 3); Sepolia faucet ETH (~0.5 to deployer / ~0.05 to each company). Once `.env` is populated locally, prime can deploy.
-4. **Sepolia deploy + Sourcify verify** — single command: `forge script script/Deploy.s.sol:Deploy --rpc-url sepolia --broadcast --verify --verifier sourcify`. Reads `PRIVATE_KEY` + `SEPOLIA_RPC_URL` from `.env`. Logs all 6 deployed addresses; populate `addresses.json` from the output.
-5. **ENS subdomain registrations** on Sepolia: bare `eu-ets-authority.eth` for the regulator; `verified-entity.eth` owned by regulator as institutional namespace; subdomains `cement-mainz.verified-entity.eth` + `aluminium-bratislava.verified-entity.eth` for demo companies. Use https://app.ens.domains (switch to Sepolia network).
-6. **Frontend live wiring** — fork session swaps `stateAt(beat)` simulation → viem reads against Sepolia addresses. Their `frontend/post-merge-cleanup` PR is in flight (receipt copy + ENS subdomain rename); after merge they pick up wiring once Sepolia addresses exist.
-7. **Demo rehearsal** end-to-end on Sepolia. Per `BRIEF.md §5` happy flow primary; `§5b` alternate as backup. `Demo.s.sol` (parameterised, multi-key) drives the chain side; frontend pulls live state via viem.
-8. **Pitch finalisation** per `BRIEF.md §14`. Numbers memorised; derivatives + bridge + regulator-MEV Q&A canned answers; verify the €800B market-size figure.
+### Immediate
+1. **Push the 2 unpushed commits.** Local `main` is ahead by `639d7b9` + `58c7732`. Confirm with Fredrik before `git push origin main` — pushing main is shared-branch territory.
+2. **Live end-to-end test.** Run `cd web && bun run dev`. Two MetaMask accounts switchable mid-session:
+   - Regulator (`0xE6fff6076BD6d82d3071b451BAba308C0fA97E1c`) → click `Execute calendar event` on `/regulator`.
+   - Company A (`0xEd271DB443dc53533D2edB3A5d4b3BF0F3DE70ED`) → on `/company`, sell some EUA via `TradingDesk`, then submit surrender via `SurrenderPanel`.
+   - The "wrong wallet" warning is the safety net — red banner if signed in with the other key.
+   - B-side bot (`contracts/script/b-side-bot.ts`) mirrors A's trades automatically; UI just shows the resulting Swap events fill the audit log.
+3. **Reset workflow for rehearsal.** Prime redeploys → `addresses.json` updates on `main` → pull → restart bot. Frontend re-reads new addresses with no code change.
 
-### Parallel tracks
+### Optional follow-up polish (transparency drawers)
+Per prime's transparency-polish list (currently deferred — opt-in if time):
+- Click ENS name → entity drawer (wallet balance + mints/swaps/retires history + ENS metadata + Etherscan).
+- Click tx hash in audit log → tx drawer (decoded args + parties + amounts + Etherscan).
+- These are read-only chain queries + drawer UI; no contract changes.
 
-- **Lin:** read `docs/design/happy-flow.md`. Produce screen mockups for `/company`, `/regulator`, `/public` at Beat 2 (busiest state) and Beat 3 (closing visual, cap-accounting widget showing supply contracted). Note the `/regulator` screen needs **two distinct panels**: scheduled allocation events (calendar-driven) and authority controls (discretionary freeze/pause/audit). Issuance is *not* in authority controls.
-- **Nahin:** read `docs/research/eu-ets-reality-check.md` for Q&A defensibility. Update pitch script to use happy-flow narration (issuance event execution, not "regulator gifts credits"). Verify the €800B market-size number flagged in BRIEF §14 before pitch.
-- **Parth:** see CHANGELOG 2026-05-09 (later evening) for consolidation context. Suggested next chunk: own Sepolia deploy + Sourcify verification + maintaining the `script/` directory as we add operational tooling.
+### Pitch / day-of
+- **Lin:** screens are live; if you want any tile re-styled, the design-token surface is `web/app/globals.css`. Components live in `web/components/` and `web/app/{route}/page.tsx`.
+- **Nahin:** numbers memorised; derivatives + bridge + regulator-MEV + LP-fee Q&A canned in `BRIEF.md §14`; verify €800B market-size before pitch.
+- **Parth:** consolidation context in `CHANGELOG.md 2026-05-09 (later evening)`. Sepolia deploy + Sourcify already done. Future chunks: any deploy-script tooling we add.
+
+### Sim-mode safety net
+Every route accepts `?beat=N` (0..3) URL parameter. That switches off chain reads and renders the design's beat-driven story instead. If the live demo breaks on stage, change URL → audience can't tell.
 
 ---
 
