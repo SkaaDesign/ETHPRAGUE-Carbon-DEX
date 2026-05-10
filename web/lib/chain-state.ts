@@ -106,10 +106,7 @@ function shortHash(h: `0x${string}` | string): string {
 async function fetchAllEvents() {
   const client = getClient();
   const latest = await client.getBlockNumber();
-  // Alchemy free-tier rate-limits eth_getLogs hard at wide ranges (HTTP 429 →
-  // Promise.all rejects → silent SIM fallback). 5k blocks = ~16.7 hr at 12s/blk,
-  // well above the gap between reset-demo.sh and stage.
-  const fromBlock = latest > 5_000n ? latest - 5_000n : 0n;
+  const fromBlock = latest > 50_000n ? latest - 50_000n : 0n;
 
   const [mintLogs, swapLogs, retireLogs] = await Promise.all([
     client.getContractEvents({
@@ -323,13 +320,17 @@ export async function getStateForRoute(
     return { state: stateAt(beat), isLive: false };
   }
 
-  // Otherwise, read live from Sepolia.
+  // Otherwise, read live from Sepolia. On failure, return the empty pre-demo
+  // state (zeros + empty audit) and let ChainErrorBanner surface the error
+  // verbatim. We deliberately do NOT fall back to populated sim numbers
+  // (stateAt(3)) — those would look like real demo data and mask the failure.
+  // Stage backup is `?beat=N` only — explicit opt-in, never auto.
   try {
     const state = await fetchLiveState();
     return { state, isLive: true };
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    console.error("[chain-state] live fetch failed; falling back to sim:", msg);
-    return { state: stateAt(3), isLive: false, error: msg };
+    console.error("[chain-state] live fetch failed:", msg);
+    return { state: stateAt(0), isLive: false, error: msg };
   }
 }
