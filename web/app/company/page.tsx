@@ -23,7 +23,8 @@ import { fmt, stateAt, type AuditEntry } from "@/lib/demo-state";
 import { getStateForRoute } from "@/lib/chain-state";
 import { TradingDesk, SurrenderPanel } from "@/components/actions";
 import { HeaderWalletStatus } from "@/components/HeaderWalletStatus";
-import { EtherscanTx } from "@/components/EtherscanLink";
+import { EnsAppLink, EtherscanTx } from "@/components/EtherscanLink";
+import { recordsForEns } from "@/lib/contracts";
 
 const COMPANY_A_ENS = "cement-mainz.verified-entity.eth";
 
@@ -173,6 +174,7 @@ function Wrap({ children }: { children: React.ReactNode }) {
 // Replaces the old BalanceTile's identity block; balance numbers move to the
 // KPI cards below for breathing room.
 function IdentityStrip() {
+  const records = recordsForEns(COMPANY_A_ENS);
   return (
     <div className="bg-surface rounded-2xl border border-border px-6 py-4 flex items-center gap-3 flex-wrap shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
       <span
@@ -180,11 +182,15 @@ function IdentityStrip() {
         className="w-8 h-8 rounded-full bg-[linear-gradient(135deg,#c8d4b8,#4a7d5e)] flex-shrink-0"
       />
       <div className="min-w-0">
-        <div className="font-mono text-[13px] leading-[1.2] text-foreground">
-          cement-mainz.verified-entity.eth
+        <div className="font-display text-[15px] leading-[1.15] text-foreground">
+          {records?.name ?? "Cement Mainz GmbH"}{" "}
+          <span className="font-mono text-[11px] text-muted ml-1">
+            ({records?.ticker ?? "—"})
+          </span>
         </div>
-        <small className="block font-sans text-[10px] text-muted mt-[2px] tracking-[0.06em] uppercase">
-          Verified emitter · cement · DE
+        <small className="font-mono text-[11px] text-muted inline-flex items-center gap-[5px] mt-[3px]">
+          {COMPANY_A_ENS}
+          <EnsAppLink name={COMPANY_A_ENS} />
         </small>
       </div>
       <span className="ml-auto inline-flex items-center gap-[5px] text-[10px] tracking-[0.08em] uppercase text-success font-semibold">

@@ -112,6 +112,46 @@ export function EnsLink({
 }
 
 /**
+ * Small icon-button link to the ENS profile page on Sepolia, where the
+ * full text-records (name, ticker, EU-ETS compliance per year, etc.) are
+ * visible. Pair with the entity's display name for the Etherscan-style
+ * "click any name → chain truth" affordance.
+ */
+export function EnsAppLink({
+  name,
+  className = "",
+}: {
+  name: string;
+  className?: string;
+}) {
+  return (
+    <a
+      href={`https://sepolia.app.ens.domains/${name}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      title={`${name} — open ENS profile (records, attestations) on Sepolia`}
+      aria-label={`Open ${name} on ENS app`}
+      className={`inline-flex items-center justify-center w-5 h-5 rounded text-success/60 hover:text-success hover:bg-success/10 transition-colors ${className}`}
+    >
+      <svg
+        width="10"
+        height="10"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden
+      >
+        <path d="M7 17 17 7" />
+        <path d="M7 7h10v10" />
+      </svg>
+    </a>
+  );
+}
+
+/**
  * "Sourcify-verified ✓" badge that links to the contract on Etherscan
  * (Etherscan picks up Sourcify verification automatically when both have it).
  */

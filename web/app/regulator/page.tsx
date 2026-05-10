@@ -27,7 +27,8 @@ import {
   StatusPill,
 } from "@/components/ui";
 import { BeatSwitcher } from "@/components/BeatSwitcher";
-import { EnsLink, EtherscanTx } from "@/components/EtherscanLink";
+import { EnsAppLink, EnsLink, EtherscanTx } from "@/components/EtherscanLink";
+import { recordsForEns } from "@/lib/contracts";
 import { IssueAllocationPanel } from "@/components/actions";
 import { HeaderWalletStatus } from "@/components/HeaderWalletStatus";
 
@@ -411,26 +412,76 @@ function RosterRow({
   statusTone?: "success" | "muted";
   last?: boolean;
 }) {
+  const records = recordsForEns(name);
   return (
     <div
-      className={`grid grid-cols-[1fr_auto_auto] gap-3 py-[10px] text-xs items-baseline ${
+      className={`grid grid-cols-[1fr_auto_auto] gap-3 py-3 text-xs items-baseline ${
         last ? "" : "border-b border-border-row"
       }`}
     >
       <span>
-        <EnsLink name={name} className="!text-xs" />
-        <small className="block font-sans text-[10px] text-muted mt-[2px]">
-          {sub}
-        </small>
+        <span className="inline-flex items-center gap-[6px]">
+          <EnsLink name={name} className="!text-xs" />
+          {records && <EnsAppLink name={name} />}
+        </span>
+        {records ? (
+          <>
+            <small className="block font-sans text-[11px] text-foreground mt-[3px]">
+              {records.name}{" "}
+              <span className="font-mono text-[10px] text-muted">
+                ({records.ticker})
+              </span>{" "}
+              · {sub}
+            </small>
+            <div className="flex flex-wrap gap-[6px] mt-[6px]">
+              <ComplianceChip
+                year="2024"
+                violated={records.violated2024}
+                detail={records.compliance2024}
+              />
+              <ComplianceChip year="2025" detail={records.compliance2025} />
+            </div>
+          </>
+        ) : (
+          <small className="block font-sans text-[10px] text-muted mt-[2px]">
+            {sub}
+          </small>
+        )}
       </span>
-      <span className="font-mono tabular-nums">{balance}</span>
+      <span className="font-mono tabular-nums self-start mt-1">{balance}</span>
       <span
-        className={`text-[10px] tracking-[0.08em] uppercase font-semibold ${
+        className={`text-[10px] tracking-[0.08em] uppercase font-semibold self-start mt-1 ${
           statusTone === "success" ? "text-success" : "text-muted"
         }`}
       >
         {status}
       </span>
     </div>
+  );
+}
+
+// EU-ETS compliance chip — derived from ENS text records. Green for verified,
+// amber-on-cream for violated. Title shows the full ESMA reference / detail.
+function ComplianceChip({
+  year,
+  violated,
+  detail,
+}: {
+  year: string;
+  violated?: boolean;
+  detail: string;
+}) {
+  const tone = violated
+    ? "bg-[#fff1d4] text-[#8a6018] border-[#e8c98c]"
+    : "bg-[#e2efe6] text-[#1f5733] border-[#c8d8cd]";
+  const icon = violated ? "⚠" : "✓";
+  return (
+    <span
+      title={detail}
+      className={`inline-flex items-center gap-[5px] px-[8px] py-[3px] rounded-[6px] border text-[10px] font-mono tracking-[0.04em] ${tone}`}
+    >
+      <span aria-hidden>{icon}</span>
+      {year}
+    </span>
   );
 }

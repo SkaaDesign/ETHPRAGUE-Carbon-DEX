@@ -90,6 +90,44 @@ export function addressForEns(name: string): Address | null {
 }
 
 // ─────────────────────────────────────────────────────────────────────────
+// ENS text records (mirrors what setup-ens-records.ts wrote on chain).
+// Hardcoded for fast frontend display — judges click the EnsAppLink to
+// verify on sepolia.app.ens.domains. Keep in sync if records change.
+// ─────────────────────────────────────────────────────────────────────────
+
+export type EnsRecords = {
+  name: string;
+  ticker: string;
+  description: string;
+  compliance2024: string;
+  compliance2025: string;
+  /** Whether the 2024 compliance line names a violation (changes badge color). */
+  violated2024?: boolean;
+};
+
+export const ENS_RECORDS: Record<string, EnsRecords> = {
+  "cement-mainz.verified-entity.eth": {
+    name: "Cement Mainz GmbH",
+    ticker: "CEMNZ",
+    description: "Cement clinker producer · Mainz, DE",
+    compliance2024: "VERIFIED · 980 EUA surrendered",
+    compliance2025: "VERIFIED · 1,020 EUA surrendered",
+  },
+  "aluminium-bratislava.verified-entity.eth": {
+    name: "Aluminium Bratislava s.r.o.",
+    ticker: "ALUBRA",
+    description: "Aluminium smelter · Bratislava, SK",
+    compliance2024: "VIOLATED · €34,500 penalty · ESMA-2024-EUR-447",
+    compliance2025: "VERIFIED · 820 EUA surrendered",
+    violated2024: true,
+  },
+};
+
+export function recordsForEns(name: string): EnsRecords | null {
+  return ENS_RECORDS[name] ?? null;
+}
+
+// ─────────────────────────────────────────────────────────────────────────
 // ABIs (minimal — only what the frontend reads)
 // ─────────────────────────────────────────────────────────────────────────
 
