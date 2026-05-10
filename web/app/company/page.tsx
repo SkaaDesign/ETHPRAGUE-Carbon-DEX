@@ -77,7 +77,7 @@ export default async function CompanyPage({
         clockSuffix="UTC · WALLET CONNECTED"
         pills={PILLS}
       >
-        <BalanceTile state={s} />
+        <BalanceTile state={s} isLive={isLive} />
 
         {isLive ? (
           // Live mode: persistent product UI, role-gated by wallet.
@@ -112,9 +112,15 @@ export default async function CompanyPage({
 // 1 · Identity + balance tile (always visible)
 // ─────────────────────────────────────────────────────────────────────────
 
-function BalanceTile({ state: s }: { state: ReturnType<typeof stateAt> }) {
-  const delta =
-    s.beat === 1
+function BalanceTile({ state: s, isLive }: { state: ReturnType<typeof stateAt>; isLive: boolean }) {
+  // Sim mode: beat is the source of truth, deltas describe the staged story.
+  // Live mode: beat is derived from event existence (see chain-state.ts), so once
+  // ANY retire event is on chain, beat=3 forever and the delta would lie about
+  // the current click's effect. The action panels (TradingDesk/SurrenderPanel)
+  // already own success-state messaging in live mode, so we just hide the delta.
+  const delta = isLive
+    ? null
+    : s.beat === 1
       ? { text: "▲ +1,000 received", down: false }
       : s.beat === 2
         ? { text: "▼ −200 sold", down: true }
